@@ -1,32 +1,28 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Lanymy.NET.NuGet.Packager</id>
+    <id>Lanymy.NET</id>
     <version>1.0.0</version>
-    <title>Lanymy.NET.NuGet.Packager</title>
+    <title>Lanymy's Extension Methods Library</title>
     <authors>lanymy</authors>
-    <owners></owners>
-    <description>
-      A long description of the package. This shows up in the right pane of the Add Package Dialog as well as in the Package Manager Console when listing packages using the Get-Package command.
-    </description>
+    <owners>lanymy</owners>
+    <description>A extension methods library for .net 4/4.5 (with CompressionFunctions,EmailFunctions,EnumFunctions,FileFunctions,IsolatedStorageFunctions,SecurityFunctions,SerializeFunctions and so on)</description>
+    <summary>A extension methods library for .net 4/4.5 (with CompressionFunctions,EmailFunctions,EnumFunctions,FileFunctions,IsolatedStorageFunctions,SecurityFunctions,SerializeFunctions and so on)</summary>
     <releaseNotes>
     </releaseNotes>
-    <summary>
-      A short description of the package. If specified, this shows up in the middle pane of the Add Package Dialog. If not specified, a truncated version of the description is used instead.
-    </summary>
-    <language>en-US</language>
-    <projectUrl>https://nuget.org/packages/Lanymy.NET.NuGet.Packager</projectUrl>
-    <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
+    <language>zh-cn</language>
+    <projectUrl>https://github.com/lanymy/Lanymy.NET</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/lanymy/Lanymy.NET/master/imgs/icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>http://opensource.org/licenses/Apache-2.0</licenseUrl>
-    <copyright>Copyright  2017</copyright>
+    <copyright>Copyright © lanyanmiyu@qq.com 2015-2017</copyright>
     <dependencies>
-        <group targetFramework="net40">
-          <dependency id="log4net" version="1.2.10" />
-        </group>
+      <group targetFramework="net40">
+        <dependency id="log4net" version="1.2.10" />
+      </group>
     </dependencies>
     <references></references>
-    <tags></tags>
+    <tags>lanymy,general,extension,compress,email,ftp,enum,file,security,serialize</tags>
   </metadata>
   <files>
     <file src="lib\" target="lib" />
