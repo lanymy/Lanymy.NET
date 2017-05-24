@@ -32,16 +32,25 @@ namespace Lanymy.General.Extension.Common
 
         private IEqualityComparer<TValue> _Comparer;
 
+
+        /// <summary>
+        /// 通用比较器 构造方法
+        /// </summary>
+        /// <param name="keySelector">比较属性的选择器</param>
+        /// <param name="comparer">自定义的属性比较器</param>
         public CommonEqualityComparer(Func<T, TValue> keySelector, IEqualityComparer<TValue> comparer)
         {
-            this._KeySelector = keySelector;
-            this._Comparer = comparer;
+            _KeySelector = keySelector;
+            _Comparer = comparer;
         }
 
-
-        public CommonEqualityComparer(Func<T, TValue> keySelector)
-            : this(keySelector, EqualityComparer<TValue>.Default)
+        /// <summary>
+        /// 通用比较器 构造方法 使用默认的属性比较器
+        /// </summary>
+        /// <param name="keySelector">比较属性的选择器</param>
+        public CommonEqualityComparer(Func<T, TValue> keySelector): this(keySelector, EqualityComparer<TValue>.Default)
         { }
+
 
         public bool Equals(T x, T y)
         {
