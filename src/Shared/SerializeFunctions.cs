@@ -7,22 +7,13 @@
 
 
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
-//using System.Runtime.Serialization.Formatters.Soap;
-using System.Text;
-using System.Threading.Tasks;
-//using System.Web.Script.Serialization;
-using System.Xml;
-using System.Xml.Serialization;
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
 using Lanymy.General.Extension.Serializer;
-using Newtonsoft.Json;
-using Formatting = System.Xml.Formatting;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Lanymy.General.Extension
 {
@@ -43,6 +34,14 @@ namespace Lanymy.General.Extension
         /// </summary>
         public static readonly IJsonSerializer DefaultJsonSerializer = new JsonNetJsonSerializer(JsonNetJsonSerializer.GetDefaultJsonSerializerSettings());
 
+        private static IJsonSerializer GetJsonSerializer(IJsonSerializer jsonSerializer = null)
+        {
+            if (jsonSerializer.IfIsNullOrEmpty())
+            {
+                jsonSerializer = DefaultJsonSerializer;
+            }
+            return jsonSerializer;
+        }
 
         /// <summary>
         /// 序列化对象成Json
@@ -51,11 +50,7 @@ namespace Lanymy.General.Extension
         /// <param name="jsonSerializer">序列化Json使用的序列化器</param>
         public static string SerializeToJson<T>(T t, IJsonSerializer jsonSerializer = null) where T : class
         {
-            if (jsonSerializer.IfIsNullOrEmpty())
-            {
-                jsonSerializer = DefaultJsonSerializer;
-            }
-            return t.IfIsNullOrEmpty() ? string.Empty : jsonSerializer.SerializeToJson(t);
+            return t.IfIsNullOrEmpty() ? string.Empty : GetJsonSerializer(jsonSerializer).SerializeToJson(t);
         }
 
         /// <summary>
@@ -65,13 +60,7 @@ namespace Lanymy.General.Extension
         /// <param name="jsonSerializer">反序列化Json使用的序列化器</param>
         public static T DeserializeFromJson<T>(string json, IJsonSerializer jsonSerializer = null) where T : class
         {
-
-            if (jsonSerializer.IfIsNullOrEmpty())
-            {
-                jsonSerializer = DefaultJsonSerializer;
-            }
-
-            return json.IfIsNullOrEmpty() ? default(T) : jsonSerializer.DeserializeFromJson<T>(json);
+            return json.IfIsNullOrEmpty() ? default(T) : GetJsonSerializer(jsonSerializer).DeserializeFromJson<T>(json);
         }
 
         /// <summary>
@@ -81,7 +70,7 @@ namespace Lanymy.General.Extension
         /// <param name="jsonSerializer">序列化Json使用的序列化器</param>
         public static Task<string> SerializeToJsonAsync<T>(T t, IJsonSerializer jsonSerializer = null) where T : class
         {
-            return SerializeToJsonAsync(t, jsonSerializer);
+            return GetJsonSerializer(jsonSerializer).SerializeToJsonAsync(t);
         }
 
 
@@ -93,7 +82,7 @@ namespace Lanymy.General.Extension
         /// <param name="jsonSerializer">反序列化Json使用的序列化器</param>
         public static Task<T> DeserializeFromJsonAsync<T>(string json, IJsonSerializer jsonSerializer = null) where T : class
         {
-            return DeserializeFromJsonAsync<T>(json, jsonSerializer);
+            return GetJsonSerializer(jsonSerializer).DeserializeFromJsonAsync<T>(json);
         }
 
 
@@ -108,6 +97,14 @@ namespace Lanymy.General.Extension
         /// </summary>
         public static readonly IXmlSerializer DefaultXmlSerializer = new LanymyXmlSerializer();
 
+        private static IXmlSerializer GetXmlSerializer( IXmlSerializer xmlSerializer = null) 
+        {
+            if (xmlSerializer.IfIsNullOrEmpty())
+            {
+                xmlSerializer = DefaultXmlSerializer;
+            }
+            return xmlSerializer;
+        }
 
         /// <summary>
         /// 指定编码序列化对象成XML
@@ -118,11 +115,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static string SerializeToXml<T>(T t, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.SerializeToXml(t, encoding);
+            return GetXmlSerializer(xmlSerializer).SerializeToXml(t, encoding);
         }
 
         /// <summary>
@@ -134,11 +127,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task<string> SerializeToXmlAsync<T>(T t, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.SerializeToXmlAsync(t, encoding);
+            return GetXmlSerializer(xmlSerializer).SerializeToXmlAsync(t, encoding);
         }
         /// <summary>
         /// 指定编码反序列化XML成对象
@@ -150,11 +139,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static T DeserializeFromXml<T>(string xmlStr, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.DeserializeFromXml<T>(xmlStr, encoding);
+            return GetXmlSerializer(xmlSerializer).DeserializeFromXml<T>(xmlStr, encoding);
         }
         /// <summary>
         /// 异步 指定编码反序列化XML成对象
@@ -166,11 +151,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task<T> DeserializeFromXmlAsync<T>(string xmlStr, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.DeserializeFromXmlAsync<T>(xmlStr, encoding);
+            return GetXmlSerializer(xmlSerializer).DeserializeFromXmlAsync<T>(xmlStr, encoding);
         }
         /// <summary>
         /// 序列化对象成XML文件
@@ -182,11 +163,7 @@ namespace Lanymy.General.Extension
         /// <param name="xmlSerializer">Xml 序列化 功能 接口</param>
         public static void SerializeToXmlFile<T>(T t, string xmlFileFullPath, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            xmlSerializer.SerializeToXmlFile(t, xmlFileFullPath, encoding);
+            GetXmlSerializer(xmlSerializer).SerializeToXmlFile(t, xmlFileFullPath, encoding);
         }
         /// <summary>
         /// 异步 序列化对象成XML文件
@@ -198,11 +175,7 @@ namespace Lanymy.General.Extension
         /// <param name="xmlSerializer">Xml 序列化 功能 接口</param>
         public static Task SerializeToXmlFileAsync<T>(T t, string xmlFileFullPath, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.SerializeToXmlFileAsync(t, xmlFileFullPath, encoding);
+            return GetXmlSerializer(xmlSerializer).SerializeToXmlFileAsync(t, xmlFileFullPath, encoding);
         }
         /// <summary>
         /// 反序列化XML文件成对象
@@ -214,11 +187,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static T DeserializeFromXmlFile<T>(string xmlFileFullPath, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.DeserializeFromXmlFile<T>(xmlFileFullPath, encoding);
+            return GetXmlSerializer(xmlSerializer).DeserializeFromXmlFile<T>(xmlFileFullPath, encoding);
         }
         /// <summary>
         /// 异步 反序列化XML文件成对象
@@ -230,11 +199,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task<T> DeserializeFromXmlFileAsync<T>(string xmlFileFullPath, Encoding encoding = null, IXmlSerializer xmlSerializer = null) where T : class
         {
-            if (xmlSerializer.IfIsNullOrEmpty())
-            {
-                xmlSerializer = DefaultXmlSerializer;
-            }
-            return xmlSerializer.DeserializeFromXmlFileAsync<T>(xmlFileFullPath, encoding);
+            return GetXmlSerializer(xmlSerializer).DeserializeFromXmlFileAsync<T>(xmlFileFullPath, encoding);
         }
 
 
@@ -251,6 +216,14 @@ namespace Lanymy.General.Extension
         /// </summary>
         public static readonly IBinarySerializer DefaultBinarySerializer = new LanymyBinarySerializer();
 
+        private static IBinarySerializer GetBinarySerializer(IBinarySerializer binarySerializer = null)
+        {
+            if (binarySerializer.IfIsNullOrEmpty())
+            {
+                binarySerializer = DefaultBinarySerializer;
+            }
+            return binarySerializer;
+        }
 
         /// <summary>
         /// 把对象序列化成二进制数据
@@ -261,11 +234,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static byte[] SerializeToBytes<T>(T t, Encoding encoding = null, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            return binarySerializer.SerializeToBytes(t, encoding);
+            return GetBinarySerializer(binarySerializer).SerializeToBytes(t, encoding);
         }
         /// <summary>
         /// 异步 把对象序列化成二进制数据
@@ -276,11 +245,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task<byte[]> SerializeToBytesAsync<T>(T t, Encoding encoding = null, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            return binarySerializer.SerializeToBytesAsync(t, encoding);
+            return GetBinarySerializer(binarySerializer).SerializeToBytesAsync(t, encoding);
         }
         /// <summary>
         /// 反序列化二进制数据成对象
@@ -292,12 +257,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static T DeserializeFromBytes<T>(byte[] bytes, Encoding encoding = null, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            return binarySerializer.DeserializeFromBytes<T>(bytes, encoding);
-
+            return GetBinarySerializer(binarySerializer).DeserializeFromBytes<T>(bytes, encoding);
         }
         /// <summary>
         /// 异步 反序列化二进制数据成对象
@@ -309,11 +269,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task<T> DeserializeFromBytesAsync<T>(byte[] bytes, Encoding encoding = null, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            return binarySerializer.DeserializeFromBytesAsync<T>(bytes, encoding);
+            return GetBinarySerializer(binarySerializer).DeserializeFromBytesAsync<T>(bytes, encoding);
         }
         /// <summary>
         /// 把对象序列化成二进制文件
@@ -327,11 +283,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static void SerializeToBytesFile<T>(T t, string binaryFileFullPath, Encoding encoding = null, bool ifCompressBytes = true, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            binarySerializer.SerializeToBytesFile(t, binaryFileFullPath, encoding);
+            GetBinarySerializer(binarySerializer).SerializeToBytesFile(t, binaryFileFullPath, encoding);
         }
         /// <summary>
         /// 异步 把对象序列化成二进制文件
@@ -345,11 +297,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task SerializeToBytesFileAsync<T>(T t, string binaryFileFullPath, Encoding encoding = null, bool ifCompressBytes = true, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            return binarySerializer.SerializeToBytesFileAsync(t, binaryFileFullPath, encoding);
+            return GetBinarySerializer(binarySerializer).SerializeToBytesFileAsync(t, binaryFileFullPath, encoding);
         }
 
         /// <summary>
@@ -363,11 +311,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static T DeserializeFromBytesFile<T>(string binaryFileFullPath, Encoding encoding = null, bool ifDecompressBytes = true, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
-            {
-                binarySerializer = DefaultBinarySerializer;
-            }
-            return binarySerializer.DeserializeFromBytesFile<T>(binaryFileFullPath, encoding);
+            return GetBinarySerializer(binarySerializer).DeserializeFromBytesFile<T>(binaryFileFullPath, encoding);
         }
 
         /// <summary>
@@ -381,11 +325,178 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static Task<T> DeserializeFromBytesFileAsync<T>(string binaryFileFullPath, Encoding encoding = null, bool ifDecompressBytes = true, IBinarySerializer binarySerializer = null) where T : class
         {
-            if (binarySerializer.IfIsNullOrEmpty())
+            return GetBinarySerializer(binarySerializer).DeserializeFromBytesFileAsync<T>(binaryFileFullPath, encoding);
+        }
+
+
+        #endregion
+
+
+        #region CSV序列化
+
+        /// <summary>
+        /// 默认CSV序列化器
+        /// </summary>
+        public static readonly Dictionary<Type, object> DefaultCsvSerializer = new Dictionary<Type, object>();
+
+
+        private static ICsvSerializer<T> GetDefaultCSVSerializer<T>() where T : class, new()
+        {
+            Type type = typeof(T);
+            if (!DefaultCsvSerializer.ContainsKey(type))
             {
-                binarySerializer = DefaultBinarySerializer;
+                DefaultCsvSerializer.AddOrReplace(type, new LanymyCSVSerializer<T>());
             }
-            return binarySerializer.DeserializeFromBytesFileAsync<T>(binaryFileFullPath, encoding);
+            return DefaultCsvSerializer[type] as ICsvSerializer<T>;
+        }
+
+        private static ICsvSerializer<T> GetCSVSerializer<T>(ICsvSerializer<T> csvSerializer = null) where T : class, new()
+        {
+            if (csvSerializer.IfIsNullOrEmpty())
+            {
+                csvSerializer = GetDefaultCSVSerializer<T>();
+            }
+            return csvSerializer;
+        }
+
+        private static ICsvModelSerializer<T> GetCSVSerializer<T>(ICsvModelSerializer<T> csvModelSerializer = null) where T : class, new()
+        {
+            if (csvModelSerializer.IfIsNullOrEmpty())
+            {
+                csvModelSerializer = GetDefaultCSVSerializer<T>();
+            }
+            return csvModelSerializer;
+        }
+
+        private static ICsvFileSerializer<T> GetCSVSerializer<T>(ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        {
+            if (csvFileSerializer.IfIsNullOrEmpty())
+            {
+                csvFileSerializer = GetDefaultCSVSerializer<T>();
+            }
+            return csvFileSerializer;
+        }
+
+
+        /// <summary>
+        /// 获取CSV数据的标题
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="csvModelSerializer">CSV 序列化 / 反序列化 功能 接口</param>
+        /// <returns></returns>
+        public static string GetCSVTitle<T>(ICsvModelSerializer<T> csvModelSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvModelSerializer).GetCSVTitle();
+        }
+
+        /// <summary>
+        /// 异步 获取CSV数据的标题
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="csvModelSerializer">CSV 序列化 / 反序列化 功能 接口</param>
+        /// <returns></returns>
+        public static Task<string> GetCSVTitleAsync<T>(ICsvModelSerializer<T> csvModelSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvModelSerializer).GetCSVTitleAsync();
+        }
+
+
+        /// <summary>
+        /// 实体类序列化成CSV
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <param name="csvSerializer">CSV 序列化 / 反序列化 功能 接口</param>
+        /// <returns></returns>
+        public static string SerializeToCSV<T>(T t, ICsvModelSerializer<T> csvSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvSerializer).SerializeToCSV(t);
+        }
+
+        /// <summary>
+        /// 异步 实体类序列化成CSV
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <param name="csvSerializer">CSV 序列化 / 反序列化 功能 接口</param>
+        /// <returns></returns>
+        public static Task<string> SerializeToCsvAsync<T>(T t, ICsvModelSerializer<T> csvSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvSerializer).SerializeToCsvAsync(t);
+        }
+
+
+        /// <summary>
+        /// 反序列化CSV成实体类
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="csvString"></param>
+        /// <param name="csvSerializer">CSV 序列化 / 反序列化 功能 接口</param>
+        /// <returns></returns>
+        public static T DeserializeFromCSV<T>(string csvString, ICsvModelSerializer<T> csvSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvSerializer).DeserializeFromCSV(csvString);
+        }
+
+
+        /// <summary>
+        /// 异步 反序列化CSV成实体类
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="csvString"></param>
+        /// <param name="csvSerializer">CSV 序列化 / 反序列化 功能 接口</param>
+        /// <returns></returns>
+        public static Task<T> DeserializeFromCsvAsync<T>(string csvString, ICsvModelSerializer<T> csvSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvSerializer).DeserializeFromCsvAsync(csvString);
+        }
+
+
+        /// <summary>
+        /// 序列化到CSV文件
+        /// </summary>
+        /// <param name="csvFileFullPath">CSV文件全路径</param>
+        /// <param name="list">要序列化的实体类数据集合</param>
+        /// <param name="ifWriteTitle">是否写入 标题 </param>
+        /// <param name="csvFileSerializer">CSV 序列化 文件 功能 接口</param>
+        public static void SerializeToCsvFile<T>(string csvFileFullPath, IEnumerable<T> list, bool ifWriteTitle = true, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        {
+            GetCSVSerializer(csvFileSerializer).SerializeToCsvFile(csvFileFullPath, list, ifWriteTitle);
+        }
+
+
+        /// <summary>
+        /// 异步 序列化到CSV文件
+        /// </summary>
+        /// <param name="csvFileFullPath">CSV文件全路径</param>
+        /// <param name="list">要序列化的实体类数据集合</param>
+        /// <param name="ifWriteTitle">是否写入 标题 </param>
+        /// <param name="csvFileSerializer">CSV 序列化 文件 功能 接口</param>
+        public static Task SerializeToCsvFileAsync<T>(string csvFileFullPath, IEnumerable<T> list, bool ifWriteTitle = true, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvFileSerializer).SerializeToCsvFileAsync(csvFileFullPath, list, ifWriteTitle);
+        }
+        /// <summary>
+        /// 从CSV文件反序列化数据
+        /// </summary>
+        /// <param name="csvFileFullPath">CSV文件全路径</param>
+        /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="csvFileSerializer">CSV 序列化 文件 功能 接口</param>
+        /// <returns></returns>
+        public static List<T> DeserializeFromCsvFile<T>(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvFileSerializer).DeserializeFromCsvFile(csvFileFullPath, csvAnnotationSymbol);
+        }
+        /// <summary>
+        /// 异步 从CSV文件反序列化数据
+        /// </summary>
+        /// <param name="csvFileFullPath">CSV文件全路径</param>
+        /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="csvFileSerializer">CSV 序列化 文件 功能 接口</param>
+        /// <returns></returns>
+        public static Task<List<T>> DeserializeFromCsvFileAsync<T>(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        {
+            return GetCSVSerializer(csvFileSerializer).DeserializeFromCsvFileAsync(csvFileFullPath, csvAnnotationSymbol);
         }
 
 

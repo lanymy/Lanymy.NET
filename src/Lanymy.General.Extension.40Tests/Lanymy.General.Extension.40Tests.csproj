@@ -75,6 +75,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Common\CommonEqualityComparerTests.cs" />
+    <Compile Include="CsvFunctionsTests.cs" />
     <Compile Include="ExtensionFunctions\DictionaryExtensionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

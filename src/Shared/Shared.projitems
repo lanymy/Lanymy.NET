@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CompressionFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConfigFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CsvFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CsvSerializeMappings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomAttributes\CSVDescriptionAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomAttributes\EnumCustomAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataBaseCommonBase.cs" />
@@ -44,7 +45,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICompresserBytesAndBytes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICompresserStringAndBase64String.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICompresserStringAndBytes.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICSVSerialize.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICsvFileReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICsvFileSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICsvModelSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ICsvSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IJsonSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsolatedStorageFunctions.cs" />
@@ -54,6 +58,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\BaseCalendarHolidayModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommonEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommunicationDataModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\CsvFileReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\CSVSerializeMapModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CustomFileInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CustomMessageBoxModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\EnumAttributeCacheModel.cs" />
@@ -90,6 +96,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\BaseSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\JsonNetJsonSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyBinarySerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyCSVSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VersionFunctions.cs" />

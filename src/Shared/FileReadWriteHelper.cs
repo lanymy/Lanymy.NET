@@ -122,29 +122,16 @@ namespace Lanymy.General.Extension
 
         private void CheckWriter()
         {
-
-            try
+            if (!_Reader.IfIsNullOrEmpty())
             {
-                if (!_Reader.IfIsNullOrEmpty())
-                {
-                    _Reader.Dispose();
-                    _Reader = null;
-                }
-
-                if (_Writer.IfIsNullOrEmpty())
-                {
-                    _Writer = new StreamWriter(_FileFullPath, true, _DefaultEncoding);
-                }
-            }
-            catch (Exception ex)
-            {
-
-                throw;
+                _Reader.Dispose();
+                _Reader = null;
             }
 
-
-
-
+            if (_Writer.IfIsNullOrEmpty())
+            {
+                _Writer = new StreamWriter(_FileFullPath, true, _DefaultEncoding);
+            }
         }
 
 

@@ -12,6 +12,7 @@
 
 
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Lanymy.General.Extension.CustomAttributes
@@ -56,13 +57,13 @@ namespace Lanymy.General.Extension.CustomAttributes
         ///// <summary>
         ///// 属性序列化方法
         ///// </summary>
-        //public Func<string, object> SerializeFunc { get; set; }
+        //public Func<object, string> PropertySerializeFunc { get; set; }
 
 
         ///// <summary>
         ///// 属性反序列化方法
         ///// </summary>
-        //public Func<object, string> DeserializeFunc { get; set; }
+        //public Func<string, object> PropertyDeserializeFunc { get; set; }
 
 
         /// <summary>
@@ -70,11 +71,15 @@ namespace Lanymy.General.Extension.CustomAttributes
         /// </summary>
         /// <param name="index">CSV索引值</param>
         /// <param name="title">CSV标题</param>
-        public CSVDescriptionAttribute(int index, string title)
+        ///// <param name="propertySerializeFunc">属性序列化方法</param>
+        ///// <param name="propertyDeserializeFunc">属性反序列化方法</param>
+        //public CSVDescriptionAttribute(int index, string title = null, Func<object, string> propertySerializeFunc = null, Func<string, object> propertyDeserializeFunc = null)
+        public CSVDescriptionAttribute(int index, string title = null)
         {
             Index = index;
             Title = title;
-            //SerializeoCsvStringFunc = serializeoCsvStringFunc;
+            //PropertySerializeFunc = propertySerializeFunc;
+            //PropertyDeserializeFunc = propertyDeserializeFunc;
         }
 
 

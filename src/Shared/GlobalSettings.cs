@@ -28,6 +28,11 @@ namespace Lanymy.General.Extension
     {
 
         /// <summary>
+        /// CSV行数据注释行首符号
+        /// </summary>
+        public const string CSV_ANNOTATION_SYMBOL = "#";
+
+        /// <summary>
         /// 默认时间格式化字符串yyyy-MM-dd hh:mm:ss.fff
         /// </summary>
         public const string DEFAULT_DATE_FORMAT_STRING  = "yyyy-MM-dd hh:mm:ss.fff";
