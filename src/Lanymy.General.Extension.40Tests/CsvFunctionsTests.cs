@@ -89,7 +89,7 @@ namespace Lanymy.General.Extension._40Tests
         public void Init()
         {
             CsvSerializeMappings.StartMap<CsvTestModel>()
-                .MapCSVSerializeProperty(o => o.Index, o => o.Index.ToString(), o => o.ConvertToType<int>())
+                .MapCSVSerializeProperty(o => o.Index, o => (o.Index + 5).ToString(), o => o.ConvertToType<int>() + 10)
                 .MapCSVSerializeProperty(o => o.CreateDateTime, o => o.CreateDateTime.ToString("yyyy-MM-dd"), o => o.ConvertToType<DateTime>())
                 .MapCSVSerializeProperty(o => o.LastUpdateDateTime, o => o.CreateDateTime.ToString(GlobalSettings.DEFAULT_DATE_FORMAT_STRING), o => o.ConvertToDateTime(GlobalSettings.DEFAULT_DATE_FORMAT_STRING));
         }

@@ -59,6 +59,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommonEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommunicationDataModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CsvFileReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\CsvMappingShellModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CSVSerializeMapModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CustomFileInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CustomMessageBoxModel.cs" />

@@ -41,9 +41,9 @@ namespace Lanymy.General.Extension
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T StartMap<T>()
+        public static CsvMappingShellModel<T> StartMap<T>() where T : class
         {
-            return default(T);
+            return new CsvMappingShellModel<T>();
         }
 
 
@@ -51,12 +51,12 @@ namespace Lanymy.General.Extension
         /// CSV属性 自定义 序列化 映射
         /// </summary>
         /// <typeparam name="T">CSV数据实体类</typeparam>
-        /// <param name="t">单纯 用于 自动关联 映射 方法  方便调用.</param>
+        /// <param name="csvMappingShellModel">单纯 用于 自动关联 映射 方法  方便调用.</param>
         /// <param name="propertyNameExpre">要映射的属性表达式</param>
         /// <param name="propertySerializeFunc">CSV序列化自定义方法</param>
         /// <param name="propertyDeserializeFunc">CSV反序列化自定义方法</param>
         /// <returns></returns>
-        public static T MapCSVSerializeProperty<T>(this T t, Expression<Func<T, object>> propertyNameExpre, Func<T, string> propertySerializeFunc, Func<string, object> propertyDeserializeFunc) where T : class
+        public static CsvMappingShellModel<T> MapCSVSerializeProperty<T>(this CsvMappingShellModel<T> csvMappingShellModel, Expression<Func<T, object>> propertyNameExpre, Func<T, string> propertySerializeFunc, Func<string, object> propertyDeserializeFunc) where T : class
         {
 
             Type type = typeof(T);
@@ -85,7 +85,7 @@ namespace Lanymy.General.Extension
 
             }
 
-            return default(T);
+            return csvMappingShellModel;
 
         }
 
