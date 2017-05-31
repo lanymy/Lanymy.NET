@@ -127,6 +127,11 @@ namespace Lanymy.General.Extension._40Tests
 
             list = SerializeFunctions.DeserializeFromCsvFile<CsvTestModel>(_CsvFileFullPath);
 
+
+            var sourceList = GetCsvListSource();
+
+            CollectionAssert.AreEqual(list.Select(o => o.UserName).ToArray(), sourceList.Select(o => o.UserName).ToArray());
+
         }
 
 
