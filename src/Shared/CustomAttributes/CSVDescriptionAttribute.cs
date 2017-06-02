@@ -21,7 +21,7 @@ namespace Lanymy.General.Extension.CustomAttributes
     /// CSV 序列化 反序列化  字段属性 描述特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public class CSVDescriptionAttribute : Attribute
+    public class CsvDescriptionAttribute : Attribute
     {
 
 
@@ -74,7 +74,7 @@ namespace Lanymy.General.Extension.CustomAttributes
         ///// <param name="propertySerializeFunc">属性序列化方法</param>
         ///// <param name="propertyDeserializeFunc">属性反序列化方法</param>
         //public CSVDescriptionAttribute(int index, string title = null, Func<object, string> propertySerializeFunc = null, Func<string, object> propertyDeserializeFunc = null)
-        public CSVDescriptionAttribute(int index, string title = null)
+        public CsvDescriptionAttribute(int index, string title = null)
         {
             Index = index;
             Title = title;

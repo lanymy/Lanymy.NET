@@ -109,12 +109,7 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public static IEnumerable<string> ReadCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, ICsvFileReader csvFileReader = null)
         {
-
-            if (csvFileReader.IfIsNullOrEmpty())
-            {
-                csvFileReader = DefaultCsvFileReader;
-            }
-            return csvFileReader.ReadCsvFile(csvFileFullPath, csvAnnotationSymbol);
+            return GenericityFunctions.GetInterface(csvFileReader, DefaultCsvFileReader).ReadCsvFile(csvFileFullPath, csvAnnotationSymbol);
         }
 
 

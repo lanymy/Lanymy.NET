@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Lanymy.General.Extension.ExtensionFunctions;
+using Lanymy.General.Extension.Models;
 
 namespace Lanymy.General.Extension
 {
@@ -22,6 +23,52 @@ namespace Lanymy.General.Extension
     public class FileFunctions
     {
 
+
+
+        /// <summary>
+        /// 复制文件
+        /// </summary>
+        /// <param name="sourceFileFullPath">源文件全路径</param>
+        /// <param name="targetFileFullPath">目标文件全路径</param>
+        /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否 覆盖目标文件</param>
+        public static void CopyFile(string sourceFileFullPath, string targetFileFullPath, bool ifOverWriteTargetFile = true)
+        {
+
+            if (!File.Exists(sourceFileFullPath))
+                throw new FileNotFoundException(nameof(sourceFileFullPath));
+
+            PathFunctions.InitDirectoryPath(targetFileFullPath);
+            File.Copy(sourceFileFullPath, targetFileFullPath, ifOverWriteTargetFile);
+
+        }
+
+        /// <summary>
+        /// 复制文件
+        /// </summary>
+        /// <param name="scheduleFileInfo">文件调度信息实体类</param>
+        /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否 覆盖目标文件</param>
+        public static void CopyFile(ScheduleFileInfoModel scheduleFileInfo, bool ifOverWriteTargetFile = true)
+        {
+            if (scheduleFileInfo.IfIsNullOrEmpty())
+                throw new ArgumentNullException(nameof(scheduleFileInfo));
+            CopyFile(scheduleFileInfo.SourceFileFullPath, scheduleFileInfo.TargetFileFullPath, ifOverWriteTargetFile);
+        }
+
+        /// <summary>
+        /// 批量复制文件
+        /// </summary>
+        /// <param name="scheduleFileInfoList">文件调度信息实体类集合</param>
+        /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否 覆盖目标文件</param>
+        public static void CopyFiles(IEnumerable<ScheduleFileInfoModel> scheduleFileInfoList, bool ifOverWriteTargetFile = true)
+        {
+            if (scheduleFileInfoList.IfIsNullOrEmpty())
+                throw new ArgumentNullException(nameof(scheduleFileInfoList));
+
+            foreach (var scheduleFileInfoModel in scheduleFileInfoList)
+            {
+                CopyFile(scheduleFileInfoModel, ifOverWriteTargetFile);
+            }
+        }
 
         #region 移动文件
 

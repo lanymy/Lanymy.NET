@@ -72,12 +72,12 @@ namespace Lanymy.General.Extension
             int lengthArray = sourceArray.Length;
 
             if (startIndex < 0 || startIndex >= lengthArray)
-                throw new ArgumentOutOfRangeException("startIndex");
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
 
             int endIndex = startIndex + length;
 
             if (endIndex + 1 < 0 || endIndex - 1 >= lengthArray)
-                throw new ArgumentOutOfRangeException("length");
+                throw new ArgumentOutOfRangeException(nameof(length));
 
             T[] result = null;
 

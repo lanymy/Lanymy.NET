@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Lanymy.General.Extension.CustomAttributes;
 using Lanymy.General.Extension.ExtensionFunctions;
+using Lanymy.General.Extension.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Lanymy.General.Extension._40Tests
@@ -12,7 +13,7 @@ namespace Lanymy.General.Extension._40Tests
 
 
     [TestClass()]
-    public class CsvFunctionsTests
+    public class CsvFunctionsTests : BaseTestModel
     {
 
 
@@ -21,24 +22,24 @@ namespace Lanymy.General.Extension._40Tests
         /// </summary>
         public class CsvTestModel
         {
-            //[CSVDescription(0, "CSV数据索引")]
-            [CSVDescription(0)]
+            //[CsvDescription(0, "CSV数据索引")]
+            [CsvDescription(0)]
             public int Index { get; set; }
-            //[CSVDescription(1, "用户名")]
-            [CSVDescription(1)]
+            //[CsvDescription(1, "用户名")]
+            [CsvDescription(1)]
             public string UserName { get; set; }
-            //[CSVDescription(2, "创建时间")]
-            [CSVDescription(2)]
+            //[CsvDescription(2, "创建时间")]
+            [CsvDescription(2)]
             public DateTime CreateDateTime { get; set; }
-            //[CSVDescription(3, "更新时间")]
-            [CSVDescription(3)]
+            //[CsvDescription(3, "更新时间")]
+            [CsvDescription(3)]
             public DateTime LastUpdateDateTime { get; set; }
         }
 
         /// <summary>
         /// CSV测试根目录名称
         /// </summary>
-        private const string CSV_TEST_ROOT_DIRECTORY_NAME = nameof(CsvFunctionsTests);
+        private readonly string _CsvTestRootDirectoryName;
 
         /// <summary>
         /// CSV文件全名称
@@ -48,18 +49,24 @@ namespace Lanymy.General.Extension._40Tests
         /// <summary>
         /// CSV文件全路径
         /// </summary>
-        private static readonly string _CsvFileFullPath = string.Empty;
+        private readonly string _CsvFileFullPath;
 
         /// <summary>
         /// CSV文件根目录全路径
         /// </summary>
-        private static readonly string _CsvFileRootDirectoryFullPath = string.Empty;
+        private readonly string _CsvFileRootDirectoryFullPath;
 
 
-        static CsvFunctionsTests()
+        public CsvFunctionsTests() : this(CSV_TEST_FILE_FULL_NAME)
         {
-            _CsvFileRootDirectoryFullPath = Path.Combine(PathFunctions.GetCallDomainPath(), CSV_TEST_ROOT_DIRECTORY_NAME);
-            _CsvFileFullPath = Path.Combine(_CsvFileRootDirectoryFullPath, CSV_TEST_FILE_FULL_NAME);
+
+        }
+
+        public CsvFunctionsTests(string testFileFullName) : base(testFileFullName)
+        {
+            _CsvTestRootDirectoryName = _TestRootDirectoryName;
+            _CsvFileFullPath = _TestFileFullPath;
+            _CsvFileRootDirectoryFullPath = _TestFileRootDirectoryFullPath;
         }
 
 

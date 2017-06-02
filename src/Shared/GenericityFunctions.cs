@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Lanymy.General.Extension.ExtensionFunctions;
 
 namespace Lanymy.General.Extension
 {
@@ -27,6 +28,19 @@ namespace Lanymy.General.Extension
     /// </summary>
     public class GenericityFunctions
     {
+
+
+        /// <summary>
+        /// 获取接口实例
+        /// </summary>
+        /// <typeparam name="TInterface"></typeparam>
+        /// <param name="tInterface"></param>
+        /// <param name="defaultInterface"></param>
+        /// <returns></returns>
+        public static TInterface GetInterface<TInterface>(TInterface tInterface, TInterface defaultInterface)
+        {
+            return tInterface.IfIsNullOrEmpty() ? defaultInterface : tInterface;
+        }
 
 
         /// <summary>

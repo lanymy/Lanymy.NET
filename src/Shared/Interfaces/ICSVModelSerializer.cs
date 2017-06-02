@@ -31,20 +31,20 @@ namespace Lanymy.General.Extension.Interfaces
         /// 获取CSV数据的标题
         /// </summary>
         /// <returns></returns>
-        string GetCSVTitle();
+        string GetCsvTitle();
 
         /// <summary>
         /// 异步 获取CSV数据的标题
         /// </summary>
         /// <returns></returns>
-        Task<string> GetCSVTitleAsync();
+        Task<string> GetCsvTitleAsync();
 
         /// <summary>
         /// 实体类序列化成CSV
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        string SerializeToCSV(TModel t);
+        string SerializeToCsv(TModel t);
         /// <summary>
         /// 异步 实体类序列化成CSV
         /// </summary>
@@ -57,7 +57,7 @@ namespace Lanymy.General.Extension.Interfaces
         /// </summary>
         /// <param name="csvString"></param>
         /// <returns></returns>
-        TModel DeserializeFromCSV(string csvString);
+        TModel DeserializeFromCsv(string csvString);
         /// <summary>
         /// 异步 反序列化CSV成实体类
         /// </summary>

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Lanymy.General.Extension.ExtensionFunctions;
 
 namespace Lanymy.General.Extension.Models
 {
@@ -25,6 +26,8 @@ namespace Lanymy.General.Extension.Models
     /// </summary>
     public class ScheduleFileInfoModel
     {
+
+
         /// <summary>
         /// 源文件全路径
         /// </summary>
@@ -34,6 +37,21 @@ namespace Lanymy.General.Extension.Models
         /// 目标文件全路径
         /// </summary>
         public string TargetFileFullPath { get; set; }
+
+
+        ///// <summary>
+        ///// 为每个ScheduleFileInfoModel要执行的操作任务
+        ///// </summary>
+        ///// <param name="list"></param>
+        ///// <param name="action"></param>
+        //public static void DoWork(IEnumerable<ScheduleFileInfoModel> list, Action<ScheduleFileInfoModel> action)
+        //{
+        //    if (!action.IfIsNullOrEmpty())
+        //    {
+                
+        //    }
+        //}
+
     }
 
 

@@ -32,13 +32,13 @@ namespace Lanymy.General.Extension.Serializer
     {
 
         public static readonly Type CurrentTModelType = typeof(TModel);
-        protected static readonly AttributeMapModel<TModel, CSVDescriptionAttribute> _AttributeMapModel;
-        protected static readonly List<CSVDescriptionAttribute> _CSVDescriptionAttributeList;
+        protected static readonly AttributeMapModel<TModel, CsvDescriptionAttribute> _AttributeMapModel;
+        protected static readonly List<CsvDescriptionAttribute> _CSVDescriptionAttributeList;
         protected static readonly List<CSVSerializeMapModel<TModel>> _CSVSerializeMapModelList;
 
         static LanymyCSVSerializer()
         {
-            _AttributeMapModel = new AttributeMapModel<TModel, CSVDescriptionAttribute>();
+            _AttributeMapModel = new AttributeMapModel<TModel, CsvDescriptionAttribute>();
             _CSVDescriptionAttributeList = _AttributeMapModel.AttributeList.OrderBy(o => o.Index).ToList();
             foreach (var csvDescriptionAttribute in _CSVDescriptionAttributeList)
             {
@@ -54,7 +54,7 @@ namespace Lanymy.General.Extension.Serializer
         /// 获取CSV数据的标题
         /// </summary>
         /// <returns></returns>
-        public virtual string GetCSVTitle()
+        public virtual string GetCsvTitle()
         {
             return GlobalSettings.CSV_ANNOTATION_SYMBOL + string.Join(",", _CSVDescriptionAttributeList.Select(o => o.Title).ToArray());
         }
@@ -63,12 +63,12 @@ namespace Lanymy.General.Extension.Serializer
         /// 异步 获取CSV数据的标题
         /// </summary>
         /// <returns></returns>
-        public virtual Task<string> GetCSVTitleAsync()
+        public virtual Task<string> GetCsvTitleAsync()
         {
 #if NET40
-            return new Task<string>(GetCSVTitle);
+            return new Task<string>(GetCsvTitle);
 #else
-            return Task.FromResult(GetCSVTitle());
+            return Task.FromResult(GetCsvTitle());
 #endif
         }
 
@@ -79,7 +79,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <typeparam name="T"></typeparam>
         /// <param name="t"></param>
         /// <returns></returns>
-        public virtual string SerializeToCSV(TModel t)
+        public virtual string SerializeToCsv(TModel t)
         {
 
             if (t.IfIsNullOrEmpty())
@@ -140,9 +140,9 @@ namespace Lanymy.General.Extension.Serializer
         public virtual Task<string> SerializeToCsvAsync(TModel t)
         {
 #if NET40
-            return new Task<string>(() => SerializeToCSV(t));
+            return new Task<string>(() => SerializeToCsv(t));
 #else
-            return Task.FromResult(SerializeToCSV(t));
+            return Task.FromResult(SerializeToCsv(t));
 #endif
         }
 
@@ -152,7 +152,7 @@ namespace Lanymy.General.Extension.Serializer
         /// </summary>
         /// <param name="csvString"></param>
         /// <returns></returns>
-        public virtual TModel DeserializeFromCSV(string csvString)
+        public virtual TModel DeserializeFromCsv(string csvString)
         {
 
             if (csvString.IfIsNullOrEmpty())
@@ -201,9 +201,9 @@ namespace Lanymy.General.Extension.Serializer
         public virtual Task<TModel> DeserializeFromCsvAsync(string csvString)
         {
 #if NET40
-            return new Task<TModel>(() => DeserializeFromCSV(csvString));
+            return new Task<TModel>(() => DeserializeFromCsv(csvString));
 #else
-            return Task.FromResult(DeserializeFromCSV(csvString));
+            return Task.FromResult(DeserializeFromCsv(csvString));
 #endif
         }
 
@@ -219,11 +219,11 @@ namespace Lanymy.General.Extension.Serializer
             {
                 if (ifWriteTitle)
                 {
-                    writer.WriteLine(SerializeFunctions.GetCSVTitle<TModel>());
+                    writer.WriteLine(SerializeFunctions.GetCsvTitle<TModel>());
                 }
                 foreach (var item in list)
                 {
-                    writer.WriteLine(SerializeFunctions.SerializeToCSV(item));
+                    writer.WriteLine(SerializeFunctions.SerializeToCsv(item));
                 }
             }
         }
@@ -252,7 +252,7 @@ namespace Lanymy.General.Extension.Serializer
             List<TModel> list = new List<TModel>();
             foreach (var csvStr in CsvFunctions.ReadCsvFile(csvFileFullPath, csvAnnotationSymbol))
             {
-                list.Add(DeserializeFromCSV(csvStr));
+                list.Add(DeserializeFromCsv(csvStr));
             }
             return list;
         }
