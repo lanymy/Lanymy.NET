@@ -56,11 +56,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<byte[]> SerializeToBytesAsync<T>(T t, Encoding encoding = null) where T : class
         {
-#if NET40
-            return new Task<byte[]>(() => SerializeToBytes(t, encoding));
-#else
-            return Task.FromResult(SerializeToBytes(t, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(SerializeToBytes,t, encoding);
         }
         /// <summary>
         /// 反序列化二进制数据成对象
@@ -83,11 +79,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<T> DeserializeFromBytesAsync<T>(byte[] bytes, Encoding encoding = null) where T : class
         {
-#if NET40
-            return new Task<T>(() => DeserializeFromBytes<T>(bytes, encoding));
-#else
-            return Task.FromResult(DeserializeFromBytes<T>(bytes, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromBytes<T>, bytes, encoding);
         }
         /// <summary>
         /// 把对象序列化成二进制文件
@@ -111,14 +103,9 @@ namespace Lanymy.General.Extension.Serializer
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <param name="ifCompressBytes">是否压缩字节数组 默认值 True 压缩形式序列化字节数组</param>
         /// <returns></returns>
-        public virtual Task SerializeToBytesFileAsync<T>(T t, string binaryFileFullPath, Encoding encoding = null,
-            bool ifCompressBytes = true) where T : class
+        public virtual Task SerializeToBytesFileAsync<T>(T t, string binaryFileFullPath, Encoding encoding = null, bool ifCompressBytes = true) where T : class
         {
-#if NET40
-            return new Task(() => SerializeToBytesFile(t, binaryFileFullPath, encoding));
-#else
-            return Task.Run(()=> SerializeToBytesFile(t, binaryFileFullPath, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(SerializeToBytesFile, t, binaryFileFullPath, encoding, ifCompressBytes);
         }
 
         /// <summary>
@@ -147,14 +134,9 @@ namespace Lanymy.General.Extension.Serializer
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <param name="ifDecompressBytes">是否解压缩字节数组 默认值 True 解压缩形式反序列化字节数组</param>
         /// <returns></returns>
-        public virtual Task<T> DeserializeFromBytesFileAsync<T>(string binaryFileFullPath, Encoding encoding = null,
-            bool ifDecompressBytes = true) where T : class
+        public virtual Task<T> DeserializeFromBytesFileAsync<T>(string binaryFileFullPath, Encoding encoding = null, bool ifDecompressBytes = true) where T : class
         {
-#if NET40
-            return new Task<T>(() => DeserializeFromBytesFile<T>(binaryFileFullPath, encoding));
-#else
-            return Task.FromResult(DeserializeFromBytesFile<T>(binaryFileFullPath, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromBytesFile<T>, binaryFileFullPath, encoding, ifDecompressBytes);
         }
 
 

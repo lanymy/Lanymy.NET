@@ -106,11 +106,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<byte[]> CompressBytesToBytesAsync(byte[] compressBytes)
         {
-#if NET40
-            return new Task<byte[]>(()=> CompressBytesToBytes(compressBytes));
-#else
-            return Task.FromResult(CompressBytesToBytes(compressBytes));
-#endif
+            return GenericityFunctions.DoTaskWork(CompressBytesToBytes, compressBytes);
         }
         /// <summary>
         /// 异步 解压缩字节数组 返回解压缩后的 字节数组
@@ -119,11 +115,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<byte[]> DecompressBytesFromBytesAsync(byte[] decompressBytes)
         {
-#if NET40
-            return new Task<byte[]>(() => DecompressBytesFromBytes(decompressBytes));
-#else
-            return Task.FromResult(DecompressBytesFromBytes(decompressBytes));
-#endif
+            return GenericityFunctions.DoTaskWork(DecompressBytesFromBytes, decompressBytes);
         }
         /// <summary>
         /// 压缩字节数组 返回 压缩后字节数组生成的 Base64 字符串
@@ -150,11 +142,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<string> CompressBytesToBase64StringAsync(byte[] compressBytes)
         {
-#if NET40
-            return new Task<string>(() => CompressBytesToBase64String(compressBytes));
-#else
-            return Task.FromResult(CompressBytesToBase64String(compressBytes));
-#endif
+            return GenericityFunctions.DoTaskWork(CompressBytesToBase64String, compressBytes);
         }
         /// <summary>
         /// 异步 解压缩 Base64 字符串 返回解压缩后的 字节数组
@@ -163,11 +151,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<byte[]> DecompressBytesFromBase64StringAsync(string decompressString)
         {
-#if NET40
-            return new Task<byte[]>(() => DecompressBytesFromBase64String(decompressString));
-#else
-            return Task.FromResult(DecompressBytesFromBase64String(decompressString));
-#endif
+            return GenericityFunctions.DoTaskWork(DecompressBytesFromBase64String, decompressString);
         }
         /// <summary>
         /// 压缩字符串 返回 压缩后的 字节数组
@@ -200,11 +184,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<byte[]> CompressStringToBytesAsync(string compressString, Encoding encoding = null)
         {
-#if NET40
-            return new Task<byte[]>(() => CompressStringToBytes(compressString, encoding));
-#else
-            return Task.FromResult(CompressStringToBytes(compressString, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(CompressStringToBytes, compressString, encoding);
         }
         /// <summary>
         /// 异步 解压缩字节数组 返回 解压缩后的字符串
@@ -214,11 +194,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<string> DecompressStringFromBytesAsync(byte[] decompressBytes, Encoding encoding = null)
         {
-#if NET40
-            return new Task<string>(() => DecompressStringFromBytes(decompressBytes, encoding));
-#else
-            return Task.FromResult(DecompressStringFromBytes(decompressBytes, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(DecompressStringFromBytes, decompressBytes, encoding);
         }
         /// <summary>
         /// 压缩字符串 返回 压缩后的Base64 字符串
@@ -248,11 +224,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<string> CompressStringToBase64StringAsync(string compressString, Encoding encoding = null)
         {
-#if NET40
-            return new Task<string>(() => CompressStringToBase64String(compressString, encoding));
-#else
-            return Task.FromResult(CompressStringToBase64String(compressString, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(CompressStringToBase64String, compressString, encoding);
         }
         /// <summary>
         /// 异步 解压缩 Base64 字符串 返回 解压缩后的字符串
@@ -262,11 +234,7 @@ namespace Lanymy.General.Extension.Compresser
         /// <returns></returns>
         public virtual Task<string> DecompressStringFromBase64StringAsync(string decompressString, Encoding encoding = null)
         {
-#if NET40
-            return new Task<string>(() => DecompressStringFromBase64String(decompressString, encoding));
-#else
-            return Task.FromResult(DecompressStringFromBase64String(decompressString, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(DecompressStringFromBase64String, decompressString, encoding);
         }
 
 

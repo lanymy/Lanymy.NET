@@ -102,7 +102,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\BaseSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\JsonNetJsonSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyBinarySerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyCSVSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyCsvSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializer\LanymyXmlSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VersionFunctions.cs" />

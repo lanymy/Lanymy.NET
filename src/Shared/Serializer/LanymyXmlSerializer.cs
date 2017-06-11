@@ -76,11 +76,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<string> SerializeToXmlAsync<T>(T t, Encoding encoding = null) where T : class
         {
-#if NET40
-            return new Task<string>(() => SerializeToXml(t, encoding));
-#else
-            return Task.FromResult(SerializeToXml(t, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(SerializeToXml, t, encoding);
         }
         /// <summary>
         /// 指定编码反序列化XML成对象
@@ -113,11 +109,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<T> DeserializeFromXmlAsync<T>(string xmlStr, Encoding encoding = null) where T : class
         {
-#if NET40
-            return new Task<T>(() => DeserializeFromXml<T>(xmlStr, encoding));
-#else
-            return Task.FromResult(DeserializeFromXml<T>(xmlStr, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromXml<T>, xmlStr, encoding);
         }
         /// <summary>
         /// 序列化对象成XML文件
@@ -142,11 +134,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <param name="encoding">编码 Null 使用默认编码</param>
         public virtual Task SerializeToXmlFileAsync<T>(T t, string xmlFileFullPath, Encoding encoding = null) where T : class
         {
-#if NET40
-            return new Task(() => SerializeToXmlFile<T>(t, xmlFileFullPath, encoding));
-#else
-            return Task.Run(() => SerializeToXmlFile<T>(t, xmlFileFullPath, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(SerializeToXmlFile<T>, t, xmlFileFullPath, encoding);
         }
         /// <summary>
         /// 反序列化XML文件成对象
@@ -175,11 +163,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<T> DeserializeFromXmlFileAsync<T>(string xmlFileFullPath, Encoding encoding = null) where T : class
         {
-#if NET40
-            return new Task<T>(() => DeserializeFromXmlFile<T>(xmlFileFullPath, encoding));
-#else
-            return Task.FromResult(DeserializeFromXmlFile<T>(xmlFileFullPath, encoding));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromXmlFile<T>, xmlFileFullPath, encoding);
         }
 
 

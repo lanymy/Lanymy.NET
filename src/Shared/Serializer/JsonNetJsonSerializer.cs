@@ -111,13 +111,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<string> SerializeToJsonAsync<T>(T t) where T : class
         {
-
-#if NET40
-            return new Task<string>(() => SerializeToJson(t));
-#else
-            return Task.FromResult(SerializeToJson(t));
-#endif
-
+            return GenericityFunctions.DoTaskWork(SerializeToJson,t);
         }
 
         /// <summary>
@@ -128,11 +122,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<T> DeserializeFromJsonAsync<T>(string json) where T : class
         {
-#if NET40
-            return new Task<T>(() => DeserializeFromJson<T>(json));
-#else
-            return Task.FromResult(DeserializeFromJson<T>(json));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromJson<T>, json);
         }
 
     }

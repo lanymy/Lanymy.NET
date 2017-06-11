@@ -325,7 +325,7 @@ namespace Lanymy.General.Extension
             Type type = typeof(T);
             if (!DefaultCsvSerializer.ContainsKey(type))
             {
-                DefaultCsvSerializer.AddOrReplace(type, new LanymyCSVSerializer<T>());
+                DefaultCsvSerializer.AddOrReplace(type, new LanymyCsvSerializer<T>());
             }
             return DefaultCsvSerializer[type] as ICsvSerializer<T>;
         }

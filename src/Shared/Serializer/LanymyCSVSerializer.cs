@@ -28,7 +28,7 @@ namespace Lanymy.General.Extension.Serializer
     /// <summary>
     /// CSV序列化器
     /// </summary>
-    public class LanymyCSVSerializer<TModel> : ICsvSerializer<TModel> where TModel : class, new()
+    public class LanymyCsvSerializer<TModel> : ICsvSerializer<TModel> where TModel : class, new()
     {
 
         public static readonly Type CurrentTModelType = typeof(TModel);
@@ -36,7 +36,7 @@ namespace Lanymy.General.Extension.Serializer
         protected static readonly List<CsvDescriptionAttribute> _CSVDescriptionAttributeList;
         protected static readonly List<CSVSerializeMapModel<TModel>> _CSVSerializeMapModelList;
 
-        static LanymyCSVSerializer()
+        static LanymyCsvSerializer()
         {
             _AttributeMapModel = new AttributeMapModel<TModel, CsvDescriptionAttribute>();
             _CSVDescriptionAttributeList = _AttributeMapModel.AttributeList.OrderBy(o => o.Index).ToList();
@@ -65,11 +65,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<string> GetCsvTitleAsync()
         {
-#if NET40
-            return new Task<string>(GetCsvTitle);
-#else
-            return Task.FromResult(GetCsvTitle());
-#endif
+            return GenericityFunctions.DoTaskWork(GetCsvTitle);
         }
 
 
@@ -139,11 +135,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<string> SerializeToCsvAsync(TModel t)
         {
-#if NET40
-            return new Task<string>(() => SerializeToCsv(t));
-#else
-            return Task.FromResult(SerializeToCsv(t));
-#endif
+            return GenericityFunctions.DoTaskWork(SerializeToCsv,t);
         }
 
 
@@ -200,11 +192,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<TModel> DeserializeFromCsvAsync(string csvString)
         {
-#if NET40
-            return new Task<TModel>(() => DeserializeFromCsv(csvString));
-#else
-            return Task.FromResult(DeserializeFromCsv(csvString));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromCsv, csvString);
         }
 
         /// <summary>
@@ -235,11 +223,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <param name="ifWriteTitle">是否写入 标题 </param>
         public virtual Task SerializeToCsvFileAsync(string csvFileFullPath, IEnumerable<TModel> list, bool ifWriteTitle = true)
         {
-#if NET40
-            return new Task(() => SerializeToCsvFile(csvFileFullPath, list, ifWriteTitle));
-#else
-            return Task.Run(()=>SerializeToCsvFile(csvFileFullPath, list, ifWriteTitle));
-#endif
+            return GenericityFunctions.DoTaskWork(SerializeToCsvFile, csvFileFullPath, list, ifWriteTitle);
         }
         /// <summary>
         /// 从CSV文件反序列化数据
@@ -264,11 +248,7 @@ namespace Lanymy.General.Extension.Serializer
         /// <returns></returns>
         public virtual Task<List<TModel>> DeserializeFromCsvFileAsync(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL)
         {
-#if NET40
-            return new Task<List<TModel>>(() => DeserializeFromCsvFile(csvFileFullPath, csvAnnotationSymbol));
-#else
-            return Task.FromResult(DeserializeFromCsvFile(csvFileFullPath, csvAnnotationSymbol));
-#endif
+            return GenericityFunctions.DoTaskWork(DeserializeFromCsvFile, csvFileFullPath, csvAnnotationSymbol);
         }
     }
 
