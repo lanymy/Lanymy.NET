@@ -28,29 +28,42 @@ namespace Lanymy.General.Extension
     {
 
 
-        ///// <summary>
-        ///// 全局Enum缓存字典
-        ///// </summary>
-        //private static Dictionary<Type, EnumMap> _DicEnumMaps = new Dictionary<Type, EnumMap>();
-
+   /// <summary>
+   /// 枚举内存缓存器
+   /// </summary>
         private static IDataMemoryCache _DataMemoryCache = new DataMemoryCache();
 
 
+        /// <summary>
+        /// 获取 枚举类型 缓存 主键值
+        /// </summary>
+        /// <typeparam name="TEnumCustomAttribute">枚举中的特性标记类型</typeparam>
+        /// <param name="enumType">枚举类型</param>
+        /// <returns></returns>
         private static string GetEnumMapCacheKey<TEnumCustomAttribute>(Type enumType)
         {
-            //Type tEnum = typeof(TEnum);
             Type tEnumCustomAttribute = typeof(TEnumCustomAttribute);
             return string.Format("{0}_{1}", enumType.FullName, tEnumCustomAttribute.FullName);
         }
 
+        /// <summary>
+        /// 获取 枚举 子项 缓存主键值
+        /// </summary>
+        /// <typeparam name="TEnumCustomAttribute">枚举中的特性标记类型</typeparam>
+        /// <param name="enumItem">枚举子项</param>
+        /// <returns></returns>
         private static string GetEnumItemCacheKey<TEnumCustomAttribute>(Enum enumItem)
         {
             return string.Format("{0}_{1}", GetEnumMapCacheKey<TEnumCustomAttribute>(enumItem.GetType()), enumItem);
         }
 
-
+        /// <summary>
+        /// 获取当前枚举映射导航器
+        /// </summary>
+        /// <typeparam name="TEnumCustomAttribute"></typeparam>
+        /// <param name="enumType"></param>
+        /// <returns></returns>
         private static EnumMapModel<TEnumCustomAttribute> GetMapper<TEnumCustomAttribute>(Type enumType)
-            //where TEnum : IComparable, IFormattable, IConvertible
             where TEnumCustomAttribute : EnumCustomAttribute
         {
             string cacheKey = GetEnumMapCacheKey<TEnumCustomAttribute>(enumType);
@@ -139,13 +152,22 @@ namespace Lanymy.General.Extension
         }
 
 
+        /// <summary>
+        /// 获取默认EnumCustomAttribute特性标记的枚举列表
+        /// </summary>
+        /// <typeparam name="TEnum">枚举类型</typeparam>
+        /// <returns></returns>
         public static List<EnumItem<EnumCustomAttribute>> GetDefaultAttributeEnumItemList<TEnum>()
             where TEnum : IComparable, IFormattable, IConvertible
         {
             return GetEnumItemList<TEnum, EnumCustomAttribute>();
         }
 
-
+        /// <summary>
+        /// 获取默认EnumCustomAttribute特性标记的枚举列表
+        /// </summary>
+        /// <param name="enumItem">具体 枚举 子项</param>
+        /// <returns></returns>
         public static EnumItem<EnumCustomAttribute> GetDefaultAttributeEnumItem(Enum enumItem)
         {
             return GetEnumItem<EnumCustomAttribute>(enumItem);
