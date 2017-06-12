@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Lanymy.General.Extension.ExtensionFunctions;
+using Lanymy.General.Extension.Interfaces;
 
 namespace Lanymy.General.Extension
 {
@@ -26,20 +27,20 @@ namespace Lanymy.General.Extension
     /// <summary>
     /// 内存模式数据缓存辅助类
     /// </summary>
-    public class DataMemoryCache
+    public class DataMemoryCache: IDataMemoryCache
     {
 
 
         #region 单例
 
-        private static DataMemoryCache _DataCache = null;
+        private static IDataMemoryCache _DataCache = null;
 
         private static readonly object SynObject = new object();
 
         /// <summary>
         /// 获取服务器通信数据中心对象
         /// </summary>
-        public static DataMemoryCache Instance()
+        public static IDataMemoryCache Instance()
         {
 
             if (null == _DataCache)
@@ -57,114 +58,139 @@ namespace Lanymy.General.Extension
         }
         #endregion
 
-        private IDictionary<string, object> _DicCache = new ConcurrentDictionary<string, object>();
+        protected ConcurrentDictionary<string, object> _DicCache = new ConcurrentDictionary<string, object>();
 
         /// <summary>
-        /// 设置缓存数据
+        /// 获取默认Key值
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="o"></param>
-        public void SetValue(string key, object o)
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public virtual string GetDefaultKey<T>()
         {
-            lock (SynObject)
-            {
-                _DicCache[key] = o;
-            }
+            return typeof(T).Name;
         }
 
         /// <summary>
-        /// 获取缓存数据
+        /// Key是否存在
+        /// </summary>
+        /// <param name="key">Key值</param>
+        /// <returns></returns>
+        public virtual bool IfHaveKey(string key)
+        {
+            return _DicCache.ContainsKey(key);
+        }
+        /// <summary>
+        /// 设置Key的Value值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public virtual void SetValue(string key, object value)
+        {
+            _DicCache.AddOrUpdate(key, value, (k, v) => v);
+        }
+
+        /// <summary>
+        /// 获取Key的Value值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public virtual object GetValue(string key)
+        {
+            _DicCache.TryGetValue(key, out object o);
+            return o;
+        }
+
+        /// <summary>
+        /// 删除Key
+        /// </summary>
+        public virtual void RemoveValue(string key)
+        {
+            _DicCache.TryRemove(key,out object o);
+        }
+
+
+        /// <summary>
+        /// 获取Key的Value值
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public T GetValue<T>(string key)
+        public virtual T GetValue<T>(string key)
         {
-            lock (SynObject)
-            {
-                return _DicCache.ContainsKey(key) ? _DicCache[key].ConvertToType<T>() : default(T);
-            }
+            _DicCache.TryGetValue(key , out object o);
+            return o.ConvertToType<T>();
+        }
+
+
+        /// <summary>
+        /// 默认Key 是否存在
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IfHaveKey<T>()
+        {
+            return IfHaveKey(GetDefaultKey<T>());
+        }
+        /// <summary>
+        /// 使用 默认Key 设置 Key的Value值
+        /// </summary>
+        /// <param name="value"></param>
+        public virtual void SetValue<T>(object value)
+        {
+            SetValue(GetDefaultKey<T>(), value);
+        }
+        /// <summary>
+        /// 使用 默认Key 获取Key 的 Value值
+        /// </summary>
+        /// <returns></returns>
+        public virtual object GetValue<T>()
+        {
+            return GetValue(GetDefaultKey<T>());
+        }
+        /// <summary>
+        /// 使用 默认Key 删除Key
+        /// </summary>
+        public virtual void RemoveValue<T>()
+        {
+            RemoveValue(GetDefaultKey<T>());
         }
 
         /// <summary>
-        /// 删除缓存项
+        /// 是否存在Key
         /// </summary>
         /// <param name="key"></param>
-        public void RemoveValue(string key)
+        /// <returns></returns>
+        public virtual bool IfHaveKey(Enum key)
         {
-
-            lock (SynObject)
-            {
-                if (_DicCache.ContainsKey(key))
-                {
-                    _DicCache.Remove(key);
-                }
-            }
-
+            return IfHaveKey(key.ToString());
         }
-
-
         /// <summary>
-        /// 主键枚举模式设置缓存数据
+        /// 设置Key的Value值
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="o"></param>
-        public void SetValue(Enum key, object o)
+        /// <param name="t"></param>
+        public virtual void SetValue<T>(Enum key, T t)
         {
-            SetValue(key.ToString(), o);
+            SetValue(key.ToString(), t);
         }
 
         /// <summary>
-        /// 主键枚举模式 获取 缓存数据
+        /// 获取Key的Value值
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public T GetValue<T>(Enum key)
+        public virtual T GetValue<T>(Enum key)
         {
             return GetValue<T>(key.ToString());
         }
-
         /// <summary>
-        /// 主键枚举模式 删除 缓存数据
+        /// 删除Key
         /// </summary>
         /// <param name="key"></param>
-        public void RemoveValue(Enum key)
+        public virtual void RemoveValue(Enum key)
         {
             RemoveValue(key.ToString());
         }
-
-
-        /// <summary>
-        /// 使用默认键值 设置缓存数据
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="t"></param>
-        public void SetValue<T>(T t)
-        {
-            SetValue(t.GetType().FullName, t);
-        }
-
-        /// <summary>
-        /// 使用默认键值 获取 缓存数据
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public T GetValue<T>()
-        {
-            return GetValue<T>(typeof(T).FullName);
-        }
-
-        /// <summary>
-        /// 使用默认键值 删除 缓存数据
-        /// </summary>
-        public void RemoveValue<T>()
-        {
-            RemoveValue(typeof(T).FullName);
-        }
-
-
     }
 
 }

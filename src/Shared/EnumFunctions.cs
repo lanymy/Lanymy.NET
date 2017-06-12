@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using Lanymy.General.Extension.CustomAttributes;
 using Lanymy.General.Extension.ExtensionFunctions;
+using Lanymy.General.Extension.Interfaces;
 using Lanymy.General.Extension.Models;
 
 
@@ -32,9 +33,7 @@ namespace Lanymy.General.Extension
         ///// </summary>
         //private static Dictionary<Type, EnumMap> _DicEnumMaps = new Dictionary<Type, EnumMap>();
 
-        private static DataMemoryCache _DataMemoryCache = new DataMemoryCache();
-
-
+        private static IDataMemoryCache _DataMemoryCache = new DataMemoryCache();
 
 
         private static string GetEnumMapCacheKey<TEnumCustomAttribute>(Type enumType)

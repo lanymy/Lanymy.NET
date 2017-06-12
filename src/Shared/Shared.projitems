@@ -18,6 +18,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Instruments\LanymyCompresser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompressionFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IArrayExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IDataMemoryCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IKeyValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEnumKeyValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IKeyValueExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\XmlConfiger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConfigFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CsvFunctions.cs" />
