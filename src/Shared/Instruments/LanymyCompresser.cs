@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
 
-namespace Lanymy.General.Extension.Compresser
+namespace Lanymy.General.Extension.Instruments.Compresser
 {
 
 

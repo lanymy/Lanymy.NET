@@ -22,7 +22,7 @@ using System.Xml.Serialization;
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
 
-namespace Lanymy.General.Extension.Serializer
+namespace Lanymy.General.Extension.Instruments.Serializer
 {
 
     /// <summary>

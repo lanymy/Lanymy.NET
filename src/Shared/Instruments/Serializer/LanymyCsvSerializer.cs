@@ -22,7 +22,7 @@ using Lanymy.General.Extension.CustomAttributes;
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Models;
 
-namespace Lanymy.General.Extension.Serializer
+namespace Lanymy.General.Extension.Instruments.Serializer
 {
 
     /// <summary>

@@ -9,7 +9,7 @@
 
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
-using Lanymy.General.Extension.Serializer;
+using Lanymy.General.Extension.Instruments.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Text;

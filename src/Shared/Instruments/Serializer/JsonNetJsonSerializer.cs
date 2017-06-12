@@ -21,7 +21,7 @@ using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
 using Newtonsoft.Json;
 
-namespace Lanymy.General.Extension.Serializer
+namespace Lanymy.General.Extension.Instruments.Serializer
 {
 
 

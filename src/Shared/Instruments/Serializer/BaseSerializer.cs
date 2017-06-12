@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Text;
 using Lanymy.General.Extension.ExtensionFunctions;
 
-namespace Lanymy.General.Extension.Serializer
+namespace Lanymy.General.Extension.Instruments.Serializer
 {
 
     /// <summary>

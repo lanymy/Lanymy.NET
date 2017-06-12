@@ -339,15 +339,41 @@ namespace Lanymy.General.Extension
         /// <summary>
         /// 获取接口实例
         /// </summary>
-        /// <typeparam name="TInterface"></typeparam>
-        /// <param name="tInterface"></param>
-        /// <param name="defaultInterface"></param>
+        /// <typeparam name="TInterface">接口类型</typeparam>
+        /// <param name="tInterface">当前接口实例</param>
+        /// <param name="defaultInterface">默认接口实例</param>
         /// <returns></returns>
         public static TInterface GetInterface<TInterface>(TInterface tInterface, TInterface defaultInterface)
         {
             return tInterface.IfIsNullOrEmpty() ? defaultInterface : tInterface;
         }
 
+        /// <summary>
+        /// 通用泛型接口执行扩展方法
+        /// </summary>
+        /// <typeparam name="TInterface">接口类型</typeparam>
+        /// <typeparam name="TReturn">要执行接口方法 的 返回数据类型</typeparam>
+        /// <param name="tInterface">当前接口实例</param>
+        /// <param name="defaultInterface">默认接口实例</param>
+        /// <param name="func">要执行的接口方法</param>
+        /// <returns></returns>
+        public static TReturn InvokeInterface<TInterface, TReturn>(TInterface tInterface, TInterface defaultInterface,Func<TInterface, TReturn> func)
+        {
+            return InvokeInterface(GetInterface(tInterface, defaultInterface), func);
+        }
+
+        /// <summary>
+        /// 通用泛型接口执行扩展方法
+        /// </summary>
+        /// <typeparam name="TInterface">接口类型</typeparam>
+        /// <param name="tInterface">当前接口实例</param>
+        /// <param name="defaultInterface">默认接口实例</param>
+        /// <param name="action">要执行的接口方法</param>
+        /// <returns></returns>
+        public static void InvokeInterface<TInterface>(TInterface tInterface, TInterface defaultInterface, Action<TInterface> action)
+        {
+            InvokeInterface(GetInterface(tInterface, defaultInterface), action);
+        }
 
         /// <summary>
         /// 通用泛型接口执行扩展方法
@@ -355,28 +381,25 @@ namespace Lanymy.General.Extension
         /// <typeparam name="TInterface">接口类型</typeparam>
         /// <typeparam name="TReturn">返回值类型</typeparam>
         /// <param name="tInterface">接口实例</param>
-        /// <param name="funcInvoke">执行接口的方法</param>
+        /// <param name="func">执行接口的方法</param>
         /// <returns></returns>
-        public static TReturn InvokeInterface<TInterface, TReturn>(TInterface tInterface, Func<TInterface, TReturn> funcInvoke)
+        public static TReturn InvokeInterface<TInterface, TReturn>(TInterface tInterface, Func<TInterface, TReturn> func)
         {
-            return funcInvoke(tInterface);
+            return func(tInterface);
         }
+
 
         /// <summary>
         /// 通用泛型接口执行扩展方法
         /// </summary>
         /// <typeparam name="TInterface">接口类型</typeparam>
-        /// <typeparam name="TInParameter">接口方法传入的参数类型</typeparam>
-        /// <typeparam name="TReturn">返回值类型</typeparam>
         /// <param name="tInterface">接口实例</param>
-        /// <param name="tInParameter">接口执行方法的参数</param>
-        /// <param name="funcInvoke">执行接口的方法</param>
+        /// <param name="action">执行接口的方法</param>
         /// <returns></returns>
-        public static TReturn InvokeInterface<TInterface, TInParameter, TReturn>(TInterface tInterface, TInParameter tInParameter, Func<TInterface, TInParameter, TReturn> funcInvoke)
+        public static void InvokeInterface<TInterface>(TInterface tInterface, Action<TInterface> action)
         {
-            return funcInvoke(tInterface, tInParameter);
+            action(tInterface);
         }
-
 
 
     }

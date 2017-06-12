@@ -19,7 +19,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Lanymy.General.Extension.Compresser;
+using Lanymy.General.Extension.Instruments.Compresser;
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
 
