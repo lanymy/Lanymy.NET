@@ -63,18 +63,18 @@ namespace Lanymy.General.Extension
 
             if (!DicCsvSerializeSettings.ContainsKey(type))
             {
-                DicCsvSerializeSettings.AddOrReplace(type, new List<CSVSerializeMapModel<T>>());
+                DicCsvSerializeSettings.AddOrReplace(type, new List<CsvSerializeMapModel<T>>());
             }
 
             string propertyName = ReflectionFunctions.GetPropertyName(propertyNameExpre);
             if (!propertyName.IfIsNullOrEmpty())
             {
-                var list = DicCsvSerializeSettings[type] as List<CSVSerializeMapModel<T>>;
+                var list = DicCsvSerializeSettings[type] as List<CsvSerializeMapModel<T>>;
                 var currentMapModel = list.Where(o => o.CsvModelType == type && o.PropertyName == propertyName).FirstOrDefault();
 
                 if (currentMapModel.IfIsNullOrEmpty())
                 {
-                    list.Add(new CSVSerializeMapModel<T> { CsvModelType = type, PropertyName = propertyName, PropertySerializeFunc = propertySerializeFunc, PropertyDeserializeFunc = propertyDeserializeFunc });
+                    list.Add(new CsvSerializeMapModel<T> { CsvModelType = type, PropertyName = propertyName, PropertySerializeFunc = propertySerializeFunc, PropertyDeserializeFunc = propertyDeserializeFunc });
 
                 }
                 else

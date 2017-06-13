@@ -1,10 +1,10 @@
 ﻿/********************************************************************
 
-时间: 2017年05月29日, AM 10:17:37
+时间: 2017年06月13日, AM 07:40:48
 
 作者: lanyanmiyu@qq.com
 
-描述: CSV文件 数据 读取 功能接口
+描述: 写文件  功能 接口
 
 其它:     
 
@@ -20,15 +20,23 @@ namespace Lanymy.General.Extension.Interfaces
 
 
     /// <summary>
-    /// CSV文件 数据 读取 功能接口
+    /// 写文件  功能 接口
     /// </summary>
-    public interface ICsvFileReader
+    public interface IFileWriter
     {
 
         /// <summary>
-        /// 读取CSV文件
+        /// 写消息
         /// </summary>
-        IEnumerable<string> ReadCsvFile();
+        /// <param name="message"></param>
+        void Write(string message);
+
+
+        /// <summary>
+        /// 写一行消息
+        /// </summary>
+        /// <param name="message"></param>
+        void WriteLine(string message);
 
     }
 

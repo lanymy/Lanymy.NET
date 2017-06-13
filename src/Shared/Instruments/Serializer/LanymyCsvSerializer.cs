@@ -34,7 +34,7 @@ namespace Lanymy.General.Extension.Instruments.Serializer
         public static readonly Type CurrentTModelType = typeof(TModel);
         protected static readonly AttributeMapModel<TModel, CsvDescriptionAttribute> _AttributeMapModel;
         protected static readonly List<CsvDescriptionAttribute> _CSVDescriptionAttributeList;
-        protected static readonly List<CSVSerializeMapModel<TModel>> _CSVSerializeMapModelList;
+        protected static readonly List<CsvSerializeMapModel<TModel>> _CSVSerializeMapModelList;
 
         static LanymyCsvSerializer()
         {
@@ -46,7 +46,7 @@ namespace Lanymy.General.Extension.Instruments.Serializer
             }
             if (CsvSerializeMappings.DicCsvSerializeSettings.ContainsKey(CurrentTModelType))
             {
-                _CSVSerializeMapModelList = CsvSerializeMappings.DicCsvSerializeSettings[CurrentTModelType] as List<CSVSerializeMapModel<TModel>>;
+                _CSVSerializeMapModelList = CsvSerializeMappings.DicCsvSerializeSettings[CurrentTModelType] as List<CsvSerializeMapModel<TModel>>;
             }
         }
 
@@ -203,7 +203,7 @@ namespace Lanymy.General.Extension.Instruments.Serializer
         /// <param name="ifWriteTitle">是否写入 标题 </param>
         public virtual void SerializeToCsvFile(string csvFileFullPath, IEnumerable<TModel> list, bool ifWriteTitle = true)
         {
-            using (var writer = new FileReadWriteHelper(csvFileFullPath, true))
+            using (var writer = new FileTextWriter(csvFileFullPath, true))
             {
                 if (ifWriteTitle)
                 {
@@ -230,11 +230,13 @@ namespace Lanymy.General.Extension.Instruments.Serializer
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
+        /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <returns></returns>
-        public virtual List<TModel> DeserializeFromCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL)
+        public virtual List<TModel> DeserializeFromCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null)
         {
             List<TModel> list = new List<TModel>();
-            foreach (var csvStr in CsvFunctions.ReadCsvFile(csvFileFullPath, csvAnnotationSymbol))
+            foreach (var csvStr in CsvFunctions.ReadCsvFile(csvFileFullPath, csvAnnotationSymbol, encoding, csvFileReader))
             {
                 list.Add(DeserializeFromCsv(csvStr));
             }
@@ -245,10 +247,12 @@ namespace Lanymy.General.Extension.Instruments.Serializer
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
+        /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <returns></returns>
-        public virtual Task<List<TModel>> DeserializeFromCsvFileAsync(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL)
+        public virtual Task<List<TModel>> DeserializeFromCsvFileAsync(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null)
         {
-            return GenericityFunctions.DoTaskWork(DeserializeFromCsvFile, csvFileFullPath, csvAnnotationSymbol);
+            return GenericityFunctions.DoTaskWork(DeserializeFromCsvFile, csvFileFullPath, csvAnnotationSymbol, encoding, csvFileReader);
         }
     }
 

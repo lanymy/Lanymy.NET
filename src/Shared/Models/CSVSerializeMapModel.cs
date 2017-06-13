@@ -22,7 +22,7 @@ namespace Lanymy.General.Extension.Models
     /// <summary>
     /// CSV自定义序列化 映射信息 实体类
     /// </summary>
-    public class CSVSerializeMapModel<TModel> where TModel:class 
+    public class CsvSerializeMapModel<TModel> where TModel:class 
     {
 
         /// <summary>

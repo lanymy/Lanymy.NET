@@ -120,7 +120,7 @@ namespace Lanymy.General.Extension.Instruments.Serializer
         /// <param name="encoding">编码 Null 使用默认编码</param>
         public virtual void SerializeToXmlFile<T>(T t, string xmlFileFullPath, Encoding encoding = null) where T : class
         {
-            using (FileReadWriteHelper writer = new FileReadWriteHelper(xmlFileFullPath, true))
+            using (var writer = new FileTextWriter(xmlFileFullPath, true))
             {
                 writer.Write(SerializeToXml(t, encoding));
             }
@@ -147,7 +147,7 @@ namespace Lanymy.General.Extension.Instruments.Serializer
         {
             T t;
 
-            using (FileReadWriteHelper reader = new FileReadWriteHelper(xmlFileFullPath))
+            using (var reader = new FileTextReader(xmlFileFullPath))
             {
                 t = DeserializeFromXml<T>(reader.ReadAll(), encoding);
             }

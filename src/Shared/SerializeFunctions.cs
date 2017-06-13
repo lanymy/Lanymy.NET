@@ -34,7 +34,7 @@ namespace Lanymy.General.Extension
         /// </summary>
         public static readonly IJsonSerializer DefaultJsonSerializer = new JsonNetJsonSerializer(JsonNetJsonSerializer.GetDefaultJsonSerializerSettings());
 
-   
+
         /// <summary>
         /// 序列化对象成Json
         /// </summary>
@@ -89,7 +89,7 @@ namespace Lanymy.General.Extension
         /// </summary>
         public static readonly IXmlSerializer DefaultXmlSerializer = new LanymyXmlSerializer();
 
-   
+
         /// <summary>
         /// 指定编码序列化对象成XML
         /// </summary>
@@ -200,7 +200,7 @@ namespace Lanymy.General.Extension
         /// </summary>
         public static readonly IBinarySerializer DefaultBinarySerializer = new LanymyBinarySerializer();
 
-      
+
         /// <summary>
         /// 把对象序列化成二进制数据
         /// </summary>
@@ -467,22 +467,26 @@ namespace Lanymy.General.Extension
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
+        /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <param name="csvFileSerializer">CSV 序列化 文件 功能 接口</param>
         /// <returns></returns>
-        public static List<T> DeserializeFromCsvFile<T>(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        public static List<T> DeserializeFromCsvFile<T>(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
         {
-            return GetCsvSerializer(csvFileSerializer).DeserializeFromCsvFile(csvFileFullPath, csvAnnotationSymbol);
+            return GetCsvSerializer(csvFileSerializer).DeserializeFromCsvFile(csvFileFullPath, csvAnnotationSymbol, encoding, csvFileReader);
         }
         /// <summary>
         /// 异步 从CSV文件反序列化数据
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
+        /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <param name="csvFileSerializer">CSV 序列化 文件 功能 接口</param>
         /// <returns></returns>
-        public static Task<List<T>> DeserializeFromCsvFileAsync<T>(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
+        public static Task<List<T>> DeserializeFromCsvFileAsync<T>(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null, ICsvFileSerializer<T> csvFileSerializer = null) where T : class, new()
         {
-            return GetCsvSerializer(csvFileSerializer).DeserializeFromCsvFileAsync(csvFileFullPath, csvAnnotationSymbol);
+            return GetCsvSerializer(csvFileSerializer).DeserializeFromCsvFileAsync(csvFileFullPath, csvAnnotationSymbol, encoding, csvFileReader);
         }
 
 

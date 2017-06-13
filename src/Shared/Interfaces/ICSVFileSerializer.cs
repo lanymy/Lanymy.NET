@@ -47,16 +47,20 @@ namespace Lanymy.General.Extension.Interfaces
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
+        /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <returns></returns>
-        List<TModel> DeserializeFromCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL);
+        List<TModel> DeserializeFromCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null);
 
         /// <summary>
         /// 异步 从CSV文件反序列化数据
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">行首 注释符 默认 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
+        /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <returns></returns>
-        Task<List<TModel>> DeserializeFromCsvFileAsync(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL);
+        Task<List<TModel>> DeserializeFromCsvFileAsync(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null);
 
 
     }

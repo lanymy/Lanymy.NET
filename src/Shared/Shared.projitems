@@ -15,10 +15,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)ChineseDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CommonEqualityComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Instruments\ArrayExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Instruments\BaseFileTextReadOrWrite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Instruments\CsvFileReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Instruments\FileTextReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Instruments\FileTextWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Instruments\LanymyCompresser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompressionFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IArrayExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IDataMemoryCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IFileReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IFileWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IKeyValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEnumKeyValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IKeyValueExtension.cs" />
@@ -40,7 +46,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionFunctions\ObjectExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExtensionFunctions\StringExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FileFunctions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)FileReadWriteHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormatFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FtpClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GenericityFunctions.cs" />
@@ -69,9 +74,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\BaseTestModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommonEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommunicationDataModel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\CsvFileReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CsvMappingShellModel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\CSVSerializeMapModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\CsvSerializeMapModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CustomFileInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\CustomMessageBoxModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\EnumAttributeCacheModel.cs" />

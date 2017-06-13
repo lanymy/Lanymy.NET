@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Lanymy.General.Extension.ExtensionFunctions;
+using Lanymy.General.Extension.Instruments;
 using Lanymy.General.Extension.Interfaces;
 using Lanymy.General.Extension.Models;
 
@@ -95,21 +96,29 @@ namespace Lanymy.General.Extension
         //public static IEnumerable<string> ReadCSVFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL)
 
 
-        /// <summary>
-        /// 默认CSV文件读取器
-        /// </summary>
-        public static readonly ICsvFileReader DefaultCsvFileReader = new CsvFileReader();
+        ///// <summary>
+        ///// 默认CSV文件读取器
+        ///// </summary>
+        //public static readonly ICsvFileReader DefaultCsvFileReader = new CsvFileReader();
 
         /// <summary>
         /// 读取CSV文件
         /// </summary>
         /// <param name="csvFileFullPath">CSV文件全路径</param>
         /// <param name="csvAnnotationSymbol">CSV 开头 的 忽略 或者 注释符 ,默认值 '#'</param>
+        /// <param name="encoding">编码 null 则使用默认编码</param>
         /// <param name="csvFileReader">CSV文件 数据 读取 功能接口</param>
         /// <returns></returns>
-        public static IEnumerable<string> ReadCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, ICsvFileReader csvFileReader = null)
+        public static IEnumerable<string> ReadCsvFile(string csvFileFullPath, string csvAnnotationSymbol = GlobalSettings.CSV_ANNOTATION_SYMBOL, Encoding encoding = null, ICsvFileReader csvFileReader = null)
         {
-            return GenericityFunctions.GetInterface(csvFileReader, DefaultCsvFileReader).ReadCsvFile(csvFileFullPath, csvAnnotationSymbol);
+
+            if (csvFileReader.IfIsNullOrEmpty())
+            {
+                csvFileReader = new CsvFileReader(csvFileFullPath, csvAnnotationSymbol, encoding);
+            }
+
+            return csvFileReader.ReadCsvFile();
+
         }
 
 
