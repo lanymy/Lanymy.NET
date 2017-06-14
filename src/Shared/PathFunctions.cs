@@ -89,22 +89,26 @@ namespace Lanymy.General.Extension
         /// 初始化目标路径文件夹 , 严格以路径是否有 文件后缀名 来区分 是文件路径 还是文件夹路径 , 可以是文件全路径 , 也可以是文件夹全路径
         /// </summary>
         /// <param name="path">可以是文件全路径 , 也可以是文件夹全路径</param>
-        public static void InitDirectoryPath(string path, bool isConfirmDirectoryPath = false)
+        ///// <param name="isConfirmDirectoryPath">是否 自动 闭合 文件夹</param>
+        public static void InitDirectoryPath(string path)
         {
             if (path.IfIsNullOrEmpty()) return;
 
-            if (isConfirmDirectoryPath)
-            {
-                if (path[path.Length - 1] != Path.DirectorySeparatorChar)
-                    path += Path.DirectorySeparatorChar;
-            }
-            else
-            {
-                path = GetFolderPath(path);
-            }
+            //if (isConfirmDirectoryPath)
+            //{
+            //    if (path[path.Length - 1] != Path.DirectorySeparatorChar)
+            //        path += Path.DirectorySeparatorChar;
+            //}
+            //else
+            //{
+            //    path = GetFolderPath(path);
+            //}
+
+            path = GetFolderPath(path);
 
             if (!path.IfIsNullOrEmpty() && !Directory.Exists(path) && path != Path.GetPathRoot(path))
                 Directory.CreateDirectory(path);
+
         }
 
         /// <summary>
