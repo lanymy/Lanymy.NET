@@ -24,13 +24,13 @@ namespace Lanymy.General.Extension.Instruments
     /// <summary>
     /// 文本文件读取器
     /// </summary>
-    public class FileTextReader: BaseFileTextReadOrWrite,IFileReader
+    public class FileTextReader : BaseFileTextReadOrWrite, IFileReader
     {
 
         /// <summary>
         /// 读数据流对象
         /// </summary>
-        public StreamReader StreamReader { get; private set; }
+        public StreamReader StreamReader { get; protected set; }
 
         /// <summary>
         /// 文本文件读取器 构造方法

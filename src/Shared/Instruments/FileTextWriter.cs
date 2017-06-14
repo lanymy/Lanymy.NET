@@ -29,7 +29,7 @@ namespace Lanymy.General.Extension.Instruments
         /// <summary>
         /// 写数据流对象
         /// </summary>
-        public StreamWriter StreamWriter { get; private set; }
+        public StreamWriter StreamWriter { get; protected set; }
 
         /// <summary>
         /// 文本文件写入器

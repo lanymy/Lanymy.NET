@@ -54,6 +54,12 @@ namespace Lanymy.General.Extension.Instruments
         public virtual IEnumerable<string> ReadCsvFile()
         {
 
+            if (StreamReader.IfIsNullOrEmpty())
+            {
+                StreamReader = new StreamReader(TextFileFullPath, CurrentEncoding);
+            }
+
+
             if (!IfHaveString())
             {
                 yield break;

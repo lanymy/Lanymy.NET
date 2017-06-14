@@ -27,7 +27,7 @@ namespace Lanymy.General.Extension.Instruments
     public abstract class BaseFileTextReadOrWrite : IDisposable
     {
 
-    
+
         /// <summary>
         /// 文本文件全路径
         /// </summary>
@@ -36,7 +36,7 @@ namespace Lanymy.General.Extension.Instruments
         /// <summary>
         /// 编码
         /// </summary>
-        public  Encoding CurrentEncoding { get; } = GlobalSettings.DEFAULT_ENCODING;
+        public Encoding CurrentEncoding { get; } = GlobalSettings.DEFAULT_ENCODING;
 
         /// <summary>
         /// 文件 文本 读写 基类 构造方法
@@ -76,7 +76,7 @@ namespace Lanymy.General.Extension.Instruments
         /// 资源释放
         /// </summary>
         public abstract void Dispose();
-        
+
     }
 
 
