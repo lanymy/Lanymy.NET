@@ -96,7 +96,8 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public virtual object GetValue(string key)
         {
-            _DicCache.TryGetValue(key, out object o);
+            object o;
+            _DicCache.TryGetValue(key, out o);
             return o;
         }
 
@@ -105,7 +106,8 @@ namespace Lanymy.General.Extension
         /// </summary>
         public virtual void RemoveValue(string key)
         {
-            _DicCache.TryRemove(key,out object o);
+            object o;
+            _DicCache.TryRemove(key, out o);
         }
 
 
@@ -117,7 +119,8 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public virtual T GetValue<T>(string key)
         {
-            _DicCache.TryGetValue(key , out object o);
+            object o;
+            _DicCache.TryGetValue(key, out o);
             return o.ConvertToType<T>();
         }
 
