@@ -28,9 +28,9 @@ namespace Lanymy.General.Extension
     {
 
 
-   /// <summary>
-   /// 枚举内存缓存器
-   /// </summary>
+        /// <summary>
+        /// 枚举内存缓存器
+        /// </summary>
         private static IDataMemoryCache _DataMemoryCache = new DataMemoryCache();
 
 
