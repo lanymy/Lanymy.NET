@@ -77,7 +77,7 @@ namespace Lanymy.General.Extension.Models
             _DictionaryAttributeProperty = new Dictionary<Expression<Func<TModel, object>>, int>();
             AttributeList = ReflectionFunctions.GetAttributeListFromModel<TModel, TAttribute>
             (
-                (attribute, propertyInfo) =>
+                (propertyInfo, attribute) =>
                 {
                     PropertyInfoList.Add(propertyInfo);
                 }

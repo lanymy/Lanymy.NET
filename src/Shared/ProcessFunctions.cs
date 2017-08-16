@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Lanymy.General.Extension.Models;
 
 namespace Lanymy.General.Extension
 {
@@ -75,6 +76,36 @@ namespace Lanymy.General.Extension
 
             return currentProcess;
         }
+
+
+
+
+        /// <summary>
+        /// 获取 当前进程的位数 x86 还是 x64
+        /// </summary>
+        /// <returns></returns>
+        public static BitOperatingSystemTypeEnum GetCurrentProcessBitOperatingSystemType()
+        {
+
+            BitOperatingSystemTypeEnum bitOperatingSystemTypeEnum;
+
+            if (IntPtr.Size == 8)
+            {
+                bitOperatingSystemTypeEnum = BitOperatingSystemTypeEnum.x64;
+            }
+            else if (IntPtr.Size == 4)
+            {
+                bitOperatingSystemTypeEnum = BitOperatingSystemTypeEnum.x86;
+            }
+            else
+            {
+                bitOperatingSystemTypeEnum = BitOperatingSystemTypeEnum.UnKnow;
+            }
+
+            return bitOperatingSystemTypeEnum;
+
+        }
+
 
 
     }

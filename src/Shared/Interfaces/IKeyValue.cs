@@ -47,6 +47,14 @@ namespace Lanymy.General.Extension.Interfaces
         /// <returns></returns>
         object GetValue(string key);
 
+        ///// <summary>
+        ///// 获取Key的Value值
+        ///// </summary>
+        ///// <typeparam name="T">Value 类型</typeparam>
+        ///// <param name="key"></param>
+        ///// <returns></returns>
+        //T GetValue<T>(string key);
+
         /// <summary>
         /// 删除Key
         /// </summary>

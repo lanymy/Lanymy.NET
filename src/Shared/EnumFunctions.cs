@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 using Lanymy.General.Extension.CustomAttributes;
 using Lanymy.General.Extension.ExtensionFunctions;
+using Lanymy.General.Extension.Instruments;
 using Lanymy.General.Extension.Interfaces;
 using Lanymy.General.Extension.Models;
 
@@ -28,84 +29,73 @@ namespace Lanymy.General.Extension
     {
 
 
+
         /// <summary>
         /// 枚举内存缓存器
         /// </summary>
         private static IDataMemoryCache _DataMemoryCache = new DataMemoryCache();
 
+        /// <summary>
+        /// 线程 对象 锁
+        /// </summary>
+        private static readonly object SynObject = new object();
+
+
 
         /// <summary>
         /// 获取 枚举类型 缓存 主键值
         /// </summary>
-        /// <typeparam name="TEnumCustomAttribute">枚举中的特性标记类型</typeparam>
         /// <param name="enumType">枚举类型</param>
         /// <returns></returns>
-        private static string GetEnumMapCacheKey<TEnumCustomAttribute>(Type enumType)
+        private static string GetEnumMapCacheKey(Type enumType)
         {
-            Type tEnumCustomAttribute = typeof(TEnumCustomAttribute);
-            return string.Format("{0}_{1}", enumType.FullName, tEnumCustomAttribute.FullName);
+            return enumType.FullName;
         }
 
-        /// <summary>
-        /// 获取 枚举 子项 缓存主键值
-        /// </summary>
-        /// <typeparam name="TEnumCustomAttribute">枚举中的特性标记类型</typeparam>
-        /// <param name="enumItem">枚举子项</param>
-        /// <returns></returns>
-        private static string GetEnumItemCacheKey<TEnumCustomAttribute>(Enum enumItem)
-        {
-            return string.Format("{0}_{1}", GetEnumMapCacheKey<TEnumCustomAttribute>(enumItem.GetType()), enumItem);
-        }
 
         /// <summary>
         /// 获取当前枚举映射导航器
         /// </summary>
-        /// <typeparam name="TEnumCustomAttribute"></typeparam>
         /// <param name="enumType"></param>
         /// <returns></returns>
-        private static EnumMapModel<TEnumCustomAttribute> GetMapper<TEnumCustomAttribute>(Type enumType)
-            where TEnumCustomAttribute : EnumCustomAttribute
+        private static EnumMapModel GetMapper(Type enumType)
         {
-            string cacheKey = GetEnumMapCacheKey<TEnumCustomAttribute>(enumType);
-            EnumMapModel<TEnumCustomAttribute> mapper = _DataMemoryCache.GetValue<EnumMapModel<TEnumCustomAttribute>>(cacheKey);
+            string cacheKey = GetEnumMapCacheKey(enumType);
+            var mapper = _DataMemoryCache.GetValue<EnumMapModel>(cacheKey);
             if (mapper.IfIsNullOrEmpty())
             {
-                mapper = new EnumMapModel<TEnumCustomAttribute>(enumType);
+                mapper = new EnumMapModel(enumType);
                 _DataMemoryCache.SetValue(cacheKey, mapper);
             }
             return mapper;
         }
 
+
         /// <summary>
         /// 获取Enum指定项
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="enumItem"></param>
         /// <returns></returns>
-        public static EnumItem<TEnumCustomAttribute> GetEnumItem<TEnumCustomAttribute>(Enum enumItem)
-            //where TEnum : IComparable, IFormattable, IConvertible
-            where TEnumCustomAttribute : EnumCustomAttribute
+        public static EnumItem GetEnumItem(Enum enumItem)
         {
-            return GetMapper<TEnumCustomAttribute>(enumItem.GetType())[enumItem];
+            return GetMapper(enumItem.GetType())[enumItem];
         }
 
 
         /// <summary>
         /// 获取Enum的子项 主键是 枚举子项 的字典类型集合
         /// </summary>
-        /// <param name="enumType"></param>
         /// <returns></returns>
         public static
 #if NET40
-            IDictionary<Enum, EnumItem<TEnumCustomAttribute>>
-
+            IDictionary<Enum, EnumItem>
 #else
-            IReadOnlyDictionary<Enum, EnumItem<TEnumCustomAttribute>> 
+            IReadOnlyDictionary<Enum, EnumItem> 
 #endif
-            GetEnumItemDictionary<TEnum, TEnumCustomAttribute>()
+            GetEnumItemDictionary<TEnum>()
             where TEnum : IComparable, IFormattable, IConvertible
-            where TEnumCustomAttribute : EnumCustomAttribute
         {
-            return GetMapper<TEnumCustomAttribute>(typeof(TEnum)).DicEnumMap;
+            return GetMapper(typeof(TEnum)).DicEnumMap;
         }
 
 
@@ -113,11 +103,10 @@ namespace Lanymy.General.Extension
         /// 获取Enum的子项集合
         /// </summary>
         /// <returns></returns>
-        public static List<EnumItem<TEnumCustomAttribute>> GetEnumItemList<TEnum, TEnumCustomAttribute>()
+        public static List<EnumItem> GetEnumItemList<TEnum>()
             where TEnum : IComparable, IFormattable, IConvertible
-            where TEnumCustomAttribute : EnumCustomAttribute
         {
-            return GetMapper<TEnumCustomAttribute>(typeof(TEnum)).DicEnumMap.Select(o => o.Value).ToList();
+            return GetMapper(typeof(TEnum)).DicEnumMap.Select(o => o.Value).ToList();
         }
 
 
@@ -127,16 +116,15 @@ namespace Lanymy.General.Extension
         /// 获取枚举多选项列表 主键是 枚举子项 的字典类型集合
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<Enum, EnumItem<TEnumCustomAttribute>> GetEnumFlagsItemDictionary<TEnumCustomAttribute>(Enum item)
-            where TEnumCustomAttribute : EnumCustomAttribute
+        public static Dictionary<Enum, EnumItem> GetEnumFlagsItemDictionary(Enum item)
         {
             List<string> flags = item.ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.Trim()).ToList();
             if (flags.IfIsNullOrEmpty())
             {
-                return new Dictionary<Enum, EnumItem<TEnumCustomAttribute>>();
+                return new Dictionary<Enum, EnumItem>();
             }
-            var mapDic = GetMapper<TEnumCustomAttribute>(item.GetType()).DicEnumMap;
-            return mapDic.Where(o => flags.Contains(o.Value.EnumKey)).ToDictionary(dicItem => dicItem.Key, dicItem => dicItem.Value);
+            var mapDic = GetMapper(item.GetType()).DicEnumMap;
+            return mapDic.Where(o => flags.Contains(o.Value.CurrentEnum.ToString())).ToDictionary(dicItem => dicItem.Key, dicItem => dicItem.Value);
         }
 
 
@@ -145,33 +133,24 @@ namespace Lanymy.General.Extension
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public static List<EnumItem<TEnumCustomAttribute>> GetEnumFlagsItemList<TEnumCustomAttribute>(Enum item)
-            where TEnumCustomAttribute : EnumCustomAttribute
+        public static List<EnumItem> GetEnumFlagsItemList(Enum item)
         {
-            return GetEnumFlagsItemDictionary<TEnumCustomAttribute>(item).Select(o => o.Value).ToList();
+            return GetEnumFlagsItemDictionary(item).Select(o => o.Value).ToList();
         }
 
 
         /// <summary>
-        /// 获取默认EnumCustomAttribute特性标记的枚举列表
+        /// 计算 是否 包含 标记
         /// </summary>
-        /// <typeparam name="TEnum">枚举类型</typeparam>
+        /// <param name="itemSource">标记数据源</param>
+        /// <param name="item">标记</param>
         /// <returns></returns>
-        public static List<EnumItem<EnumCustomAttribute>> GetDefaultAttributeEnumItemList<TEnum>()
-            where TEnum : IComparable, IFormattable, IConvertible
+        public static bool HasFlag(Enum itemSource, Enum item)
         {
-            return GetEnumItemList<TEnum, EnumCustomAttribute>();
+            return itemSource.HasFlag(item);
         }
 
-        /// <summary>
-        /// 获取默认EnumCustomAttribute特性标记的枚举列表
-        /// </summary>
-        /// <param name="enumItem">具体 枚举 子项</param>
-        /// <returns></returns>
-        public static EnumItem<EnumCustomAttribute> GetDefaultAttributeEnumItem(Enum enumItem)
-        {
-            return GetEnumItem<EnumCustomAttribute>(enumItem);
-        }
+
 
 
     }

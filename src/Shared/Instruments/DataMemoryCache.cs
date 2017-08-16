@@ -21,54 +21,25 @@ using System.Threading.Tasks;
 using Lanymy.General.Extension.ExtensionFunctions;
 using Lanymy.General.Extension.Interfaces;
 
-namespace Lanymy.General.Extension
+namespace Lanymy.General.Extension.Instruments
 {
 
     /// <summary>
-    /// 内存模式数据缓存辅助类
+    /// 内存模式数据缓存类
     /// </summary>
-    public class DataMemoryCache: IDataMemoryCache
+    public class DataMemoryCache : IDataMemoryCache
     {
 
 
-        #region 单例
 
-        private static IDataMemoryCache _DataCache = null;
-
-        private static readonly object SynObject = new object();
-
-        /// <summary>
-        /// 获取服务器通信数据中心对象
-        /// </summary>
-        public static IDataMemoryCache Instance()
-        {
-
-            if (null == _DataCache)
-            {
-                lock (SynObject)
-                {
-                    if (null == _DataCache)
-                    {
-                        _DataCache = new DataMemoryCache();
-                    }
-                }
-            }
-
-            return _DataCache;
-        }
-        #endregion
 
         protected ConcurrentDictionary<string, object> _DicCache = new ConcurrentDictionary<string, object>();
 
         /// <summary>
-        /// 获取默认Key值
+        /// key 格式化 格式 字符串 {0}_{1}
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public virtual string GetDefaultKey<T>()
-        {
-            return typeof(T).Name;
-        }
+        private const string KEY_STRING_FORMAT = "{0}_{1}";
+
 
         /// <summary>
         /// Key是否存在
@@ -79,6 +50,8 @@ namespace Lanymy.General.Extension
         {
             return _DicCache.ContainsKey(key);
         }
+
+
         /// <summary>
         /// 设置Key的Value值
         /// </summary>
@@ -88,6 +61,7 @@ namespace Lanymy.General.Extension
         {
             _DicCache.AddOrUpdate(key, value, (k, v) => v);
         }
+
 
         /// <summary>
         /// 获取Key的Value值
@@ -101,6 +75,7 @@ namespace Lanymy.General.Extension
             return o;
         }
 
+
         /// <summary>
         /// 删除Key
         /// </summary>
@@ -112,18 +87,25 @@ namespace Lanymy.General.Extension
 
 
         /// <summary>
-        /// 获取Key的Value值
+        /// 获取默认Key值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public virtual string GetDefaultKey<T>()
+        {
+            return typeof(T).FullName;
+        }
+
+        /// <summary>
+        /// 获取默认Key值
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public virtual T GetValue<T>(string key)
+        public virtual string GetDefaultKey<T>(string key)
         {
-            object o;
-            _DicCache.TryGetValue(key, out o);
-            return o.ConvertToType<T>();
+            return string.Format(KEY_STRING_FORMAT, key, GetDefaultKey<T>());
         }
-
 
         /// <summary>
         /// 默认Key 是否存在
@@ -133,22 +115,59 @@ namespace Lanymy.General.Extension
         {
             return IfHaveKey(GetDefaultKey<T>());
         }
+
         /// <summary>
-        /// 使用 默认Key 设置 Key的Value值
+        /// key是否存在
         /// </summary>
-        /// <param name="value"></param>
-        public virtual void SetValue<T>(object value)
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public virtual bool IfHaveKey<T>(string key)
         {
-            SetValue(GetDefaultKey<T>(), value);
+            return IfHaveKey(GetDefaultKey<T>(key));
         }
+
         /// <summary>
         /// 使用 默认Key 获取Key 的 Value值
         /// </summary>
         /// <returns></returns>
-        public virtual object GetValue<T>()
+        public virtual T GetValue<T>()
         {
-            return GetValue(GetDefaultKey<T>());
+            return GetValue(GetDefaultKey<T>()).ConvertToType<T>();
         }
+
+        /// <summary>
+        /// 获取Key的Value值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public virtual T GetValue<T>(string key)
+        {
+            return GetValue(GetDefaultKey<T>(key)).ConvertToType<T>();
+        }
+
+
+        /// <summary>
+        /// 使用 默认Key 设置 Key的Value值
+        /// </summary>
+        /// <param name="value"></param>
+        public virtual void SetValue<T>(T value)
+        {
+            SetValue(GetDefaultKey<T>(), value);
+        }
+
+        /// <summary>
+        /// 根据 Key 设置 Value值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public virtual void SetValue<T>(string key, T value)
+        {
+            SetValue(GetDefaultKey<T>(key), value as object);
+        }
+
         /// <summary>
         /// 使用 默认Key 删除Key
         /// </summary>
@@ -158,22 +177,36 @@ namespace Lanymy.General.Extension
         }
 
         /// <summary>
-        /// 是否存在Key
+        /// 删除Key
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        public virtual void RemoveValue<T>(string key)
+        {
+            RemoveValue(GetDefaultKey<T>(key));
+        }
+
+
+        /// <summary>
+        /// 获取 枚举项  默认Key 值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public virtual bool IfHaveKey(Enum key)
+        public virtual string GetEnumDefaultKey<T>(Enum key)
         {
-            return IfHaveKey(key.ToString());
+            return GetDefaultKey<T>(string.Format(KEY_STRING_FORMAT, key.GetType().FullName, key));
         }
+
         /// <summary>
-        /// 设置Key的Value值
+        /// 是否存在Key
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
-        /// <param name="t"></param>
-        public virtual void SetValue<T>(Enum key, T t)
+        /// <returns></returns>
+        public virtual bool IfHaveKey<T>(Enum key)
         {
-            SetValue(key.ToString(), t);
+            return IfHaveKey(GetEnumDefaultKey<T>(key));
         }
 
         /// <summary>
@@ -184,16 +217,30 @@ namespace Lanymy.General.Extension
         /// <returns></returns>
         public virtual T GetValue<T>(Enum key)
         {
-            return GetValue<T>(key.ToString());
+            return GetValue<T>(GetEnumDefaultKey<T>(key));
         }
+
+        /// <summary>
+        /// 设置Key的Value值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="t"></param>
+        public virtual void SetValue<T>(Enum key, T t)
+        {
+            SetValue(GetEnumDefaultKey<T>(key), t);
+        }
+
+
         /// <summary>
         /// 删除Key
         /// </summary>
         /// <param name="key"></param>
-        public virtual void RemoveValue(Enum key)
+        public virtual void RemoveValue<T>(Enum key)
         {
-            RemoveValue(key.ToString());
+            RemoveValue(GetEnumDefaultKey<T>(key));
         }
+
+
     }
 
 }

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Lanymy.General.Extension.CustomAttributes;
 
 namespace Lanymy.General.Extension.ExtensionFunctions
 {
@@ -347,6 +348,60 @@ namespace Lanymy.General.Extension.ExtensionFunctions
 
         #endregion
 
+
+        #region AsType 提升类型
+
+        /// <summary>
+        /// 使用 TBase as TTarget 的形式 转换 对象类型  TTarget 的基类 必须是  TBase
+        /// </summary>
+        /// <typeparam name="TBase">父类型</typeparam>
+        /// <typeparam name="TTarget">子类型 </typeparam>
+        /// <param name="o"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static TTarget AsType<TBase, TTarget>(this TBase o, TTarget defaultValue = default(TTarget))
+            where TBase : class
+            where TTarget : class, TBase
+        {
+            try
+            {
+                return o as TTarget;
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
+
+
+        /// <summary>
+        /// 提升 EnumCustomAttribute  类型
+        /// </summary>
+        /// <typeparam name="TTarget">EnumCustomAttribute 目标类型</typeparam>
+        /// <param name="o"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static TTarget AsType<TTarget>(this BaseEnumCustomAttribute o, TTarget defaultValue = default(TTarget))
+            where TTarget : BaseEnumCustomAttribute
+        {
+            return o.AsType<BaseEnumCustomAttribute, TTarget>(defaultValue);
+        }
+
+
+        /// <summary>
+        /// 根据枚举项 提升 EnumCustomAttribute  类型
+        /// </summary>
+        /// <typeparam name="TTarget">EnumCustomAttribute 目标类型</typeparam>
+        /// <param name="o">当前枚举项</param>
+        /// <param name="defaultValue">提升失败 返回的 默认值</param>
+        /// <returns></returns>
+        public static TTarget AsType<TTarget>(this Enum o, TTarget defaultValue = default(TTarget))
+            where TTarget : BaseEnumCustomAttribute
+        {
+            return EnumFunctions.GetEnumItem(o).EnumCustomAttribute.AsType<BaseEnumCustomAttribute, TTarget>(defaultValue);
+        }
+
+        #endregion
 
 
         /// <summary>

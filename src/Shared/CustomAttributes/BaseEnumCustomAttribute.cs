@@ -1,10 +1,10 @@
 ﻿/********************************************************************
 
-时间: 2017年06月12日, AM 10:42:04
+时间: 2017年08月16日, PM 02:04:19
 
 作者: lanyanmiyu@qq.com
 
-描述: 内存模式 数据缓存 功能 接口
+描述: 枚举特性基类
 
 其它:     
 
@@ -16,14 +16,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Lanymy.General.Extension.Interfaces
+namespace Lanymy.General.Extension.CustomAttributes
 {
 
 
+
     /// <summary>
-    /// 内存模式 数据缓存 功能 接口
+    /// 枚举特性基类
     /// </summary>
-    public interface IDataMemoryCache : IKeyValue, IKeyValueExtension, IEnumKeyValue
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    public abstract class BaseEnumCustomAttribute : Attribute
     {
 
     }

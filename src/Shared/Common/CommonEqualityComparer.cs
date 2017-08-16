@@ -48,8 +48,10 @@ namespace Lanymy.General.Extension.Common
         /// 通用比较器 构造方法 使用默认的属性比较器
         /// </summary>
         /// <param name="keySelector">比较属性的选择器</param>
-        public CommonEqualityComparer(Func<T, TValue> keySelector): this(keySelector, EqualityComparer<TValue>.Default)
-        { }
+        public CommonEqualityComparer(Func<T, TValue> keySelector) : this(keySelector, EqualityComparer<TValue>.Default)
+        {
+
+        }
 
 
         public bool Equals(T x, T y)

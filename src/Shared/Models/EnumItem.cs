@@ -22,89 +22,37 @@ namespace Lanymy.General.Extension.Models
     /// <summary>
     /// 枚举单项实体类
     /// </summary>
-    /// <typeparam name="TEnumCustomAttribute">枚举自定义扩展标记</typeparam>
-    public class EnumItem<TEnumCustomAttribute> where TEnumCustomAttribute : EnumCustomAttribute
+    public class EnumItem
     {
 
 
-        ///// <summary>
-        ///// 当前枚举项
-        ///// </summary>
-        //public Enum CurrentEnum { get; set; }
+        /// <summary>
+        /// 当前枚举项
+        /// </summary>
+        public Enum CurrentEnum { get; }
 
 
 
         /// <summary>
-        /// 枚举项对应的Key值
+        /// 枚举自定义扩展特性 基类 
         /// </summary>
-        public string EnumKey { get; set; }
+        public BaseEnumCustomAttribute EnumCustomAttribute { get; }
 
-
-        /// <summary>
-        /// 枚举项导航索引值
-        /// </summary>
-        public object EnumValue { get; set; }
-
-        /// <summary>
-        /// 枚举自定义扩展标记
-        /// </summary>
-        public TEnumCustomAttribute EnumCustomAttribute { get; set; }
-
-
-
-        ///// <summary>
-        ///// 标题
-        ///// </summary>
-        //public string Title { get; set; }
-
-
-        ///// <summary>
-        ///// 枚举项描述
-        ///// </summary>
-        //public string Description { get; set; }
-
-
-        ///// <summary>
-        ///// 枚举项其他附加属性值
-        ///// </summary>
-        //public object Other { get; set; }
 
 
         /// <summary>
         /// 枚举单项实体类 构造方法
         /// </summary>
-        /// <param name="enumKey">枚举项对应的Key值</param>
-        /// <param name="enumValue">枚举项导航索引值</param>
-        /// <param name="enumCustomAttribute">枚举自定义扩展标记</param>
-        public EnumItem(string enumKey, object enumValue, TEnumCustomAttribute enumCustomAttribute = null)
+        /// <param name="currentEnum">当前 导航的 枚举项</param>
+        /// <param name="enumCustomAttribute">当前 枚举 自定义 扩展 特性</param>
+        public EnumItem(Enum currentEnum, BaseEnumCustomAttribute enumCustomAttribute)
         {
-
-            //CurrentEnum = enumItem;
-            EnumKey = enumKey;
-            EnumValue = enumValue;
+            CurrentEnum = currentEnum;
             EnumCustomAttribute = enumCustomAttribute;
-            //if (!description.IfIsNullOrEmpty())
-            //{
-            //    _CustomDescriptionAttribute = description;
-            //    //Title = description.Title;
-            //    //Description = description.Description;
-            //    //Other = description.Other;
-            //}
         }
 
-
-        //public Enum CurrentEnum
-        //{
-
-        //    get
-        //    {
-        //        return (T)Enum.ToObject(t, EnumValue);
-        //    }
-        //}
-
-
-
-
-
     }
+
+
+
 }

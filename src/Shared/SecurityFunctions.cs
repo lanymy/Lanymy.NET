@@ -243,7 +243,7 @@ namespace Lanymy.General.Extension
             StringBuilder sb = new StringBuilder();
             foreach (var b in hashedBytes)
             {
-                sb.Append(b.ToString("x2").ToLower());
+                sb.Append(b.ToString("X2"));
             }
 
             return sb.ToString();

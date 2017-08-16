@@ -214,5 +214,28 @@ namespace Lanymy.General.Extension.Models
     }
 
 
+    /// <summary>
+    /// 多少位计算模式 x86 / x64
+    /// </summary>
+    public enum BitOperatingSystemTypeEnum
+    {
+        /// <summary>
+        /// 未定义
+        /// </summary>
+        UnDefine,
+        /// <summary>
+        /// 32位
+        /// </summary>
+        x86,
+        /// <summary>
+        /// 64位
+        /// </summary>
+        x64,
+        /// <summary>
+        /// 未知
+        /// </summary>
+        UnKnow,
+    }
+
 
 }

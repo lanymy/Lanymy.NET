@@ -66,7 +66,7 @@ namespace Lanymy.General.Extension
         /// <typeparam name="TAttribute">特性</typeparam>
         /// <param name="doWorkForEachAttributeModel">对每个特性需要操作的回调方法,提供两个参数可以进行操作 第一个参数 当前特性 第二个参数 当前属性的反射信息实体类</param>
         /// <returns></returns>
-        public static List<TAttribute> GetAttributeListFromModel<TModel, TAttribute>(Action<TAttribute, PropertyInfo> doWorkForEachAttributeModel = null)
+        public static List<TAttribute> GetAttributeListFromModel<TModel, TAttribute>(Action<PropertyInfo, TAttribute> doWorkForEachAttributeModel = null)
             where TModel : class
             where TAttribute : Attribute
         {
@@ -91,7 +91,7 @@ namespace Lanymy.General.Extension
                 {
                     if (!doWorkForEachAttributeModel.IfIsNullOrEmpty())
                     {
-                        doWorkForEachAttributeModel(currentAttribute, propertyInfo);
+                        doWorkForEachAttributeModel(propertyInfo, currentAttribute);
                     }
 
                     list.Add(currentAttribute);
@@ -110,7 +110,7 @@ namespace Lanymy.General.Extension
         /// <typeparam name="TAttribute">特性标记</typeparam>
         /// <param name="doWorkForEachAttributeModel">每个特性的回调方法</param>
         /// <returns></returns>
-        public static List<TAttribute> GetAttributeListFromEnum<TEnum, TAttribute>(Action<TAttribute, FieldInfo> doWorkForEachAttributeModel = null)
+        public static List<TAttribute> GetAttributeListFromEnum<TEnum, TAttribute>(Action<Enum, FieldInfo, TAttribute> doWorkForEachAttributeModel = null)
             where TEnum : IComparable, IFormattable, IConvertible
             where TAttribute : Attribute
         {
@@ -131,20 +131,32 @@ namespace Lanymy.General.Extension
             foreach (Enum enumValue in Enum.GetValues(enumType))
             {
 
-                var fieldInfo = enumType.GetField(enumValue.ToString());
-#if NET40
-                foreach (TAttribute currentAttribute in fieldInfo.GetCustomAttributes(currentAttributeType, true))
-#else
-                foreach (var currentAttribute in fieldInfo.GetCustomAttributes<TAttribute>(true))
-#endif
-                {
-                    if (!doWorkForEachAttributeModel.IfIsNullOrEmpty())
-                    {
-                        doWorkForEachAttributeModel(currentAttribute, fieldInfo);
-                    }
 
-                    list.Add(currentAttribute);
+                var fieldInfo = enumType.GetField(enumValue.ToString());
+                var attribute = Attribute.GetCustomAttribute(fieldInfo, typeof(TAttribute)) as TAttribute;
+
+                if (!doWorkForEachAttributeModel.IfIsNullOrEmpty())
+                {
+                    doWorkForEachAttributeModel(enumValue, fieldInfo, attribute);
                 }
+
+                list.Add(attribute);
+
+
+                //                var fieldInfo = enumType.GetField(enumValue.ToString());
+                //#if NET40
+                //                foreach (TAttribute currentAttribute in fieldInfo.GetCustomAttributes(currentAttributeType, true))
+                //#else
+                //                foreach (var currentAttribute in fieldInfo.GetCustomAttributes<TAttribute>(true))
+                //#endif
+                //                {
+                //                    if (!doWorkForEachAttributeModel.IfIsNullOrEmpty())
+                //                    {
+                //                        doWorkForEachAttributeModel(currentAttribute, fieldInfo);
+                //                    }
+
+                //                    list.Add(currentAttribute);
+                //                }
             }
 
             return list;

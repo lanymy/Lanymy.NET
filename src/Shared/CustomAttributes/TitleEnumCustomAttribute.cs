@@ -20,17 +20,16 @@ namespace Lanymy.General.Extension.CustomAttributes
 
 
     /// <summary>
-    /// 自定义属性特性,用于扩展枚举项的描述
+    /// 带 标题 和 描述 属性 的 自定义属性特性,用于扩展枚举项的描述
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-    public class EnumCustomAttribute : Attribute
+    public class TitleEnumCustomAttribute : BaseEnumCustomAttribute
     {
+
 
         /// <summary>
         /// 标题
         /// </summary>
         public string Title { get; set; }
-
 
 
         /// <summary>
@@ -39,16 +38,10 @@ namespace Lanymy.General.Extension.CustomAttributes
         public string Description { get; set; }
 
 
-        ///// <summary>
-        ///// 其它附加信息
-        ///// </summary>
-        //public object Other { get; set; }
-
-
         /// <summary>
         /// 枚举自定义特性构造方法
         /// </summary>
-        public EnumCustomAttribute()
+        public TitleEnumCustomAttribute()
         {
 
         }
@@ -58,12 +51,10 @@ namespace Lanymy.General.Extension.CustomAttributes
         /// </summary>
         /// <param name="title">标题</param>
         /// <param name="description">描述</param>
-        ///// <param name="other">其它附加信息</param>
-        public EnumCustomAttribute(string title, string description = null)
+        public TitleEnumCustomAttribute(string title, string description = null)
         {
             Title = title;
             Description = description;
-            //Other = other;
         }
 
 
