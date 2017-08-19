@@ -220,6 +220,11 @@ namespace Lanymy.General.Extension
                 paths.AddRange(tempPaths);
             }
 
+            if (paths[0].ToLower().StartsWith("http"))
+            {
+                paths[0] += "/";
+            }
+
             string result = string.Join("/", paths);
 
             if (path[0].Replace("\\", "/").StartsWith("/"))

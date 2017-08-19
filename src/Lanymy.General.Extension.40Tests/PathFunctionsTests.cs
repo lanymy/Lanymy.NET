@@ -19,7 +19,7 @@ namespace Lanymy.General.Extension._40Tests
         public void CombineRelativePathTest()
         {
 
-            string path1 = "/aaaa/bbb";
+            string path1 = "http://aaaa/bbb";
             string path2 = "../ccc/";
 
             string result = PathFunctions.CombineRelativePath(path1, path2);
