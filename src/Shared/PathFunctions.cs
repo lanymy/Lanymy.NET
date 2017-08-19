@@ -171,8 +171,7 @@ namespace Lanymy.General.Extension
         {
             return RegexFunctions.IsRelativePath(path);
         }
-
-
+     
 
         /// <summary>
         /// 相对路径组装
@@ -182,7 +181,7 @@ namespace Lanymy.General.Extension
         public static string CombineRelativePath(params string[] path)
         {
 
-            List<string> pathList = path.Select(s => s.Replace("\\", "/")).ToList();
+           List<string> pathList = path.Select(s => s.Replace("\\", "/")).ToList();
 
             if (pathList.IfIsNullOrEmpty())
             {
@@ -227,6 +226,8 @@ namespace Lanymy.General.Extension
             {
                 result = "/" + result;
             }
+
+            result += path.LastOrDefault().EndsWith("/") ? "/" : string.Empty;
 
             return result;
 

@@ -89,6 +89,15 @@ namespace Lanymy.General.Extension
 
             BitOperatingSystemTypeEnum bitOperatingSystemTypeEnum;
 
+            //if (Environment.Is64BitProcess)
+            //{
+            //    bitOperatingSystemTypeEnum = BitOperatingSystemTypeEnum.x64;
+            //}
+            //else
+            //{
+            //    bitOperatingSystemTypeEnum = BitOperatingSystemTypeEnum.x86;
+            //}
+
             if (IntPtr.Size == 8)
             {
                 bitOperatingSystemTypeEnum = BitOperatingSystemTypeEnum.x64;
