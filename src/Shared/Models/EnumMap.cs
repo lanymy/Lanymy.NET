@@ -10,6 +10,8 @@
 
 ********************************************************************/
 
+using System;
+
 namespace Lanymy.General.Extension.Models
 {
 
@@ -235,6 +237,52 @@ namespace Lanymy.General.Extension.Models
         /// 未知
         /// </summary>
         UnKnow,
+    }
+
+
+    [Flags]
+    public enum DaysOfWeek
+    {
+        /// <summary>
+        /// 星期一
+        /// </summary>
+        Monday = 0x1,
+        /// <summary>
+        /// 星期二
+        /// </summary>
+        Tuesday = 0x2,
+        /// <summary>
+        /// 星期三
+        /// </summary>
+        Wednesday = 0x4,
+        /// <summary>
+        /// 星期四
+        /// </summary>
+        Thursday = 0x8,
+        /// <summary>
+        /// 星期五
+        /// </summary>
+        Friday = 0x10,
+        /// <summary>
+        /// 星期六
+        /// </summary>
+        Saturday = 0x20,
+        /// <summary>
+        /// 星期天
+        /// </summary>
+        Sunday = 0x40,
+        /// <summary>
+        /// 周末
+        /// </summary>
+        Weekend = Saturday | Sunday,
+        /// <summary>
+        /// 工作日
+        /// </summary>
+        Workday = 0x1f,
+        /// <summary>
+        /// 一周
+        /// </summary>
+        AllWeek = Workday | Weekend
     }
 
 
