@@ -1,53 +1,43 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.NET.NuGet.Packager", "Lanymy.NET.NuGet.Packager\Lanymy.NET.NuGet.Packager.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 Documents", "00 Documents", "{31DF6982-DE23-4832-B9B4-FCDF3088170B}"
+	ProjectSection(SolutionItems) = preProject
+		Documents\Standard.txt = Documents\Standard.txt
+	EndProjectSection
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "Shared\Shared.shproj", "{1DD77F73-8CB9-46FC-93F3-67DC53AA2BFB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 Others", "01 Others", "{A42DF379-A556-44E5-B89D-CF3E95B92CC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.General.Extension.40", "Lanymy.General.Extension.40\Lanymy.General.Extension.40.csproj", "{91FB990C-F0E2-4792-8D4F-A4101A1D840B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 UnitTests", "02 UnitTests", "{25F62B98-DC70-4219-ABFA-98454D455589}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.General.Extension.45", "Lanymy.General.Extension.45\Lanymy.General.Extension.45.csproj", "{203B9CD1-57F8-4FBB-830F-50432E8A3E94}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 Commons", "03 Commons", "{0B046EE0-3294-4090-9260-52970A903A51}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.General.Extension.40Tests", "Lanymy.General.Extension.40Tests\Lanymy.General.Extension.40Tests.csproj", "{0513BAE6-7D50-4EAA-A303-BD79BE9B6EBA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04 Common.Webs", "04 Common.Webs", "{50B707EC-A318-40D7-BBE4-2AC53CEAD4E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.General.Extension.45Tests", "Lanymy.General.Extension.45Tests\Lanymy.General.Extension.45Tests.csproj", "{999DE287-6AD3-461F-B6ED-989F2BFB0021}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05 Common.Clients", "05 Common.Clients", "{BA37EE82-59C0-4430-B3FB-3BDB7F43BBB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common", "Commons\Lanymy.Common\Lanymy.Common.csproj", "{53608A03-B4CB-437F-AE16-976BF58B099F}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Shared\Shared.projitems*{1dd77f73-8cb9-46fc-93f3-67dc53aa2bfb}*SharedItemsImports = 13
-		Shared\Shared.projitems*{203b9cd1-57f8-4fbb-830f-50432e8a3e94}*SharedItemsImports = 4
-		Shared\Shared.projitems*{91fb990c-f0e2-4792-8d4f-a4101a1d840b}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Release|Any CPU.Build.0 = Release|Any CPU
-		{91FB990C-F0E2-4792-8D4F-A4101A1D840B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91FB990C-F0E2-4792-8D4F-A4101A1D840B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91FB990C-F0E2-4792-8D4F-A4101A1D840B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91FB990C-F0E2-4792-8D4F-A4101A1D840B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{203B9CD1-57F8-4FBB-830F-50432E8A3E94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{203B9CD1-57F8-4FBB-830F-50432E8A3E94}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{203B9CD1-57F8-4FBB-830F-50432E8A3E94}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{203B9CD1-57F8-4FBB-830F-50432E8A3E94}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0513BAE6-7D50-4EAA-A303-BD79BE9B6EBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0513BAE6-7D50-4EAA-A303-BD79BE9B6EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0513BAE6-7D50-4EAA-A303-BD79BE9B6EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0513BAE6-7D50-4EAA-A303-BD79BE9B6EBA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{999DE287-6AD3-461F-B6ED-989F2BFB0021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{999DE287-6AD3-461F-B6ED-989F2BFB0021}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{999DE287-6AD3-461F-B6ED-989F2BFB0021}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{999DE287-6AD3-461F-B6ED-989F2BFB0021}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53608A03-B4CB-437F-AE16-976BF58B099F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53608A03-B4CB-437F-AE16-976BF58B099F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53608A03-B4CB-437F-AE16-976BF58B099F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53608A03-B4CB-437F-AE16-976BF58B099F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{53608A03-B4CB-437F-AE16-976BF58B099F} = {0B046EE0-3294-4090-9260-52970A903A51}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {55F4599F-E744-4FB9-A0B9-0F41F223A2BF}
 	EndGlobalSection
 EndGlobal
