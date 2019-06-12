@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums.cs" />
+    <Compile Include="Models\ConsoleArgumentModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -50,6 +52,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Common.Clients\Lanymy.Common.Console\Lanymy.Common.Console.csproj">
+      <Project>{92eefafd-acbb-4a45-ae30-812ce42b6af7}</Project>
+      <Name>Lanymy.Common.Console</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj">
       <Project>{53608a03-b4cb-437f-ae16-976bf58b099f}</Project>
       <Name>Lanymy.Common</Name>
@@ -57,6 +63,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>start "" "$(TargetPath)" "$(SolutionDir)" 1</PostBuildEvent>
+    <PostBuildEvent>start "" "$(TargetPath)" -ArgsJson "{'LanymyNetSolutionRootDirectoryFullPath':'$(SolutionDir)','IsDebugModel':1}"</PostBuildEvent>
   </PropertyGroup>
 </Project>

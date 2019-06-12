@@ -1,0 +1,84 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+
+    <TargetFrameworks>netcoreapp2.2;net472;netstandard2.0</TargetFrameworks>
+
+  </PropertyGroup>
+
+
+
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>bin\Debug\netcoreapp2.2\Lanymy.Common.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>bin\Release\netcoreapp2.2\Lanymy.Common.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>bin\Debug\net472\Lanymy.Common.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>bin\Release\net472\Lanymy.Common.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>bin\Debug\netstandard2.0\Lanymy.Common.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>bin\Release\netstandard2.0\Lanymy.Common.Console.xml</DocumentationFile>
+  </PropertyGroup>
+
+
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj" />
+  </ItemGroup>
+
+
+
+
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net472'">
+
+    <!--<Reference Include="System.Management" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />-->
+
+
+
+
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.2'">
+
+
+
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+
+
+
+  </ItemGroup>
+
+
+
+
+
+
+
+
+</Project>
