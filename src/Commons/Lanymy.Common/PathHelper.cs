@@ -205,9 +205,9 @@ namespace Lanymy.Common
         /// 根据路径操作符 计算 文件夹 路径
         /// </summary>
         /// <param name="path">文件夹全路径</param>
-        /// <param name="pathOperator">路径操作符 如: ..\..\</param>
+        /// <param name="pathOperator">路径操作符 如: ..\..\;如果为空 则 自动计算 path 的路径</param>
         /// <returns></returns>
-        public static string CombineDirectoryRelativePath(string path, string pathOperator = @"..\")
+        public static string CombineDirectoryRelativePath(string path, string pathOperator = "")
         {
 
             path = GetFolderPath(path);

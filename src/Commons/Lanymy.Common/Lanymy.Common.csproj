@@ -86,9 +86,12 @@
   </ItemGroup>
 
 
-  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(ProjectDir)bin\$(ConfigurationName)\netcoreapp2.2\$(TargetName).XML&quot; &quot;$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\netcoreapp2.2\$(TargetName).XML&quot; /Y&#xD;&#xA;copy &quot;$(ProjectDir)bin\$(ConfigurationName)\netcoreapp2.2\$(TargetName).dll&quot; &quot;$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\netcoreapp2.2\$(TargetName).dll&quot; /Y&#xD;&#xA;copy &quot;$(ProjectDir)bin\$(ConfigurationName)\net472\$(TargetName).XML&quot; &quot;$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\net472\$(TargetName).XML&quot; /Y&#xD;&#xA;copy &quot;$(ProjectDir)bin\$(ConfigurationName)\net472\$(TargetName).dll&quot; &quot;$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\net472\$(TargetName).dll&quot; /Y&#xD;&#xA;copy &quot;$(ProjectDir)bin\$(ConfigurationName)\netstandard2.0\$(TargetName).XML&quot; &quot;$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\netstandard2.0\$(TargetName).XML&quot; /Y&#xD;&#xA;copy &quot;$(ProjectDir)bin\$(ConfigurationName)\netstandard2.0\$(TargetName).dll&quot; &quot;$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\netstandard2.0\$(TargetName).dll&quot; /Y" />
-  </Target>-->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="start &quot;&quot; &quot;$(SolutionDir)..\Build\AutoCopyReleaseDll\AutoCopyReleaseDll.exe&quot; -ArgsJson &quot;{'ProjectFileFullName':'$(TargetFileName)','TargetDirFullPath':'$(TargetPath)..\..\..\','AutoCopyDirFullPath':'$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\','IgnoreFolderNames':'','IsDebugModel':0}&quot;" />
+  </Target>
+
+
+
 
 
 

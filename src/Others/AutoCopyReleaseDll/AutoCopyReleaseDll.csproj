@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{45678658-6B38-4F6B-A3BD-6306D5EB89CD}</ProjectGuid>
+    <ProjectGuid>{1E58F49C-D9E1-40C2-A291-5BE9E192246C}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>TheFirstBuildLanymyNetSolution</RootNamespace>
-    <AssemblyName>TheFirstBuildLanymyNetSolution</AssemblyName>
+    <RootNamespace>AutoCopyReleaseDll</RootNamespace>
+    <AssemblyName>AutoCopyReleaseDll</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
