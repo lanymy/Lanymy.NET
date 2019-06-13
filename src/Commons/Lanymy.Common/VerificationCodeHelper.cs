@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common
@@ -19,12 +21,24 @@ namespace Lanymy.Common
         public static string CreateVerificationCode(byte verificationCodeLength = 4, bool isOnlyNumber = false)
         {
 
-            if (verificationCodeLength < 4 || verificationCodeLength > 10)
+            const byte MIN_LENGTH = 4;
+            const byte MAX_LENGTH = 10;
+
+            if (verificationCodeLength < MIN_LENGTH || verificationCodeLength > MAX_LENGTH)
             {
-                throw new ArgumentOutOfRangeException(nameof(verificationCodeLength), "验证码长度(4-10之间)");
+                throw new ArgumentOutOfRangeException(nameof(verificationCodeLength), string.Format("验证码长度({0}-{1}之间)", MIN_LENGTH, MAX_LENGTH));
             }
 
-            return (isOnlyNumber ? BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(), 0).ToString() : Guid.NewGuid().ToString("N").ToUpper()).RightSubString(verificationCodeLength);
+            var randomCodeStr = Path.GetRandomFileName().Replace(".", "");
+
+            if (isOnlyNumber)
+            {
+                randomCodeStr = BitConverter.ToUInt32(DefaultSettingKeys.DEFAULT_ENCODING.GetBytes(randomCodeStr), 0).ToString().PadLeft(MAX_LENGTH, '0');
+            }
+
+            return randomCodeStr.RightSubString(verificationCodeLength).ToUpper();
+
+            //return (isOnlyNumber ? BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(), 0).ToString() : Guid.NewGuid().ToString("N").ToUpper()).RightSubString(verificationCodeLength);
 
         }
 
