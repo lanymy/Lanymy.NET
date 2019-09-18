@@ -2,8 +2,8 @@
 
   <PropertyGroup>
 
-    <TargetFrameworks>netcoreapp2.2;net472;netstandard2.0</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
+    <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
+    <!--<LangVersion>7.3</LangVersion>-->
     <!--<GeneratePackageOnBuild>false</GeneratePackageOnBuild>-->
 
   </PropertyGroup>
@@ -21,14 +21,14 @@
     <DocumentationFile>bin\Release\netcoreapp2.2\Lanymy.Common.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\net472\Lanymy.Common.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\net48\Lanymy.Common.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\net472\Lanymy.Common.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\net48\Lanymy.Common.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
@@ -61,7 +61,7 @@
   </ItemGroup>
 
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net472'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net48'">
 
     <Reference Include="System.Management" />
     <Reference Include="Microsoft.CSharp" />
@@ -86,9 +86,9 @@
   </ItemGroup>
 
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="start &quot;&quot; &quot;$(SolutionDir)..\Build\AutoCopyReleaseDll\AutoCopyReleaseDll.exe&quot; -ArgsJson &quot;{'ProjectFileFullName':'$(TargetFileName)','TargetDirFullPath':'$(TargetPath)..\..\..\','AutoCopyDirFullPath':'$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\','IgnoreFolderNames':'','IsDebugModel':0}&quot;" />
-  </Target>
+  </Target>-->
 
 
 
