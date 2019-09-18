@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 Documents", "00 Documents", "{31DF6982-DE23-4832-B9B4-FCDF3088170B}"
 	ProjectSection(SolutionItems) = preProject
 		Documents\Standard.txt = Documents\Standard.txt
+		Documents\编译符号.txt = Documents\编译符号.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 Others", "01 Others", "{A42DF379-A556-44E5-B89D-CF3E95B92CC0}"
