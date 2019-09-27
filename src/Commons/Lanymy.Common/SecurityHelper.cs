@@ -334,7 +334,7 @@ namespace Lanymy.Common
                 strToEncryptTemp = string.Format(
                     "{1}{0}{2}{0}{3}",
                     SPLIT_STRING,
-                    DateTime.Now.ToString(DefaultSettingKeys.DEFAULT_HTTP_URI_DATE_FORMAT_STRING),
+                    DateTime.Now.ToString(DateTimeFormatKeys.DATE_TIME_FORMAT_2),
                     salt,
                     strToEncrypt);
 

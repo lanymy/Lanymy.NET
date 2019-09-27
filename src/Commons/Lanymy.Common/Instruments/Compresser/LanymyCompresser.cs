@@ -18,7 +18,7 @@ namespace Lanymy.Common.Instruments.Compresser
         /// <summary>
         /// 默认缓冲区大小
         /// </summary>
-        public readonly int DEFAULT_BUFFERSIZE = DefaultSettingKeys.DEFAULT_BUFFERSIZE;
+        public readonly int DEFAULT_BUFFERSIZE = BufferSizeKeys.BUFFER_SIZE_4K;
 
         /// <summary>
         /// 编码

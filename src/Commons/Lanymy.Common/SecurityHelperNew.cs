@@ -107,7 +107,7 @@ namespace Lanymy.Common
                     //只有在随机加密情况下 才会 赋值时间戳
                     encryptDigestInfoModel.CreateDateTime = DateTime.Now;
 
-                    string headerFlagDataString = new string(DateTime.Now.ToString(DefaultSettingKeys.DEFAULT_HTTP_URI_DATE_FORMAT_STRING).Reverse().ToArray());
+                    string headerFlagDataString = new string(DateTime.Now.ToString(DateTimeFormatKeys.DATE_TIME_FORMAT_2).Reverse().ToArray());
                     var headerFlagDataStringBytes = Encoding.UTF8.GetBytes(headerFlagDataString);
 
                     //写入随机种子标识位
@@ -714,7 +714,7 @@ namespace Lanymy.Common
 
             EncryptBytesDigestInfoModel encryptBytesDigestInfoModel;
             using (var sourceStream = new MemoryStream(sourceBytes))
-            using (var encryptStream = File.Create(encryptFileFullPath, DefaultSettingKeys.DEFAULT_BUFFERSIZE))
+            using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
 
                 EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
@@ -858,7 +858,7 @@ namespace Lanymy.Common
             encryptFileDigestInfoModel.EncryptedFileFullName = Path.GetFileName(encryptFileFullPath);
 
             using (var sourceStream = File.OpenRead(sourceFileFullPath))
-            using (var encryptStream = File.Create(encryptFileFullPath, DefaultSettingKeys.DEFAULT_BUFFERSIZE))
+            using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
 
                 EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptFileDigestInfoModel, encoding);
@@ -898,7 +898,7 @@ namespace Lanymy.Common
                 encryptFileDigestInfoModel.EncryptedFileFullName = Path.GetFileName(encryptedFileFullPath);
 
                 using (var encryptedStream = File.OpenRead(encryptedFileFullPath))
-                using (var sourceStream = File.Create(sourceFileFullPath, DefaultSettingKeys.DEFAULT_BUFFERSIZE))
+                using (var sourceStream = File.Create(sourceFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
                 {
                     DencryptStreamFromStream(encryptedStream, sourceStream, secretKey, encoding);
                 }

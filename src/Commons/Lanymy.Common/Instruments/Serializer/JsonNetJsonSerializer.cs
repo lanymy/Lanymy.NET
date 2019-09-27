@@ -23,7 +23,7 @@ namespace Lanymy.Common.Instruments.Serializer
         /// <summary>
         /// 默认时间格式化字符串yyyy-MM-dd hh:mm:ss.fff
         /// </summary>
-        public const string DATE_FORMAT_STRING = DefaultSettingKeys.DEFAULT_DATE_FORMAT_STRING;
+        public const string DATE_FORMAT_STRING = DateTimeFormatKeys.DATE_TIME_FORMAT_1;
 
         /// <summary>
         /// 序列化Json使用的格式化配置属性

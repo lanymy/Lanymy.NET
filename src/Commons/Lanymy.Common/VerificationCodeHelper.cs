@@ -38,8 +38,6 @@ namespace Lanymy.Common
 
             return randomCodeStr.RightSubString(verificationCodeLength).ToUpper();
 
-            //return (isOnlyNumber ? BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(), 0).ToString() : Guid.NewGuid().ToString("N").ToUpper()).RightSubString(verificationCodeLength);
-
         }
 
     }

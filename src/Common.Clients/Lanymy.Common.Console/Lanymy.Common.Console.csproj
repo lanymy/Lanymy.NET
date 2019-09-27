@@ -2,7 +2,7 @@
 
   <PropertyGroup>
 
-    <TargetFrameworks>netcoreapp2.2;net472;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
 
   </PropertyGroup>
 
@@ -19,14 +19,14 @@
     <DocumentationFile>bin\Release\netcoreapp2.2\Lanymy.Common.Console.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\net472\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\net48\Lanymy.Common.Console.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net472|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\net472\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\net48\Lanymy.Common.Console.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
@@ -50,7 +50,7 @@
 
 
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net472'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net48'">
 
     <!--<Reference Include="System.Management" />
     <Reference Include="Microsoft.CSharp" />

@@ -61,28 +61,28 @@ namespace Lanymy.Common
 
 
 
-        private static string _ClientConfigFileFullPath;
+        //private static string _ClientConfigFileFullPath;
 
-        /// <summary>
-        /// 客户端 配置表 文件 全路径
-        /// </summary>
-        public static string ClientConfigFileFullPath => _ClientConfigFileFullPath;
-
-
-        private static string _LanymyConfigFileFullPath;
-
-        /// <summary>
-        /// 全局 配置表 文件 全路径
-        /// </summary>
-        public static string LanymyConfigFileFullPath => _LanymyConfigFileFullPath;
+        ///// <summary>
+        ///// 客户端 配置表 文件 全路径
+        ///// </summary>
+        //public static string ClientConfigFileFullPath => _ClientConfigFileFullPath;
 
 
-        private static string _LanymyWebAPIConfigFileFullPath;
+        //private static string _LanymyConfigFileFullPath;
 
-        /// <summary>
-        /// webApi配置 文件 全路径
-        /// </summary>
-        public static string LanymyWebApiConfigFileFullPath => _LanymyWebAPIConfigFileFullPath;
+        ///// <summary>
+        ///// 全局 配置表 文件 全路径
+        ///// </summary>
+        //public static string LanymyConfigFileFullPath => _LanymyConfigFileFullPath;
+
+
+        //private static string _LanymyWebAPIConfigFileFullPath;
+
+        ///// <summary>
+        ///// webApi配置 文件 全路径
+        ///// </summary>
+        //public static string LanymyWebApiConfigFileFullPath => _LanymyWebAPIConfigFileFullPath;
 
 
         private static string _CacheFolderFullPath;
@@ -149,10 +149,10 @@ namespace Lanymy.Common
             _NLogConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultSettingKeys.NLOG_CONFIG_FILE_FULL_NAME);
 
 
-            _ClientConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultLanymyNetSettingKeys.CLIENT_CONFIG_FILE_FULL_NAME);
+            //_ClientConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultLanymyNetSettingKeys.CLIENT_CONFIG_FILE_FULL_NAME);
 
-            _LanymyConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultLanymyNetSettingKeys.LANYMY_CONFIG_FILE_FULL_NAME);
-            _LanymyWebAPIConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultLanymyNetSettingKeys.LANYMY_WEBAPI_CONFIG_FILE_FULL_NAME);
+            //_LanymyConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultLanymyNetSettingKeys.LANYMY_CONFIG_FILE_FULL_NAME);
+            //_LanymyWebAPIConfigFileFullPath = Path.Combine(ConfigFolderFullPath, DefaultLanymyNetSettingKeys.LANYMY_WEBAPI_CONFIG_FILE_FULL_NAME);
 
 
 

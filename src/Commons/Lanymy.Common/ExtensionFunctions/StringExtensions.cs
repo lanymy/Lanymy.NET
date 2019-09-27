@@ -235,7 +235,7 @@ namespace Lanymy.Common.ExtensionFunctions
 
             if (encoding.IfIsNullOrEmpty())
             {
-                encoding = DefaultSettingKeys.DEFAULT_ENCODING;
+                encoding = Encoding.Default;
             }
 
             return s.IfIsNullOrEmpty() ? 0 : encoding.GetBytes(s).Length;

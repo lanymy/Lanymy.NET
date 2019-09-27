@@ -8,6 +8,7 @@ using Lanymy.Common;
 using Lanymy.Common.CustomAttributes;
 using Lanymy.Common.ExtensionFunctions;
 using Unity;
+using Unity.Lifetime;
 
 
 namespace Lanymy.Common
@@ -78,7 +79,8 @@ namespace Lanymy.Common
         /// 根据 IocBaseClassRegisterAttribute 特性 自动注入 基类实例
         /// </summary>
         /// <param name="assembly"></param>
-        public static void AutoIocBaseClassAssembly(Assembly assembly)
+        /// <param name="lifetimeManager"></param>
+        public static void AutoIocBaseClassAssembly(Assembly assembly, ITypeLifetimeManager lifetimeManager = null)
         {
 
             var container = CurrentContainer;
@@ -125,7 +127,16 @@ namespace Lanymy.Common
 
             foreach (var childType in childTypeList)
             {
-                container.RegisterType(childType);
+
+                if (lifetimeManager.IfIsNullOrEmpty())
+                {
+                    container.RegisterType(childType);
+                }
+                else
+                {
+                    container.RegisterType(childType, lifetimeManager);
+                }
+
             }
 
 
