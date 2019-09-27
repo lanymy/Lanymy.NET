@@ -49,7 +49,10 @@ namespace Lanymy.Common.Instruments.IsolatedStorage
         /// <returns></returns>
         protected virtual string MatchFileFullName(string fileName)
         {
-            return SecurityHelper.EncryptFileNameToBase64String(fileName, ISOLATED_STORAGE_FILE_SUFFIX, null, false);
+
+            //return SecurityHelperOld.EncryptFileNameToBase64String(fileName, ISOLATED_STORAGE_FILE_SUFFIX, null, false);
+            return SecurityHelper.EncryptFileNameToHashCodeString(fileName, ISOLATED_STORAGE_FILE_SUFFIX, null, null);
+
         }
 
         /// <summary>
@@ -73,7 +76,9 @@ namespace Lanymy.Common.Instruments.IsolatedStorage
         {
 
             if (stream.IfIsNullOrEmpty() || sourceString.IfIsNullOrEmpty()) return;
-            byte[] buffer = CompressionHelper.CompressBytesToBytes(SecurityHelper.EncryptStringToBytes(sourceString, securityKey, true, encoding));
+            //byte[] buffer = CompressionHelper.CompressBytesToBytes(SecurityHelperOld.EncryptStringToBytes(sourceString, securityKey, true, encoding));
+            var encryptModel = SecurityHelper.EncryptStringToBytes(sourceString, securityKey, true, encoding);
+            byte[] buffer = CompressionHelper.CompressBytesToBytes(encryptModel.EncryptedBytes);
             stream.Write(buffer, 0, buffer.Length);
 
         }
@@ -90,7 +95,14 @@ namespace Lanymy.Common.Instruments.IsolatedStorage
             if (stream.IfIsNullOrEmpty()) return string.Empty;
             byte[] data = new byte[stream.Length];
             stream.Read(data, 0, data.Length);
-            return SecurityHelper.DecryptStringFromBytes(CompressionHelper.DecompressBytesFromBytes(data), securityKey, encoding);
+
+            //return SecurityHelperOld.DecryptStringFromBytes(CompressionHelper.DecompressBytesFromBytes(data), securityKey, encoding);
+
+            var decryptModel = SecurityHelper.DecryptStringFromBytes(CompressionHelper.DecompressBytesFromBytes(data), securityKey, encoding);
+
+            return decryptModel.SourceString;
+
+
         }
 
 
