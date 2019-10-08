@@ -121,12 +121,8 @@
 
 
   <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="start &quot;&quot; &quot;$(SolutionDir)..\Build\AutoCopyReleaseDll\AutoCopyReleaseDll.exe&quot; -ArgsJson &quot;{'ProjectFileFullName':'$(TargetFileName)','TargetDirFullPath':'$(TargetPath)..\..\..\','AutoCopyDirFullPath':'$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\','IgnoreFolderNames':'','IsDebugModel':0}&quot;" />
+    <Exec Command="start &quot;&quot; &quot;$(SolutionDir)..\Build\PushNugetPackageTools\PushNugetPackageTools.exe&quot; -TargetFramework &quot;$(TargetFramework)&quot; -PublishRootDirectoryFullPath &quot;$(TargetDir)&quot;" />
   </Target>-->
-
-
-
-
 
 
 

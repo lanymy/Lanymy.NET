@@ -68,14 +68,13 @@ namespace Lanymy.Common.Console
                         errorMessage += string.Format("命令行参数名 [ {0} ] 格式不正确,命令行参数名请以'-'符号开头", argsTitle) + Environment.NewLine;
                         continue;
                     }
-                    else
-                    {
-                        argsTitle = argsTitle.Substring(1);
-                    }
+
+                    argsTitle = argsTitle.Substring(1);
 
                     var consoleArgumentModel = createConsoleArgumentModelDelegate?.Invoke(argsTitle, argsData);
 
-                    var currentConsoleArgumentEnumItem = enumList.Where(o => o.CurrentEnum.ToString() == consoleArgumentModel?.InputArgumentTitle).FirstOrDefault();
+                    //var currentConsoleArgumentEnumItem = enumList.Where(o => o.CurrentEnum.ToString() == consoleArgumentModel?.InputArgumentTitle).FirstOrDefault();
+                    var currentConsoleArgumentEnumItem = enumList.Where(o => (o.EnumCustomAttribute as BaseConsoleArgumentEnumAttribute)?.SourceArgumentTitle == consoleArgumentModel.InputArgumentTitle).FirstOrDefault();
 
                     if (!currentConsoleArgumentEnumItem.IfIsNullOrEmpty())
                     {
