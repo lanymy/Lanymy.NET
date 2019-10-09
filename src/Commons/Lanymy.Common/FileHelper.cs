@@ -38,11 +38,12 @@ namespace Lanymy.Common
         /// </summary>
         /// <param name="inputStream"></param>
         /// <param name="offset">偏移量 默认值 0 不偏移</param>
+        /// <param name="hashAlgorithmType">哈希散列算法类型 默认使用 SHA256</param>
         /// <returns></returns>
-        public static string GetStreamHashCode(Stream inputStream, int offset = 0)
+        public static string GetStreamHashCode(Stream inputStream, int offset = 0, HashAlgorithmTypeEnum hashAlgorithmType = HashAlgorithmTypeEnum.SHA256)
         {
             string hashString = string.Empty;
-            using (var hash = HashAlgorithm.Create())
+            using (var hash = HashAlgorithm.Create(hashAlgorithmType.ToString()))
             {
                 if (offset >= 0 && offset < inputStream.Length)
                 {
@@ -60,8 +61,9 @@ namespace Lanymy.Common
         /// </summary>
         /// <param name="bytes"></param>
         /// <param name="offset">偏移量 默认值 0 不偏移</param>
+        /// <param name="hashAlgorithmType">哈希散列算法类型 默认使用 SHA256</param>
         /// <returns></returns>
-        public static string GetBytesHashCode(byte[] bytes, int offset = 0)
+        public static string GetBytesHashCode(byte[] bytes, int offset = 0, HashAlgorithmTypeEnum hashAlgorithmType = HashAlgorithmTypeEnum.SHA256)
         {
             string hashString = string.Empty;
             using (MemoryStream ms = new MemoryStream(bytes))

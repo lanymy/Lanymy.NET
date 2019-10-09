@@ -2248,12 +2248,14 @@ namespace Lanymy.Common
         /// <summary>
         /// 未定义
         /// </summary>
-        [TitleEnum("未定义")] UnDefine,
+        [TitleEnum("未定义")]
+        UnDefine,
 
         /// <summary>
         /// 未知类型
         /// </summary>
-        [TitleEnum("未知类型")] UnKnown,
+        [TitleEnum("未知类型")]
+        UnKnown,
 
 
         /// <summary>
@@ -4959,6 +4961,36 @@ namespace Lanymy.Common
     #endregion
 
 
+    /// <summary>
+    /// 哈希散列算法类型
+    /// </summary>
+    public enum HashAlgorithmTypeEnum
+    {
+
+        /// <summary>
+        /// 未定义
+        /// </summary>
+        [TitleEnum("未定义")]
+        UnDefine,
+
+        /// <summary>
+        /// 未知类型
+        /// </summary>
+        [TitleEnum("未知类型")]
+        UnKnown,
+
+        MD5,
+
+        SHA1,
+
+        SHA256,
+
+        SHA384,
+
+        SHA512,
+
+
+    }
 
 
 }

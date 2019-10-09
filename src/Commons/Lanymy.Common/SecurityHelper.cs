@@ -45,9 +45,10 @@ namespace Lanymy.Common
         private const int ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH = 17;
 
         /// <summary>
-        /// 二进制 数组 哈希值 长度
+        /// 二进制 数组 SHA256 哈希散列算法 哈希值 长度
         /// </summary>
-        private const int BYTES_HASH_CODE_LENGTH = 40;
+        private const int BYTES_HASH_CODE_LENGTH = 64;
+        //private const int BYTES_HASH_CODE_LENGTH = 40;
 
 
 
@@ -207,10 +208,11 @@ namespace Lanymy.Common
         //public static TEncryptResultModel GetHeaderInfoModelFromEncryptedStream<TEncryptHeaderInfoModel, TEncryptResultModel>(Stream encryptedStream, string secretKey = null, Encoding encoding = null)
         //    where TEncryptHeaderInfoModel : BaseEncryptHeaderInfoModel, new()
         //    where TEncryptResultModel : BaseEncryptResultModel<TEncryptHeaderInfoModel>, new()
-        public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, string secretKey = null, Encoding encoding = null)
+        //public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, string secretKey = null, Encoding encoding = null)
+        public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, Encoding encoding = null)
         {
 
-            if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_SECURITY_KEY;
+            //if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_SECURITY_KEY;
             if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
 
             //var encryptResultModel = new EncryptResultModel<EncryptDigestInfoModel>
@@ -223,8 +225,8 @@ namespace Lanymy.Common
                 IsSuccess = false,
             };
 
-            //密钥必须16位
-            byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
+            ////密钥必须16位
+            //byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
 
 
             encryptedStream.Position = 0;
@@ -340,7 +342,8 @@ namespace Lanymy.Common
 
             using (var encryptedStream = File.OpenRead(encryptedFileFullPath))
             {
-                encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, secretKey, encoding);
+                //encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, secretKey, encoding);
+                encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, encoding);
 
             }
 
@@ -354,7 +357,8 @@ namespace Lanymy.Common
             if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_SECURITY_KEY;
             if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
 
-            var encryptResultModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, secretKey, encoding);
+            //var encryptResultModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, secretKey, encoding);
+            var encryptResultModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, encoding);
 
             if (!encryptResultModel.IsSuccess)
             {
@@ -405,7 +409,7 @@ namespace Lanymy.Common
             using (var sourceStream = new MemoryStream(bytesToEncrypt))
             using (var encryptStream = new MemoryStream())
             {
-                EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
+                encryptDigestInfoModel = EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
                 encryptBytesDigestInfoModel = encryptDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBytesDigestInfoModel>();
                 if (encryptBytesDigestInfoModel.IsSuccess)
                 {
@@ -717,7 +721,7 @@ namespace Lanymy.Common
             using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
 
-                EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
+                encryptDigestInfoModel = EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
                 encryptBytesDigestInfoModel = encryptDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBytesDigestInfoModel>();
             }
 
@@ -861,7 +865,7 @@ namespace Lanymy.Common
             using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
 
-                EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptFileDigestInfoModel, encoding);
+                encryptFileDigestInfoModel = EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptFileDigestInfoModel, encoding);
 
             }
 
@@ -1055,6 +1059,7 @@ namespace Lanymy.Common
         /// <param name="fileName">要加密的文件名</param>
         /// <param name="encryptFileExtension">加密后文件扩展名 默认 ".base64"</param>
         /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
+        /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
         /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
         /// <returns></returns>
         public static string EncryptFileNameToHashCodeString
@@ -1062,11 +1067,12 @@ namespace Lanymy.Common
             string fileName,
             string encryptFileExtension = ".base64",
             string secretKey = null,
+            bool ifRandom = true,
             Encoding encoding = null)
         {
 
             if (fileName.IfIsNullOrEmpty()) return string.Empty;
-            var encryptStringDigestInfoModel = EncryptStringToBytes(fileName, secretKey, true, encoding);
+            var encryptStringDigestInfoModel = EncryptStringToBytes(fileName, secretKey, ifRandom, encoding);
             if (!encryptStringDigestInfoModel.IsSuccess)
             {
                 return string.Empty;
@@ -1107,9 +1113,9 @@ namespace Lanymy.Common
         /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
         /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
         /// <returns></returns>
-        public static string EncryptDirectoryNameToHashCodeString(string directoryName, string secretKey = null, Encoding encoding = null)
+        public static string EncryptDirectoryNameToHashCodeString(string directoryName, string secretKey = null, bool ifRandom = true, Encoding encoding = null)
         {
-            return EncryptFileNameToHashCodeString(directoryName, string.Empty, secretKey, encoding);
+            return EncryptFileNameToHashCodeString(directoryName, string.Empty, secretKey, ifRandom, encoding);
         }
 
 

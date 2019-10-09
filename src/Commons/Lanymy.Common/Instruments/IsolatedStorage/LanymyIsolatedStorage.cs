@@ -51,7 +51,7 @@ namespace Lanymy.Common.Instruments.IsolatedStorage
         {
 
             //return SecurityHelperOld.EncryptFileNameToBase64String(fileName, ISOLATED_STORAGE_FILE_SUFFIX, null, false);
-            return SecurityHelper.EncryptFileNameToHashCodeString(fileName, ISOLATED_STORAGE_FILE_SUFFIX, null, null);
+            return SecurityHelper.EncryptFileNameToHashCodeString(fileName, ISOLATED_STORAGE_FILE_SUFFIX, null, false, null);
 
         }
 
