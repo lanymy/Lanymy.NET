@@ -68,7 +68,7 @@ namespace Lanymy.Common
             string hashString = string.Empty;
             using (MemoryStream ms = new MemoryStream(bytes))
             {
-                hashString = GetStreamHashCode(ms, offset);
+                hashString = GetStreamHashCode(ms, offset, hashAlgorithmType);
             }
             return hashString;
         }

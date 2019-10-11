@@ -25,7 +25,14 @@ namespace Lanymy.Common.Core.UnitTests
 
                 hashCode = FileHelper.GetStreamHashCode(ms);
 
+                var hashCodeMD5 = FileHelper.GetStreamHashCode(ms, 0, HashAlgorithmTypeEnum.MD5);
+                var hashCodeSHA1 = FileHelper.GetStreamHashCode(ms, 0, HashAlgorithmTypeEnum.SHA1);
+                var hashCodeSHA256 = FileHelper.GetStreamHashCode(ms, 0, HashAlgorithmTypeEnum.SHA256);
+
             }
+
+
+
 
             Assert.AreEqual(hashCode, sourceHashCode);
 

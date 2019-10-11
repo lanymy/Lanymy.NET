@@ -44,11 +44,20 @@ namespace Lanymy.Common
         /// </summary>
         private const int ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH = 17;
 
+        ///// <summary>
+        ///// 二进制 数组 SHA256 哈希散列算法 哈希值 长度
+        ///// </summary>
+        //private const int BYTES_HASH_CODE_LENGTH = 64;
+
         /// <summary>
-        /// 二进制 数组 SHA256 哈希散列算法 哈希值 长度
+        /// 二进制 数组 SHA1 哈希散列算法 哈希值 长度
         /// </summary>
-        private const int BYTES_HASH_CODE_LENGTH = 64;
-        //private const int BYTES_HASH_CODE_LENGTH = 40;
+        private const int BYTES_HASH_CODE_LENGTH = 40;
+
+        /// <summary>
+        /// 当前 哈希散列算法 加密类型
+        /// </summary>
+        private static readonly HashAlgorithmTypeEnum _CurrentHashAlgorithmType = HashAlgorithmTypeEnum.SHA1;
 
 
 
@@ -92,7 +101,7 @@ namespace Lanymy.Common
                 encryptDigestInfoModel.SecurityEncryptDirectionType = securityEncryptDirectionType;
                 encryptDigestInfoModel.IsRandomEncrypt = ifRandom;
                 encryptDigestInfoModel.SourceBytesSize = sourceStream.Length;
-                encryptDigestInfoModel.SourceBytesHashCode = FileHelper.GetStreamHashCode(sourceStream);
+                encryptDigestInfoModel.SourceBytesHashCode = FileHelper.GetStreamHashCode(sourceStream, hashAlgorithmType: _CurrentHashAlgorithmType);
                 encryptDigestInfoModel.CreateDateTime = null;
 
                 sourceStream.Position = 0;
@@ -125,7 +134,7 @@ namespace Lanymy.Common
                 int encryptModelBytesLength = encryptModelJsonBytes.Length;
                 var encryptModelBytesLengthBytes = BitConverter.GetBytes(encryptModelBytesLength);
                 //头摘要实体类二进制数据 哈希值 二进制数据
-                var encryptModelJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes);
+                var encryptModelJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
                 var encryptModelJsonBytesHashCodeBytes = encoding.GetBytes(encryptModelJsonBytesHashCode);
 
                 //写入 头摘要 哈希值
@@ -167,7 +176,7 @@ namespace Lanymy.Common
             var encryptAfterContentBytesLengthBytes = BitConverter.GetBytes(encryptAfterContentBytesLength);
 
             //加密后 正文数据流 哈希值
-            var encryptAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptStream, (int)contentStartPosition);
+            var encryptAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptStream, (int)contentStartPosition, _CurrentHashAlgorithmType);
             var encryptAfterContentBytesHashCodeBytes = encoding.GetBytes(encryptAfterContentBytesHashCode);
 
             encryptStream.Position = contentStartPosition - BYTES_HASH_CODE_LENGTH - ENCRYPT_AFTER_CONTENT_BYTES_LENGTH;
@@ -181,7 +190,7 @@ namespace Lanymy.Common
             encryptStream.Flush();
 
             //加密后完整数据流哈希值
-            var encryptAfterBytesHashCode = FileHelper.GetStreamHashCode(encryptStream);
+            var encryptAfterBytesHashCode = FileHelper.GetStreamHashCode(encryptStream, hashAlgorithmType: _CurrentHashAlgorithmType);
 
             encryptDigestInfoModel.EncryptBytesSize = encryptAfterBytesLength;
             encryptDigestInfoModel.EncryptBytesHashCode = encryptAfterBytesHashCode;
@@ -262,7 +271,7 @@ namespace Lanymy.Common
             //提取头摘要信息
             var encryptModelJsonBytes = new byte[encryptModelBytesLength];
             encryptedStream.Read(encryptModelJsonBytes, 0, encryptModelBytesLength);
-            var encryptModelHeaderJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes);
+            var encryptModelHeaderJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
 
             if (encryptModelJsonBytesHashCode != encryptModelHeaderJsonBytesHashCode)
             {
@@ -299,7 +308,7 @@ namespace Lanymy.Common
 
             var currentPosition = encryptedStream.Position;
 
-            var encryptedAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, (int)currentPosition);
+            var encryptedAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, (int)currentPosition, _CurrentHashAlgorithmType);
 
             if (encryptAfterContentBytesHashCode != encryptedAfterContentBytesHashCode)
             {
@@ -311,7 +320,7 @@ namespace Lanymy.Common
             //encryptHeaderModel.CreateDateTime
 
             encryptHeaderModel.EncryptBytesSize = encryptedStream.Length;
-            encryptHeaderModel.EncryptBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream);
+            encryptHeaderModel.EncryptBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, hashAlgorithmType: _CurrentHashAlgorithmType);
             encryptHeaderModel.EncryptContentBytesSize = encryptAfterContentBytesLength;
             encryptHeaderModel.EncryptContentBytesHashCode = encryptAfterContentBytesHashCode;
 
