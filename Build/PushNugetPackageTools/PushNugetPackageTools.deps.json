@@ -8,7 +8,10 @@
     ".NETCoreApp,Version=v3.0": {
       "PushNugetPackageTools/1.0.0": {
         "dependencies": {
-          "Lanymy.Common": "0.2.0"
+          "Lanymy.Common": "0.2.2",
+          "Lanymy.Common.Console": "0.1.1",
+          "NuGet.Packaging": "5.3.0",
+          "NuGet.Protocol": "5.3.0"
         },
         "runtime": {
           "PushNugetPackageTools.dll": {}
@@ -66,7 +69,7 @@
           }
         }
       },
-      "Lanymy.Common/0.2.0": {
+      "Lanymy.Common/0.2.2": {
         "dependencies": {
           "CacheManager.Microsoft.Extensions.Caching.Memory": "1.2.0",
           "CacheManager.Serialization.Json": "1.2.0",
@@ -85,8 +88,19 @@
         },
         "runtime": {
           "lib/netcoreapp2.2/Lanymy.Common.dll": {
-            "assemblyVersion": "0.2.0.0",
-            "fileVersion": "0.2.0.0"
+            "assemblyVersion": "0.2.2.0",
+            "fileVersion": "0.2.2.0"
+          }
+        }
+      },
+      "Lanymy.Common.Console/0.1.1": {
+        "dependencies": {
+          "Lanymy.Common": "0.2.2"
+        },
+        "runtime": {
+          "lib/netcoreapp2.2/Lanymy.Common.Console.dll": {
+            "assemblyVersion": "0.1.1.0",
+            "fileVersion": "0.1.1.0"
           }
         }
       },
@@ -96,7 +110,7 @@
           "System.Collections.NonGeneric": "4.0.1",
           "System.Console": "4.3.0",
           "System.Diagnostics.Debug": "4.3.0",
-          "System.Diagnostics.Process": "4.1.0",
+          "System.Diagnostics.Process": "4.3.0",
           "System.Diagnostics.StackTrace": "4.0.1",
           "System.Diagnostics.TraceSource": "4.0.0",
           "System.IO.FileSystem": "4.3.0",
@@ -114,7 +128,7 @@
           "System.Runtime.Serialization.Formatters": "4.3.0",
           "System.Text.RegularExpressions": "4.3.0",
           "System.Threading": "4.3.0",
-          "System.Threading.Thread": "4.0.0",
+          "System.Threading.Thread": "4.3.0",
           "System.Threading.Timer": "4.3.0",
           "System.Xml.ReaderWriter": "4.3.0",
           "System.Xml.XmlDocument": "4.0.1"
@@ -299,6 +313,73 @@
           "lib/netstandard2.0/NLog.dll": {
             "assemblyVersion": "4.0.0.0",
             "fileVersion": "4.6.2.9511"
+          }
+        }
+      },
+      "NuGet.Common/5.3.0": {
+        "dependencies": {
+          "NuGet.Frameworks": "5.3.0",
+          "System.Diagnostics.Process": "4.3.0",
+          "System.Threading.Thread": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Common.dll": {
+            "assemblyVersion": "5.3.0.4",
+            "fileVersion": "5.3.0.6251"
+          }
+        }
+      },
+      "NuGet.Configuration/5.3.0": {
+        "dependencies": {
+          "NuGet.Common": "5.3.0",
+          "System.Security.Cryptography.ProtectedData": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Configuration.dll": {
+            "assemblyVersion": "5.3.0.4",
+            "fileVersion": "5.3.0.6251"
+          }
+        }
+      },
+      "NuGet.Frameworks/5.3.0": {
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Frameworks.dll": {
+            "assemblyVersion": "5.3.0.4",
+            "fileVersion": "5.3.0.6251"
+          }
+        }
+      },
+      "NuGet.Packaging/5.3.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.1",
+          "NuGet.Configuration": "5.3.0",
+          "NuGet.Versioning": "5.3.0",
+          "System.Dynamic.Runtime": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Packaging.dll": {
+            "assemblyVersion": "5.3.0.4",
+            "fileVersion": "5.3.0.6251"
+          }
+        }
+      },
+      "NuGet.Protocol/5.3.0": {
+        "dependencies": {
+          "NuGet.Packaging": "5.3.0",
+          "System.Dynamic.Runtime": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Protocol.dll": {
+            "assemblyVersion": "5.3.0.4",
+            "fileVersion": "5.3.0.6251"
+          }
+        }
+      },
+      "NuGet.Versioning/5.3.0": {
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Versioning.dll": {
+            "assemblyVersion": "5.3.0.4",
+            "fileVersion": "5.3.0.6251"
           }
         }
       },
@@ -538,7 +619,7 @@
           "System.Security.Principal.Windows": "4.5.0"
         }
       },
-      "System.Diagnostics.Process/4.1.0": {
+      "System.Diagnostics.Process/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.0.0",
           "Microsoft.Win32.Primitives": "4.3.0",
@@ -558,8 +639,8 @@
           "System.Text.Encoding.Extensions": "4.3.0",
           "System.Threading": "4.3.0",
           "System.Threading.Tasks": "4.3.0",
-          "System.Threading.Thread": "4.0.0",
-          "System.Threading.ThreadPool": "4.0.10",
+          "System.Threading.Thread": "4.3.0",
+          "System.Threading.ThreadPool": "4.3.0",
           "runtime.native.System": "4.3.0"
         }
       },
@@ -604,6 +685,24 @@
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.0.0",
           "Microsoft.Win32.SystemEvents": "4.5.0"
+        }
+      },
+      "System.Dynamic.Runtime/4.3.0": {
+        "dependencies": {
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Debug": "4.3.0",
+          "System.Linq": "4.3.0",
+          "System.Linq.Expressions": "4.3.0",
+          "System.ObjectModel": "4.3.0",
+          "System.Reflection": "4.3.0",
+          "System.Reflection.Emit": "4.3.0",
+          "System.Reflection.Emit.ILGeneration": "4.3.0",
+          "System.Reflection.Primitives": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Threading": "4.3.0"
         }
       },
       "System.Globalization/4.3.0": {
@@ -705,7 +804,7 @@
           "System.Threading": "4.3.0",
           "System.Threading.Overlapped": "4.0.1",
           "System.Threading.Tasks": "4.3.0",
-          "System.Threading.Thread": "4.0.0",
+          "System.Threading.Thread": "4.3.0",
           "runtime.native.System": "4.3.0"
         }
       },
@@ -1190,12 +1289,12 @@
           "System.Threading.Tasks": "4.3.0"
         }
       },
-      "System.Threading.Thread/4.0.0": {
+      "System.Threading.Thread/4.3.0": {
         "dependencies": {
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Threading.ThreadPool/4.0.10": {
+      "System.Threading.ThreadPool/4.3.0": {
         "dependencies": {
           "System.Runtime": "4.3.0",
           "System.Runtime.Handles": "4.3.0"
@@ -1315,12 +1414,19 @@
       "path": "commonservicelocator/2.0.4",
       "hashPath": "commonservicelocator.2.0.4.nupkg.sha512"
     },
-    "Lanymy.Common/0.2.0": {
+    "Lanymy.Common/0.2.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-nT4T9Te9CpExOJdYCdxqw8IymG6wDq30GJq6YgtSulcRXOfSW+qIcE0YMk7U6vIIEzFBzEV9EJjHKuXaAgpijw==",
-      "path": "lanymy.common/0.2.0",
-      "hashPath": "lanymy.common.0.2.0.nupkg.sha512"
+      "sha512": "sha512-3bi1SSPaz1/U8/fVfSzXqvhGCKVo9/0LHou8XbRXpOXLM6tI3KKfKz6hxwlM5Cgihy81UkoEE6GdENaKhky2gA==",
+      "path": "lanymy.common/0.2.2",
+      "hashPath": "lanymy.common.0.2.2.nupkg.sha512"
+    },
+    "Lanymy.Common.Console/0.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cfokyN5OYgi7GEp+ArEAq+Heloajs8BC7YMYCTB/WjiERQUri0xhuahTo+Uql+ACoPh75tEahdOZMOTc6SRpIQ==",
+      "path": "lanymy.common.console/0.1.1",
+      "hashPath": "lanymy.common.console.0.1.1.nupkg.sha512"
     },
     "log4net/2.0.8": {
       "type": "package",
@@ -1447,6 +1553,48 @@
       "sha512": "sha512-HWgFhL87DCGtklqOf0LHDLItl/hQLxpQSV/PTzLm6UXrJr4dfUcDhQmzM5tFIxU38u0Jake06kspXQqTA80lKA==",
       "path": "nlog/4.6.2",
       "hashPath": "nlog.4.6.2.nupkg.sha512"
+    },
+    "NuGet.Common/5.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-j+3OiRoT6Csrb4+l248Oy2+5XPVhWnkTkvlsC73YyUtwhGD66/TkxJz98HdLu5cd9Frubq3X9gIm90NDbAiMSg==",
+      "path": "nuget.common/5.3.0",
+      "hashPath": "nuget.common.5.3.0.nupkg.sha512"
+    },
+    "NuGet.Configuration/5.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5szJYhttDdfY/kMaqZsau8eog/kTAbwyvP5/4DhmqjcXdQdGj7ZAlvO/j3u/k+64ThXcsAQtxwtWl/qJop0EmQ==",
+      "path": "nuget.configuration/5.3.0",
+      "hashPath": "nuget.configuration.5.3.0.nupkg.sha512"
+    },
+    "NuGet.Frameworks/5.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-D/NXC0nmvclTcgdHz9ExQFUqUZZtWqbFgAYDZ7rUT+aUbaag4nLRXRSOmRCemafeNndcMoI3WzJWdS+JnTJ8BQ==",
+      "path": "nuget.frameworks/5.3.0",
+      "hashPath": "nuget.frameworks.5.3.0.nupkg.sha512"
+    },
+    "NuGet.Packaging/5.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-LnDjlQmvNhXFR6yyYJG/gmmxVfhBk4HHZ64uEt5isZ/xjM+9pAUydcJR06D87w50Wm53PHsNxCHv/nLha8ajBQ==",
+      "path": "nuget.packaging/5.3.0",
+      "hashPath": "nuget.packaging.5.3.0.nupkg.sha512"
+    },
+    "NuGet.Protocol/5.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TJAOx2tmqMnDc8zKxlt2LTYQI8BGCROZK58e+zpNc/ARxPbgCHv3VaqUxgiiCA4559tjDwskcASyWrUMdTRuZQ==",
+      "path": "nuget.protocol/5.3.0",
+      "hashPath": "nuget.protocol.5.3.0.nupkg.sha512"
+    },
+    "NuGet.Versioning/5.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OY3d/HNbzqSs1/+Zwzaz5uSFLboJrwHZDIR4yCp3WW96m5FsYT9uZXhXSBmpWUQBzJHrePvdWYWLOlZqfHy/VA==",
+      "path": "nuget.versioning/5.3.0",
+      "hashPath": "nuget.versioning.5.3.0.nupkg.sha512"
     },
     "Pipelines.Sockets.Unofficial/1.0.7": {
       "type": "package",
@@ -1700,12 +1848,12 @@
       "path": "system.diagnostics.performancecounter/4.5.0",
       "hashPath": "system.diagnostics.performancecounter.4.5.0.nupkg.sha512"
     },
-    "System.Diagnostics.Process/4.1.0": {
+    "System.Diagnostics.Process/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mpVZ5bnlSs3tTeJ6jYyDJEIa6tavhAd88lxq1zbYhkkCu0Pno2+gHXcvZcoygq2d8JxW3gojXqNJMTAshduqZA==",
-      "path": "system.diagnostics.process/4.1.0",
-      "hashPath": "system.diagnostics.process.4.1.0.nupkg.sha512"
+      "sha512": "sha512-J0wOX07+QASQblsfxmIMFc9Iq7KTXYL3zs2G/Xc704Ylv3NpuVdo6gij6V3PGiptTxqsK0K7CdXenRvKUnkA2g==",
+      "path": "system.diagnostics.process/4.3.0",
+      "hashPath": "system.diagnostics.process.4.3.0.nupkg.sha512"
     },
     "System.Diagnostics.StackTrace/4.0.1": {
       "type": "package",
@@ -1741,6 +1889,13 @@
       "sha512": "sha512-GiyeGi/v4xYDz1vCNFwFvhz9k1XddOG7VD3jxRqzRBCbTHji+s3HxxbxtoymuK4OadEpgotI8zQ5+GEEH9sUEQ==",
       "path": "system.drawing.common/4.5.1",
       "hashPath": "system.drawing.common.4.5.1.nupkg.sha512"
+    },
+    "System.Dynamic.Runtime/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SNVi1E/vfWUAs/WYKhE9+qlS6KqK0YVhnlT0HQtr8pMIA8YX3lwy3uPMownDwdYISBdmAF/2holEIldVp85Wag==",
+      "path": "system.dynamic.runtime/4.3.0",
+      "hashPath": "system.dynamic.runtime.4.3.0.nupkg.sha512"
     },
     "System.Globalization/4.3.0": {
       "type": "package",
@@ -2148,19 +2303,19 @@
       "path": "system.threading.tasks.extensions/4.3.0",
       "hashPath": "system.threading.tasks.extensions.4.3.0.nupkg.sha512"
     },
-    "System.Threading.Thread/4.0.0": {
+    "System.Threading.Thread/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-gIdJqDXlOr5W9zeqFErLw3dsOsiShSCYtF9SEHitACycmvNvY8odf9kiKvp6V7aibc8C4HzzNBkWXjyfn7plbQ==",
-      "path": "system.threading.thread/4.0.0",
-      "hashPath": "system.threading.thread.4.0.0.nupkg.sha512"
+      "sha512": "sha512-OHmbT+Zz065NKII/ZHcH9XO1dEuLGI1L2k7uYss+9C1jLxTC9kTZZuzUOyXHayRk+dft9CiDf3I/QZ0t8JKyBQ==",
+      "path": "system.threading.thread/4.3.0",
+      "hashPath": "system.threading.thread.4.3.0.nupkg.sha512"
     },
-    "System.Threading.ThreadPool/4.0.10": {
+    "System.Threading.ThreadPool/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-IMXgB5Vf/5Qw1kpoVgJMOvUO1l32aC+qC3OaIZjWJOjvcxuxNWOK2ZTWWYXfij22NHxT2j1yWX5vlAeQWld9vA==",
-      "path": "system.threading.threadpool/4.0.10",
-      "hashPath": "system.threading.threadpool.4.0.10.nupkg.sha512"
+      "sha512": "sha512-SrCOmTvvOOCmJT4BBxdZcwhz6XEMsjBGZvGSVorOxdCznaUNeVotEjDfXGIZ8gcGo00qgPbTV6puHDgcFYl6Iw==",
+      "path": "system.threading.threadpool/4.3.0",
+      "hashPath": "system.threading.threadpool.4.3.0.nupkg.sha512"
     },
     "System.Threading.Timer/4.3.0": {
       "type": "package",
