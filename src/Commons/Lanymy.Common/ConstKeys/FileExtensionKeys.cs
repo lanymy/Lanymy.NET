@@ -27,7 +27,10 @@ namespace Lanymy.Common.ConstKeys
         /// </summary>
         public const string CONFIG_FILE_EXTENSION = ".config";
 
-
+        /// <summary>
+        /// BT 种子 文件 扩展名 .torrent
+        /// </summary>
+        public const string TORRENT_FILE_EXTENSION = ".torrent";
 
     }
 
