@@ -12,12 +12,12 @@ using Lanymy.Common.Models.SecurityModels;
 
 namespace Lanymy.Common
 {
+
+
     /// <summary>
-    /// 新安全加密类 辅助方法 暂时 不提交到主干上
+    /// 安全加密类 辅助方法
     /// </summary>
-
-
-    internal class SecurityHelper
+    public class SecurityHelper
     {
 
 
