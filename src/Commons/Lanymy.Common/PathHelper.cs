@@ -464,5 +464,17 @@ namespace Lanymy.Common
         }
 
 
+        /// <summary>
+        /// 打开指定目录
+        /// </summary>
+        /// <param name="directoryFullPath"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static bool OpenDirectoryExplorer(string directoryFullPath, params string[] args)
+        {
+            return ProcessHelper.StartExplorerProcess(directoryFullPath, args);
+        }
+
+
     }
 }

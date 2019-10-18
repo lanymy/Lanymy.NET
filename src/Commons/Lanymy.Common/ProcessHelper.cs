@@ -12,19 +12,37 @@ namespace Lanymy.Common
     public class ProcessHelper
     {
 
+
         /// <summary>
-        /// 启动一个进程
+        /// 启动进程
         /// </summary>
         /// <param name="applicationFileFullPath">应用程序全路径</param>
+        /// <param name="createNoWindow">是否 显示启动 进程的界面 True 不显示 ; False 显示</param>
         /// <param name="useShellExecute">该值指示是否使用操作系统 shell 启动进程 默认值 False</param>
-        /// <param name="args">要传递的启动参数</param>
+        /// <param name="args">启动应用程序 需要 传递的启动参数</param>
         /// <returns></returns>
-        public static bool StartProcess(string applicationFileFullPath, bool useShellExecute = false, params string[] args)
+        public static bool StartProcess(string applicationFileFullPath, bool createNoWindow, bool useShellExecute = false, params string[] args)
         {
+            return StartProcess(GetProcessStartInfo(applicationFileFullPath, createNoWindow, useShellExecute, args));
+        }
+
+        /// <summary>
+        /// 启动进程
+        /// </summary>
+        /// <param name="processStartInfo"></param>
+        /// <returns></returns>
+        public static bool StartProcess(ProcessStartInfo processStartInfo)
+        {
+
             bool state = false;
+
             try
             {
-                state = GetStartProcess(applicationFileFullPath, useShellExecute, args).Start();
+                using (var process = new Process())
+                {
+                    process.StartInfo = processStartInfo;
+                    state = process.Start();
+                }
             }
             catch
             {
@@ -32,28 +50,46 @@ namespace Lanymy.Common
             }
 
             return state;
+
         }
 
 
         /// <summary>
         /// 打开指定目录
         /// </summary>
-        /// <param name="applicationFileFullPath">目录路径</param>
-        /// <param name="useShellExecute">该值指示是否使用操作系统 shell 启动进程 默认值 False</param>
+        /// <param name="directoryFullPath">目录路径</param>
+        /// <param name="args"></param>
         /// <returns></returns>
-        public static bool StartPathProcess(string applicationFileFullPath, bool useShellExecute = false)
+        public static bool StartExplorerProcess(string directoryFullPath, params string[] args)
         {
-            bool state = false;
-            try
+            return StartProcess(GetExplorerProcessStartInfo(directoryFullPath, args));
+        }
+
+        /// <summary>
+        /// 打开指定目录
+        /// </summary>
+        /// <returns></returns>
+        internal static ProcessStartInfo GetExplorerProcessStartInfo(string directoryFullPath, params string[] args)
+        {
+
+            //var currentProcess = new Process();
+            //var startInfo = new ProcessStartInfo("explorer.exe", applicationFileFullPath);
+            //currentProcess.StartInfo = startInfo;
+            //currentProcess.StartInfo.UseShellExecute = useShellExecute;
+            //return currentProcess;
+
+            var argsList = new List<string>
             {
-                state = GetStartPathProcess(applicationFileFullPath, useShellExecute).Start();
-            }
-            catch
+                directoryFullPath
+            };
+
+            if (args.Length > 0)
             {
-                state = false;
+                argsList.AddRange(args);
             }
 
-            return state;
+            return GetProcessStartInfo("explorer.exe", false, false, argsList.ToArray());
+
         }
 
 
@@ -61,10 +97,11 @@ namespace Lanymy.Common
         /// 获取匹配好的进程实体类
         /// </summary>
         /// <param name="applicationFileFullPath">应用程序全路径</param>
+        /// <param name="createNoWindow">是否 显示启动 进程的界面 True 不显示 ; False 显示</param>
         /// <param name="useShellExecute">该值指示是否使用操作系统 shell 启动进程 默认值 False</param>
         /// <param name="args">启动应用程序 需要 传递的启动参数</param>
         /// <returns></returns>
-        public static Process GetStartProcess(string applicationFileFullPath, bool useShellExecute = false, params string[] args)
+        public static ProcessStartInfo GetProcessStartInfo(string applicationFileFullPath, bool createNoWindow, bool useShellExecute = false, params string[] args)
         {
             string strArgs = string.Empty;
 
@@ -73,12 +110,40 @@ namespace Lanymy.Common
                 strArgs = string.Join(" ", args);
             }
 
-            var currentProcess = new Process();
-            var startInfo = new ProcessStartInfo(applicationFileFullPath, strArgs.Trim());
-            currentProcess.StartInfo = startInfo;
-            currentProcess.StartInfo.UseShellExecute = useShellExecute;
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = applicationFileFullPath,
+                Arguments = strArgs,
+            };
 
-            return currentProcess;
+            if (createNoWindow)
+            {
+
+                startInfo.CreateNoWindow = true;
+                startInfo.RedirectStandardInput = false;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+                startInfo.UseShellExecute = false;
+                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+            }
+            else
+            {
+
+                startInfo.CreateNoWindow = false;
+                startInfo.UseShellExecute = useShellExecute;
+
+            }
+
+            //var currentProcess = new Process();
+            //var startInfo = new ProcessStartInfo(applicationFileFullPath, strArgs.Trim());
+            //currentProcess.StartInfo = startInfo;
+            //currentProcess.StartInfo.UseShellExecute = useShellExecute;
+
+            //return currentProcess;
+
+            return startInfo;
+
         }
 
 
@@ -108,20 +173,7 @@ namespace Lanymy.Common
 
         }
 
-        /// <summary>
-        /// 打开指定目录
-        /// </summary>
-        /// <param name="applicationFileFullPath">目录路径</param>
-        /// <param name="useShellExecute">该值指示是否使用操作系统 shell 启动进程 默认值 False</param>
-        /// <returns></returns>
-        private static Process GetStartPathProcess(string applicationFileFullPath, bool useShellExecute = false)
-        {
-            var currentProcess = new Process();
-            var startInfo = new ProcessStartInfo("explorer.exe", applicationFileFullPath);
-            currentProcess.StartInfo = startInfo;
-            currentProcess.StartInfo.UseShellExecute = useShellExecute;
-            return currentProcess;
-        }
+
 
 
     }
