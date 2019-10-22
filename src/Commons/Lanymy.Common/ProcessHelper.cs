@@ -6,6 +6,8 @@ using Lanymy.Common;
 
 namespace Lanymy.Common
 {
+
+
     /// <summary>
     /// 进程辅助类
     /// </summary>
@@ -120,7 +122,7 @@ namespace Lanymy.Common
             {
 
                 startInfo.CreateNoWindow = true;
-                startInfo.RedirectStandardInput = false;
+                startInfo.RedirectStandardInput = true;
                 startInfo.RedirectStandardOutput = true;
                 startInfo.RedirectStandardError = true;
                 startInfo.UseShellExecute = false;

@@ -58,16 +58,30 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <param name="s"></param>
         /// <param name="keyWord">关键字</param>
         /// <param name="ifCutKeyWord">是否保留关键字 默认值 True 不保留关键字</param>
+        /// <param name="repeatCount">重复执行此方法的次数,默认值 0,只执行一次不重复执行</param>
         /// <returns></returns>
-        public static string RightSubString(this string s, string keyWord, bool ifCutKeyWord = true)
+        public static string RightSubString(this string s, string keyWord, bool ifCutKeyWord = true, ushort repeatCount = 0)
         {
 
-            if (s.LastIndexOf(keyWord, StringComparison.Ordinal) < 0)
+            if (repeatCount == 0)
             {
-                return "";
+
+                if (s.LastIndexOf(keyWord, StringComparison.Ordinal) < 0)
+                {
+                    return "";
+                }
+
+                return ifCutKeyWord ? s.Substring(s.LastIndexOf(keyWord, StringComparison.Ordinal)).Remove(0, keyWord.Length) : s.Substring(s.LastIndexOf(keyWord, StringComparison.Ordinal));
+
             }
 
-            return ifCutKeyWord ? s.Substring(s.LastIndexOf(keyWord, StringComparison.Ordinal)).Remove(0, keyWord.Length) : s.Substring(s.LastIndexOf(keyWord, StringComparison.Ordinal));
+            for (int i = 0; i <= repeatCount; i++)
+            {
+                s = s.RightSubString(keyWord, ifCutKeyWord);
+            }
+
+            return s;
+
 
         }
 
@@ -123,23 +137,36 @@ namespace Lanymy.Common.ExtensionFunctions
         }
 
 
-
         /// <summary>
         /// 从字符串左侧 根据关键字 截取字符串 如果没有找到关键字 则返回 空字符串
         /// </summary>
         /// <param name="s"></param>
         /// <param name="keyWord">关键字</param>
         /// <param name="ifCutKeyWord">截取后的字符串是否去掉关键字</param>
+        /// <param name="repeatCount">重复执行此方法的次数,默认值 0,只执行一次不重复执行</param>
         /// <returns></returns>
-        public static string LeftSubString(this string s, string keyWord, bool ifCutKeyWord = true)
+        public static string LeftSubString(this string s, string keyWord, bool ifCutKeyWord = true, ushort repeatCount = 0)
         {
 
-            if (s.IndexOf(keyWord, StringComparison.Ordinal) < 0)
+            if (repeatCount == 0)
             {
-                return "";
+
+                if (s.IndexOf(keyWord, StringComparison.Ordinal) < 0)
+                {
+                    return "";
+                }
+
+                return ifCutKeyWord ? s.Substring(0, s.IndexOf(keyWord, StringComparison.Ordinal)) : s.Substring(0, s.IndexOf(keyWord, StringComparison.Ordinal)) + keyWord;
+
             }
 
-            return ifCutKeyWord ? s.Substring(0, s.IndexOf(keyWord, StringComparison.Ordinal)) : s.Substring(0, s.IndexOf(keyWord, StringComparison.Ordinal)) + keyWord;
+            for (int i = 0; i <= repeatCount; i++)
+            {
+                s = s.LeftSubString(keyWord, ifCutKeyWord);
+            }
+
+            return s;
+
         }
 
 
@@ -150,15 +177,30 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <param name="s"></param>
         /// <param name="keyWord">关键字</param>
         /// <param name="ifCutKeyWord">删除后的字符串 是否 去掉 关键字</param>
+        /// <param name="repeatCount">重复执行此方法的次数,默认值 0,只执行一次不重复执行</param>
         /// <returns></returns>
-        public static string LeftRemoveString(this string s, string keyWord, bool ifCutKeyWord = true)
+        public static string LeftRemoveString(this string s, string keyWord, bool ifCutKeyWord = true, ushort repeatCount = 0)
         {
-            if (s.IndexOf(keyWord, StringComparison.Ordinal) < 0)
+
+            if (repeatCount == 0)
             {
-                return s;
+
+                if (s.IndexOf(keyWord, StringComparison.Ordinal) < 0)
+                {
+                    return s;
+                }
+
+                return ifCutKeyWord ? s.Remove(0, s.IndexOf(keyWord, StringComparison.Ordinal) + keyWord.Length) : s.Remove(0, s.IndexOf(keyWord, StringComparison.Ordinal));
+
             }
 
-            return ifCutKeyWord ? s.Remove(0, s.IndexOf(keyWord, StringComparison.Ordinal) + keyWord.Length) : s.Remove(0, s.IndexOf(keyWord, StringComparison.Ordinal));
+            for (int i = 0; i <= repeatCount; i++)
+            {
+                s = s.LeftRemoveString(keyWord, ifCutKeyWord);
+            }
+
+            return s;
+
         }
 
 
@@ -168,16 +210,30 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <param name="s"></param>
         /// <param name="keyWord">关键字</param>
         /// <param name="ifCutKeyWord">删除后的字符串 是否 去掉 关键字 默认值 True 去掉关键字 </param>
+        /// <param name="repeatCount">重复执行此方法的次数,默认值 0,只执行一次不重复执行</param>
         /// <returns></returns>
-        public static string RightRemoveString(this string s, string keyWord, bool ifCutKeyWord = true)
+        public static string RightRemoveString(this string s, string keyWord, bool ifCutKeyWord = true, ushort repeatCount = 0)
         {
 
-            if (s.IndexOf(keyWord, StringComparison.Ordinal) < 0)
+            if (repeatCount == 0)
             {
-                return s;
+
+                if (s.IndexOf(keyWord, StringComparison.Ordinal) < 0)
+                {
+                    return s;
+                }
+
+                return ifCutKeyWord ? s.Remove(s.LastIndexOf(keyWord, StringComparison.Ordinal)) : s.Remove(s.LastIndexOf(keyWord, StringComparison.Ordinal) + keyWord.Length);
+
             }
 
-            return ifCutKeyWord ? s.Remove(s.LastIndexOf(keyWord, StringComparison.Ordinal)) : s.Remove(s.LastIndexOf(keyWord, StringComparison.Ordinal) + keyWord.Length);
+            for (int i = 0; i <= repeatCount; i++)
+            {
+                s = s.RightRemoveString(keyWord, ifCutKeyWord);
+            }
+
+            return s;
+
         }
 
 

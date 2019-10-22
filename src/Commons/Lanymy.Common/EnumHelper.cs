@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Instruments;
 using Lanymy.Common.Instruments.Cache;
 using Lanymy.Common.Interfaces.ICaches;
 using Lanymy.Common.Models;
@@ -44,13 +45,13 @@ namespace Lanymy.Common
         /// </summary>
         /// <param name="enumType"></param>
         /// <returns></returns>
-        private static EnumMapModel GetMapper(Type enumType)
+        private static EnumMapper GetMapper(Type enumType)
         {
             string cacheKey = GetEnumMapCacheKey(enumType);
-            var mapper = _DataMemoryCache.GetValue<EnumMapModel>(cacheKey);
+            var mapper = _DataMemoryCache.GetValue<EnumMapper>(cacheKey);
             if (mapper.IfIsNullOrEmpty())
             {
-                mapper = new EnumMapModel(enumType);
+                mapper = new EnumMapper(enumType);
                 _DataMemoryCache.SetValue(cacheKey, mapper);
             }
             return mapper;

@@ -16,4 +16,24 @@
     <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Resources\Tools\" />
+    <Folder Include="Resources\Others\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\Others\BigBunny.m4v">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Tools\ffmpeg.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Tools\ffplay.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Tools\ffprobe.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

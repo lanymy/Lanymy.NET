@@ -5,6 +5,7 @@ using System.Net.Mail;
 using System.Text;
 using Lanymy.Common.ExtensionFunctions;
 using Lanymy.Common.Models;
+using Lanymy.Common.Models.ResultModels;
 
 namespace Lanymy.Common
 {

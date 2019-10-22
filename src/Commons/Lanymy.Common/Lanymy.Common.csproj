@@ -4,7 +4,7 @@
 
     <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
 
-    <ReleaseNumbers>0.3.1</ReleaseNumbers>
+    <ReleaseNumbers>0.4.0</ReleaseNumbers>
 
     <AssemblyVersion>$(ReleaseNumbers)</AssemblyVersion>
 
@@ -22,7 +22,7 @@
 
     <Description>
       Lanymy.Common-alpha
-      通用辅助类库. 序列化 ; 压缩 ; 数据流加密 ; 文件操作 ; 枚举扩展 ; 沙盒操作 ; 进程 ; 二维码 ; 反射 ; 版本 ; 流水号 ; 验证码 ;
+      通用辅助类库. 序列化 ; 压缩 ; 数据流加密 ; 文件操作 ; 枚举扩展 ; 沙盒操作 ; 进程 ; 二维码 ; 反射 ; 版本 ; 流水号 ; 验证码 ; CMD命令行操作器 ; ffmpeg辅助类 ;
       目前版本还在测试阶段,还不够稳定.
     </Description>
 

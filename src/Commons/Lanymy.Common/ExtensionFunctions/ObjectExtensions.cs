@@ -14,6 +14,18 @@ namespace Lanymy.Common.ExtensionFunctions
 
         #region 判断是否为空
 
+
+        /// <summary>
+        /// 判断 对象 是否为 空引用
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
+        public static bool IfIsNull(this object o)
+        {
+            return null == o;
+        }
+
+
         /// <summary>
         /// 判断对象是否为null或者为空
         /// </summary>
@@ -21,7 +33,7 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <returns></returns>
         public static bool IfIsNullOrEmpty(this object o)
         {
-            return null == o || o.Equals("");
+            return o.IfIsNull() || o.Equals("");
         }
 
         /// <summary>
@@ -42,7 +54,7 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <returns></returns>
         public static bool IfIsNullOrEmpty(this StringBuilder o)
         {
-            return o == null || o.Length == 0 || o.ToString().IfIsNullOrEmpty();
+            return o.IfIsNull() || o.Length == 0 || o.ToString().IfIsNullOrEmpty();
         }
 
 
@@ -64,7 +76,7 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <returns></returns>
         public static bool IfIsNullOrEmpty<T>(this ICollection<T> o)
         {
-            return null == o || o.Count == 0;
+            return o.IfIsNull() || o.Count == 0;
         }
 
         /// <summary>
@@ -74,7 +86,7 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <returns></returns>
         public static bool IfIsNullOrEmpty<T>(this IEnumerable<T> o)
         {
-            return null == o || !o.Any();
+            return o.IfIsNull() || !o.Any();
         }
 
         /// <summary>
@@ -84,7 +96,7 @@ namespace Lanymy.Common.ExtensionFunctions
         /// <returns></returns>
         public static bool IfIsNullOrEmpty<TK, TV>(this IDictionary<TK, TV> o)
         {
-            return null == o || o.Count == 0;
+            return o.IfIsNull() || o.Count == 0;
         }
 
         #endregion
