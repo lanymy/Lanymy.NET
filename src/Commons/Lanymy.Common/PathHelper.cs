@@ -202,118 +202,58 @@ namespace Lanymy.Common
 
 
         /// <summary>
-        /// 根据路径操作符 计算 文件夹 路径
+        /// 根据路径操作符 计算 (系统绝对路径 或 HTTP绝对路径) 绝对路径
         /// </summary>
-        /// <param name="path">文件夹全路径</param>
-        /// <param name="pathOperator">路径操作符 如: ..\..\;如果为空 则 自动计算 path 的路径</param>
+        /// <param name="absolutePath">绝对路径 如: c:\abc 或 http://www.abc.com</param>
+        /// <param name="pathOperator"></param>
         /// <returns></returns>
-        public static string CombineDirectoryRelativePath(string path, string pathOperator = "")
+        public static string CombineRelativePath(string absolutePath, string pathOperator = "")
         {
 
-            path = GetFolderPath(path);
-
-            return new DirectoryInfo(string.Format(@"{0}{1}", path, pathOperator)).FullName;
-            //var di = new DirectoryInfo(string.Format(@"{0}{1}", path, pathOperator));
-            //return di.FullName;
-
-        }
-
-
-        /// <summary>
-        /// 相对路径组装
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static string CombineRelativePath(params string[] path)
-        {
-
-            List<string> pathList = path.Select(s => s.Replace("\\", "/")).ToList();
-
-            if (pathList.IfIsNullOrEmpty())
-            {
-                return "";
-            }
-
-            var paths = pathList[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            pathList.RemoveAt(0);
-
-            foreach (string pathItem in pathList)
-            {
-                var pathItemTemp = pathItem;
-                var tempPaths = pathItemTemp.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                while (true)
-                {
-                    if (pathItemTemp.StartsWith("../"))
-                    {
-                        tempPaths.RemoveAt(0);
-                        pathItemTemp = pathItemTemp.Remove(0, 3);
-
-                        if (paths.Count > 1)
-                        {
-                            paths.RemoveAt(paths.Count - 1);
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-
-
-                paths.AddRange(tempPaths);
-            }
-
-            string result = string.Join("/", paths);
-
-            if (path[0].Replace("\\", "/").StartsWith("/"))
-            {
-                result = "/" + result;
-            }
-
-            return result;
+            return absolutePath.ToLower().Contains(@":\") ? CombineSystemRelativePath(absolutePath, pathOperator) : CombineHttpRelativePath(absolutePath, pathOperator);
 
         }
 
         /// <summary>
-        /// 相对路径组装
+        /// 根据路径操作符 计算 系统 绝对路径
         /// </summary>
-        /// <param name="path1"></param>
-        /// <param name="path2"></param>
+        /// <param name="absolutePath">带系统盘符的 绝对路径 如: c:\abc</param>
+        /// <param name="pathOperator">路径操作符 如: ../../;如果为空 则 自动计算 path 的路径</param>
         /// <returns></returns>
-        public static string CombineRelativePath(string path1, string path2)
+        public static string CombineSystemRelativePath(string absolutePath, string pathOperator = "")
         {
-            return CombineRelativePath(new[] { path1, path2 });
+            return Path.GetFullPath(Path.Combine(absolutePath, pathOperator));
         }
 
         /// <summary>
-        /// 相对路径组装
+        /// 根据路径操作符 计算 HTTP 绝对路径
         /// </summary>
-        /// <param name="path1"></param>
-        /// <param name="path2"></param>
-        /// <param name="path3"></param>
+        /// <param name="absolutePath">HTTP 绝对路径 如: http://www.abc.com</param>
+        /// <param name="pathOperator">路径操作符 如: ../../123.html;如果为空 则 自动计算 path 的路径</param>
         /// <returns></returns>
-        public static string CombineRelativePath(string path1, string path2, string path3)
+        public static string CombineHttpRelativePath(string absolutePath, string pathOperator = "")
         {
-            return CombineRelativePath(new[] { path1, path2, path3 });
+            Uri uri1 = new Uri(absolutePath);
+            Uri uri2;
+            Uri.TryCreate(uri1, pathOperator, out uri2);
+            return uri2.ToString();
         }
-
 
         /// <summary>
-        /// 相对路径组装
+        /// 计算两个绝对路径 相对路径 表达式
         /// </summary>
-        /// <param name="path1"></param>
-        /// <param name="path2"></param>
-        /// <param name="path3"></param>
-        /// <param name="path4"></param>
+        /// <param name="startAbsolutePath">起始绝对路径</param>
+        /// <param name="endAbsolutePath">要计算到目标的绝对路径</param>
         /// <returns></returns>
-        public static string CombineRelativePath(string path1, string path2, string path3, string path4)
+        public static string MakeRelativePath(string startAbsolutePath, string endAbsolutePath)
         {
-            return CombineRelativePath(new[] { path1, path2, path3, path4 });
-        }
 
+            var uri1 = new Uri(startAbsolutePath, UriKind.Absolute);
+            var uri2 = new Uri(endAbsolutePath, UriKind.Absolute);
+
+            return uri1.MakeRelativeUri(uri2).ToString();
+
+        }
 
 
 

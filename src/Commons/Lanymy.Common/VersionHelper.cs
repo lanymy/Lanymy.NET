@@ -36,7 +36,7 @@ namespace Lanymy.Common
 
 
         /// <summary>
-        /// 获取 调用当前正在执行的 方法的 方法的 版本号
+        /// 获取 调用当前正在执行的 方法的 版本号
         /// </summary>
         /// <returns></returns>
         public static Version GetCallingAssemblyVersion()
