@@ -6,6 +6,9 @@ using Lanymy.Common.ExtensionFunctions;
 namespace Lanymy.Common.Models.ResultModels
 {
 
+    /// <summary>
+    /// CMD 执行 返回信息 实体类 基类
+    /// </summary>
     public abstract class BaseCmdResultModel
     {
 

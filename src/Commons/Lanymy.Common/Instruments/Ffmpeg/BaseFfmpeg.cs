@@ -27,10 +27,13 @@ namespace Lanymy.Common.Instruments.Ffmpeg
         /// </summary>
         protected LanymyCmd _CmdFfmpeg { get; }
 
-        private Task _Task;
-
         protected Action<string> OnFfmpegOutputCommand { get; }
 
+        /// <summary>
+        /// ffmpeg 操作器 基类 构造方法
+        /// </summary>
+        /// <param name="ffmpegFileFullPath">ffmpeg.exe 文件全路径</param>
+        /// <param name="onFfmpegOutputCommand">ffmpeg执行命令输出行回调</param>
         protected BaseFfmpeg(string ffmpegFileFullPath, Action<string> onFfmpegOutputCommand)
         {
 
@@ -60,12 +63,21 @@ namespace Lanymy.Common.Instruments.Ffmpeg
             OnFfmpegOutputCommand?.Invoke(data);
         }
 
-
+        /// <summary>
+        /// 异步 执行 ffmpeg 命令 , 不需要包含 ffmpeg 关键字 直接传入 后面的相关参数命令即可
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public async Task<string> RunFfmpegCmdAsync(params string[] args)
         {
             return await Task.Run(() => RunFfmpegCmd(args));
         }
 
+        /// <summary>
+        /// 执行 ffmpeg 命令 , 不需要包含 ffmpeg 关键字 直接传入 后面的相关参数命令即可
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public string RunFfmpegCmd(params string[] args)
         {
 
@@ -78,7 +90,11 @@ namespace Lanymy.Common.Instruments.Ffmpeg
 
         }
 
-
+        /// <summary>
+        /// 异步 执行 ffmpeg 命令 , 命令字符串中 不需要包含 ffmpeg 关键字 直接传入 后面的相关参数命令即可
+        /// </summary>
+        /// <param name="ffmpegCmdString"></param>
+        /// <returns></returns>
         public async Task<string> RunFfmpegCmdAsync(string ffmpegCmdString)
         {
             return await Task.Run(() => RunFfmpegCmd(ffmpegCmdString));
@@ -109,8 +125,11 @@ namespace Lanymy.Common.Instruments.Ffmpeg
         }
 
 
-        //TimeSpan totalMediaDuration = new TimeSpan();
-
+        /// <summary>
+        /// 获取视频文件播放总时间
+        /// </summary>
+        /// <param name="videoFileFullPath">视频文件全路径</param>
+        /// <returns></returns>
         public TimeSpan GetVideoTotalDuration(string videoFileFullPath)
         {
 
