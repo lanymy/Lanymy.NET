@@ -4,11 +4,13 @@
 
     <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
 
-    <AssemblyVersion>0.1.1.0</AssemblyVersion>
+    <ReleaseNumbers>0.1.2</ReleaseNumbers>
 
-    <FileVersion>0.1.1.0</FileVersion>
+    <AssemblyVersion>$(ReleaseNumbers)</AssemblyVersion>
 
-    <Version>0.1.1</Version>
+    <FileVersion>$(ReleaseNumbers)</FileVersion>
+
+    <Version>$(ReleaseNumbers)</Version>
 
     <PackageId>Lanymy.Common.Console</PackageId>
 

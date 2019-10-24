@@ -15,18 +15,38 @@ namespace Lanymy.Common.Core.UnitTests.Instruments.Cmd
             using (var cmd = new LanymyCmd())
             {
 
-                var resultModel = cmd.ExecuteCommandWithResultModel("ipconfig");
+                var resultModel = cmd.ExecuteCommand("ipconfig");
 
                 if (resultModel.IsSuccess)
                 {
 
-                    string str = resultModel.OutputDataString;
+                    string outputDataString = resultModel.OutputDataString;
+                    string errorDataString = resultModel.ErrorDataString;
 
                 }
 
             }
 
+
+            using (var cmd = new LanymyCmd())
+            {
+
+                var resultModel = cmd.ExecuteCommandAsync("ipconfig").Result;
+
+                if (resultModel.IsSuccess)
+                {
+
+                    string outputDataString = resultModel.OutputDataString;
+                    string errorDataString = resultModel.ErrorDataString;
+
+                }
+
+            }
+
+
         }
+
+
 
     }
 }
