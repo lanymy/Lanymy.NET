@@ -60,6 +60,19 @@ namespace Lanymy.Common
 
 
         /// <summary>
+        /// 通过 192.168.1.1 这种格式的IP字符串 转成 对应的 IPAddress 实例对象
+        /// </summary>
+        /// <param name="ipString"></param>
+        /// <returns></returns>
+        public static IPAddress GetIpAddressByIpString(string ipString)
+        {
+
+            return new IPAddress(ipString.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries).Select(o => o.ConvertToType<byte>()).ToArray());
+
+        }
+
+
+        /// <summary>
         /// 获取本地所有IP地址列表
         /// </summary>
         /// <returns></returns>
@@ -279,8 +292,8 @@ namespace Lanymy.Common
 
             Parallel.For(1, 254, new ParallelOptions()
             {
-                MaxDegreeOfParallelism = 254
-            }, (int lastIpNum) =>
+                MaxDegreeOfParallelism = 255
+            }, (lastIpNum) =>
             {
 
                 string ipStr = prefixGatewayAddresses + lastIpNum;
