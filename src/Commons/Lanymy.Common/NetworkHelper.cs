@@ -282,12 +282,17 @@ namespace Lanymy.Common
 
         }
 
-        public static List<IpInfoModel> GetLanIpInfoList(IPAddress gatewayAddresses, Action<IpInfoModel> action = null)
+        public static List<IpInfoModel> GetLanIpInfoList(string gatewayAddressString, Action<IpInfoModel> action = null)
+        {
+            return GetLanIpInfoList(GetIpAddressByIpString(gatewayAddressString), action);
+        }
+
+        public static List<IpInfoModel> GetLanIpInfoList(IPAddress gatewayAddress, Action<IpInfoModel> action = null)
         {
 
             var ipInfoList = new List<IpInfoModel>();
             //string str2 = string.Concat(string.Join(".", ipaddress.ToString().Split('.').Take(3)), ".");
-            string gatewayAddressesString = gatewayAddresses.ToString();
+            string gatewayAddressesString = gatewayAddress.ToString();
             string prefixGatewayAddresses = string.Join(".", gatewayAddressesString.Split('.').Take(3)) + ".";
 
             Parallel.For(1, 254, new ParallelOptions()
