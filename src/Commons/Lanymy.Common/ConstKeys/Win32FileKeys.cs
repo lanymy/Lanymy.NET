@@ -18,7 +18,10 @@ namespace Lanymy.Common.ConstKeys
         /// </summary>
         public const string KERNEL32 = "kernel32" + FileExtensionKeys.DLL_FILE_EXTENSION;
 
-
+        /// <summary>
+        /// iphlpapi.dll
+        /// </summary>
+        public const string IPHLPAPI = "iphlpapi" + FileExtensionKeys.DLL_FILE_EXTENSION;
 
 
     }
