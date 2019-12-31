@@ -4,7 +4,7 @@
 
     <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
 
-    <ReleaseNumbers>0.4.3</ReleaseNumbers>
+    <ReleaseNumbers>0.4.4</ReleaseNumbers>
 
     <AssemblyVersion>$(ReleaseNumbers)</AssemblyVersion>
 
