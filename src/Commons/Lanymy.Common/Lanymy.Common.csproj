@@ -28,16 +28,22 @@
 
     <PackageIcon>icon.png</PackageIcon>
 
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/5466092</PackageIconUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <!--<LangVersion>7.3</LangVersion>-->
-    <!--<GeneratePackageOnBuild>false</GeneratePackageOnBuild>-->
-
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\..\..\imgs\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 
 
@@ -117,13 +123,7 @@
   </ItemGroup>
 
 
-  <ItemGroup>
-    <None Include="..\..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
+
 
 
   <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">

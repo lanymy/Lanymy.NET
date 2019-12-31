@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 
     <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
 
-    <ReleaseNumbers>0.1.2</ReleaseNumbers>
+    <ReleaseNumbers>0.1.0</ReleaseNumbers>
 
     <AssemblyVersion>$(ReleaseNumbers)</AssemblyVersion>
 
@@ -12,7 +12,7 @@
 
     <Version>$(ReleaseNumbers)</Version>
 
-    <PackageId>Lanymy.Common.Console</PackageId>
+    <PackageId>Lanymy.Config</PackageId>
 
     <Authors>Lanymy</Authors>
 
@@ -21,17 +21,16 @@
     <Product>Lanymy.NET</Product>
 
     <Description>
-      Lanymy.Common.Console-alpha
-      控制台通用辅助类
+      Lanymy.Config-alpha
+      通用配置表相关辅助类库
       目前版本还在测试阶段,还不够稳定.
     </Description>
 
     <PackageIcon>icon.png</PackageIcon>
 
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
 
   </PropertyGroup>
 
@@ -46,44 +45,40 @@
     </None>
   </ItemGroup>
 
-
-
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\netcoreapp2.2\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netcoreapp2.2\Lanymy.Config.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\netcoreapp2.2\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\netcoreapp2.2\Lanymy.Config.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\net48\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\net48\Lanymy.Config.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\net48\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\net48\Lanymy.Config.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\netstandard2.0\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netstandard2.0\Lanymy.Config.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\netstandard2.0\Lanymy.Common.Console.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\netstandard2.0\Lanymy.Config.xml</DocumentationFile>
   </PropertyGroup>
-
 
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
 
-    <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj" />
+    <ProjectReference Include="..\Lanymy.Common\Lanymy.Common.csproj" />
 
   </ItemGroup>
 
@@ -96,11 +91,6 @@
 
 
   <ItemGroup Condition="'$(TargetFramework)'=='net48'">
-
-    <!--<Reference Include="System.Management" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />-->
-
 
 
 
@@ -118,19 +108,6 @@
 
 
   </ItemGroup>
-
-
-
-
-
-  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="start &quot;&quot; &quot;$(SolutionDir)..\Build\AutoCopyReleaseDll\AutoCopyReleaseDll.exe&quot; -ArgsJson &quot;{'ProjectFileFullName':'$(TargetFileName)','TargetDirFullPath':'$(TargetPath)..\..\..\','AutoCopyDirFullPath':'$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\','IgnoreFolderNames':'','IsDebugModel':0}&quot;" />
-  </Target>-->
-
-
-
-
-
 
 
 

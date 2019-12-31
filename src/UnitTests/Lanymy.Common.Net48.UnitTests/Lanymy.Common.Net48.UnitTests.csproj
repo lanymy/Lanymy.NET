@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj">
-      <Project>{53608A03-B4CB-437F-AE16-976BF58B099F}</Project>
+      <Project>{53608a03-b4cb-437f-ae16-976bf58b099f}</Project>
       <Name>Lanymy.Common</Name>
     </ProjectReference>
   </ItemGroup>
