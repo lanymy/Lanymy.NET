@@ -2,25 +2,68 @@
 
   <!--<Import Project="Dependencies.props" />-->
 
-  <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc1</VersionSuffix>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    <LangVersion>latest</LangVersion>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
-    <DebugType>portable</DebugType>
-    <NetStandardImplicitPackageVersion>2.0.0-*</NetStandardImplicitPackageVersion>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <LangVersion>8.0</LangVersion>
+  <!--MSBuild 保留属性表-->
+  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-reserved-and-well-known-properties?view=vs-2019-->
+  <!--MSBuild 常见的项元数据-->
+  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2019-->
+  <!--属性函数 列表-->
+  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/property-functions?view=vs-2019-->
 
-    <!-- Common Nuget properties-->
+  <PropertyGroup>
+
+    <CurrentTargetFrameworks>netcoreapp2.2;net48;netstandard2.0</CurrentTargetFrameworks>
+
+    <CurrentBuildProjectName>$(MSBuildProjectName)</CurrentBuildProjectName>
+
+    <LanymyCommonProjectName>Lanymy.Common</LanymyCommonProjectName>
+    <LanymyCommonReleaseNumbers>0.4.4</LanymyCommonReleaseNumbers>
+
+    <LanymyConfigProjectName>Lanymy.Config</LanymyConfigProjectName>
+    <LanymyConfigReleaseNumbers>0.1.0</LanymyConfigReleaseNumbers>
+
+    <LanymyCommonConsoleProjectName>Lanymy.Common.Console</LanymyCommonConsoleProjectName>
+    <LanymyCommonConsoleReleaseNumbers>0.1.2</LanymyCommonConsoleReleaseNumbers>
+
+
+
+    <CurrentReleaseNumbers Condition=" '$(CurrentBuildProjectName)' == '$(LanymyCommonProjectName)'">$(LanymyCommonReleaseNumbers)</CurrentReleaseNumbers>
+
+    <CurrentReleaseNumbers Condition=" '$(CurrentBuildProjectName)' == '$(LanymyConfigProjectName)'">$(LanymyConfigReleaseNumbers)</CurrentReleaseNumbers>
+
+    <CurrentReleaseNumbers Condition=" '$(CurrentBuildProjectName)' == '$(LanymyCommonConsoleProjectName)'">$(LanymyCommonConsoleReleaseNumbers)</CurrentReleaseNumbers>
+
+
+
+
+
+    <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
+
+    <FileVersion>$(CurrentReleaseNumbers)</FileVersion>
+
+    <Version>$(CurrentReleaseNumbers)</Version>
+
+
+
+
+
+    <PackageId>$(CurrentBuildProjectName)</PackageId>
+
+    <Authors>Lanymy</Authors>
     
-    <!-- This is used by GitHub Repository to find which repository should contain the package when updloaded -->
-    <RepositoryUrl>https://github.com/OrchardCMS/OrchardCore</RepositoryUrl>
-    
+    <Company>Copyright © Lanymy 2019</Company>
+
+    <Product>Lanymy.NET</Product>
+
+    <PackageIcon>icon.png</PackageIcon>
+
+    <PackageIconUrl>https://raw.githubusercontent.com/lanymy/Lanymy.SharedBinary.Public/master/src/imgs/icon.ico</PackageIconUrl>
+
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
   </PropertyGroup>
+
+
 
 </Project>
