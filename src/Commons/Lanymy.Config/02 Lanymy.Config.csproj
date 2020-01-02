@@ -9,7 +9,7 @@
 
 
     <Description>
-      Lanymy.Config-alpha
+      $(CurrentBuildProjectName)-alpha
       通用配置表相关辅助类库
       目前版本还在测试阶段,还不够稳定.
     </Description>
@@ -26,13 +26,6 @@
 
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   
-  </ItemGroup>
-
-
-  <ItemGroup Condition="'$(Configuration)'=='Debug'">
-
-    <ProjectReference Include="..\Lanymy.Common\Lanymy.Common.csproj" />
-
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Release'">
@@ -67,6 +60,11 @@
   <ItemGroup>
     <Folder Include="ConfigModels\" />
     <Folder Include="Models\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lanymy.Common\00 Lanymy.Common.csproj" />
   </ItemGroup>
 
 

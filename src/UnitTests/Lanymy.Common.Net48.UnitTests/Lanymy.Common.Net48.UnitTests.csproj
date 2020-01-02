@@ -56,9 +56,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj">
+    <ProjectReference Include="..\..\Commons\Lanymy.Common\00 Lanymy.Common.csproj">
       <Project>{53608a03-b4cb-437f-ae16-976bf58b099f}</Project>
-      <Name>Lanymy.Common</Name>
+      <Name>00 Lanymy.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

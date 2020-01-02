@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj" />
+    <Folder Include="Resources\Tools\" />
+    <Folder Include="Resources\Others\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Tools\" />
-    <Folder Include="Resources\Others\" />
+    <ProjectReference Include="..\..\Commons\Lanymy.Common\00 Lanymy.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

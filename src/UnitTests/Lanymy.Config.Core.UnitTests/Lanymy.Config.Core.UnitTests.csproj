@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Commons\Lanymy.Config\Lanymy.Config.csproj" />
+    <ProjectReference Include="..\..\Commons\Lanymy.Config\02 Lanymy.Config.csproj" />
   </ItemGroup>
 
 </Project>

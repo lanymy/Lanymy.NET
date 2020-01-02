@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common.Clients\Lanymy.Common.Console\Lanymy.Common.Console.csproj" />
-    <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj" />
+    <ProjectReference Include="..\..\Commons\Lanymy.Common\00 Lanymy.Common.csproj" />
   </ItemGroup>
 
 </Project>

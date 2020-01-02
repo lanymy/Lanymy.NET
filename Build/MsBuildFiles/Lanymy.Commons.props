@@ -13,10 +13,12 @@
 
     <CurrentTargetFrameworks>netcoreapp2.2;net48;netstandard2.0</CurrentTargetFrameworks>
 
-    <CurrentBuildProjectName>$(MSBuildProjectName)</CurrentBuildProjectName>
 
     <LanymyCommonProjectName>Lanymy.Common</LanymyCommonProjectName>
     <LanymyCommonReleaseNumbers>0.4.4</LanymyCommonReleaseNumbers>
+
+    <LanymyDtoModelsProjectName>Lanymy.DtoModels</LanymyDtoModelsProjectName>
+    <LanymyDtoModelsReleaseNumbers>0.1.0</LanymyDtoModelsReleaseNumbers>
 
     <LanymyConfigProjectName>Lanymy.Config</LanymyConfigProjectName>
     <LanymyConfigReleaseNumbers>0.1.0</LanymyConfigReleaseNumbers>
@@ -24,16 +26,51 @@
     <LanymyCommonConsoleProjectName>Lanymy.Common.Console</LanymyCommonConsoleProjectName>
     <LanymyCommonConsoleReleaseNumbers>0.1.2</LanymyCommonConsoleReleaseNumbers>
 
+    <CurrentBuildProjectName>$(MSBuildProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>0.0.1</CurrentReleaseNumbers>
 
-
-    <CurrentReleaseNumbers Condition=" '$(CurrentBuildProjectName)' == '$(LanymyCommonProjectName)'">$(LanymyCommonReleaseNumbers)</CurrentReleaseNumbers>
-
-    <CurrentReleaseNumbers Condition=" '$(CurrentBuildProjectName)' == '$(LanymyConfigProjectName)'">$(LanymyConfigReleaseNumbers)</CurrentReleaseNumbers>
-
-    <CurrentReleaseNumbers Condition=" '$(CurrentBuildProjectName)' == '$(LanymyCommonConsoleProjectName)'">$(LanymyCommonConsoleReleaseNumbers)</CurrentReleaseNumbers>
+  </PropertyGroup>
 
 
 
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyCommonProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyCommonProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyCommonReleaseNumbers)</CurrentReleaseNumbers>
+ 
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyDtoModelsProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyDtoModelsProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyDtoModelsReleaseNumbers)</CurrentReleaseNumbers>
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyConfigProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyConfigProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyConfigReleaseNumbers)</CurrentReleaseNumbers>
+ 
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyCommonConsoleProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyCommonConsoleProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyCommonConsoleReleaseNumbers)</CurrentReleaseNumbers>
+    
+  </PropertyGroup>
+
+
+
+
+
+  <PropertyGroup>
+
+
+    <AssemblyName>$(CurrentBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CurrentBuildProjectName)</RootNamespace>
 
 
     <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
@@ -49,7 +86,7 @@
     <PackageId>$(CurrentBuildProjectName)</PackageId>
 
     <Authors>Lanymy</Authors>
-    
+
     <Company>Copyright © Lanymy 2019</Company>
 
     <Product>Lanymy.NET</Product>

@@ -10,7 +10,7 @@
     
 
     <Description>
-      Lanymy.Common.Console-alpha
+      $(CurrentBuildProjectName)-alpha
       控制台通用辅助类
       目前版本还在测试阶段,还不够稳定.
     </Description>
@@ -18,15 +18,6 @@
     <PackageTags>helper;console;extension;common;</PackageTags>
 
   </PropertyGroup>
-
- 
- 
-
-  <ItemGroup Condition="'$(Configuration)'=='Debug'">
-
-    <ProjectReference Include="..\..\Commons\Lanymy.Common\Lanymy.Common.csproj" />
-
-  </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Release'">
 
@@ -59,6 +50,11 @@
 
 
 
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Commons\Lanymy.Common\00 Lanymy.Common.csproj" />
   </ItemGroup>
 
 

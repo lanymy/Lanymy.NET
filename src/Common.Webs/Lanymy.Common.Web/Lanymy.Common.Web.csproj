@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+</Project>
+
+
+
+<!--<ItemGroup>
+  <PackageReference Include="log4net" Version="2.0.8" />
+  <PackageReference Include="Microsoft.AspNet.Mvc.zh-Hans" Version="5.2.7" />
+  <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+  <PackageReference Include="Microsoft.AspNet.WebApi.Client.zh-Hans" Version="5.2.7" />
+  <PackageReference Include="Microsoft.AspNet.WebApi.Core.zh-Hans" Version="5.2.7" />
+  <PackageReference Include="Microsoft.AspNet.WebApi.WebHost.zh-Hans" Version="5.2.7" />
+  <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.2" />
+  <PackageReference Include="Microsoft.Owin.Host.SystemWeb.zh-Hans" Version="4.0.1" />
+  <PackageReference Include="Microsoft.Owin.zh-Hans" Version="4.0.1" />
+  <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  <PackageReference Include="Owin" Version="1.0.0" />
+</ItemGroup>-->
