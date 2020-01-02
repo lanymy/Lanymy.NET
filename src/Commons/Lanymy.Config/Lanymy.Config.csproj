@@ -1,24 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.props" />
+
   <PropertyGroup>
 
-    <TargetFrameworks>netcoreapp2.2;net48;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
 
-    <ReleaseNumbers>0.1.0</ReleaseNumbers>
-
-    <AssemblyVersion>$(ReleaseNumbers)</AssemblyVersion>
-
-    <FileVersion>$(ReleaseNumbers)</FileVersion>
-
-    <Version>$(ReleaseNumbers)</Version>
-
-    <PackageId>Lanymy.Config</PackageId>
-
-    <Authors>Lanymy</Authors>
-
-    <Company>Copyright © Lanymy 2019</Company>
-
-    <Product>Lanymy.NET</Product>
 
     <Description>
       Lanymy.Config-alpha
@@ -26,54 +14,12 @@
       目前版本还在测试阶段,还不够稳定.
     </Description>
 
-    <PackageIcon>icon.png</PackageIcon>
 
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageTags>helper;config;extension;common;</PackageTags>
 
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\..\imgs\icon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\netcoreapp2.2\Lanymy.Config.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\netcoreapp2.2\Lanymy.Config.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\net48\Lanymy.Config.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net48|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\net48\Lanymy.Config.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\netstandard2.0\Lanymy.Config.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>bin\Release\netstandard2.0\Lanymy.Config.xml</DocumentationFile>
-  </PropertyGroup>
 
 
   <ItemGroup>
@@ -91,7 +37,8 @@
 
   <ItemGroup Condition="'$(Configuration)'=='Release'">
 
-    <PackageReference Include="Lanymy.Common" Version="0.4.4" />
+    <!--<PackageReference Include="Lanymy.Common" Version="0.4.4" />-->
+    <PackageReference Include="Lanymy.Common" Version="$(LanymyCommonReleaseNumbers)" />
 
   </ItemGroup>
 
@@ -123,5 +70,7 @@
   </ItemGroup>
 
 
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
 
 </Project>

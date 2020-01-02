@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 Documents", "00 Document
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 Others", "01 Others", "{A42DF379-A556-44E5-B89D-CF3E95B92CC0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 UnitTests", "02 UnitTests", "{25F62B98-DC70-4219-ABFA-98454D455589}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 UnitTests", "01 UnitTests", "{25F62B98-DC70-4219-ABFA-98454D455589}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 Commons", "03 Commons", "{0B046EE0-3294-4090-9260-52970A903A51}"
 EndProject
@@ -22,6 +22,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common", "Commons\Lanymy.Common\Lanymy.Common.csproj", "{53608A03-B4CB-437F-AE16-976BF58B099F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Console", "Common.Clients\Lanymy.Common.Console\Lanymy.Common.Console.csproj", "{92EEFAFD-ACBB-4A45-AE30-812CE42B6AF7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{53608A03-B4CB-437F-AE16-976BF58B099F} = {53608A03-B4CB-437F-AE16-976BF58B099F}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Core.UnitTests", "UnitTests\Lanymy.Common.Core.UnitTests\Lanymy.Common.Core.UnitTests.csproj", "{AC3F1BDD-FD96-4C83-8A70-45D6E7CB239E}"
 EndProject
@@ -30,8 +33,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Net48.UnitTests", "UnitTests\Lanymy.Common.Net48.UnitTests\Lanymy.Common.Net48.UnitTests.csproj", "{62667240-E283-48C3-B247-8C7CE8F65605}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Config", "Commons\Lanymy.Config\Lanymy.Config.csproj", "{21109484-DB07-4A24-B5C0-71DF8236B1F1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{53608A03-B4CB-437F-AE16-976BF58B099F} = {53608A03-B4CB-437F-AE16-976BF58B099F}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Config.Core.UnitTests", "UnitTests\Lanymy.Config.Core.UnitTests\Lanymy.Config.Core.UnitTests.csproj", "{6228BA88-1A05-41B6-801F-B1EC14D16295}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Config.Core.UnitTests", "UnitTests\Lanymy.Config.Core.UnitTests\Lanymy.Config.Core.UnitTests.csproj", "{6228BA88-1A05-41B6-801F-B1EC14D16295}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 Build", "02 Build", "{763B929A-035E-4A34-9C58-1395D67A9313}"
+	ProjectSection(SolutionItems) = preProject
+		..\Build\MsBuildFiles\Lanymy.Commons.props = ..\Build\MsBuildFiles\Lanymy.Commons.props
+		..\Build\MsBuildFiles\Lanymy.Commons.targets = ..\Build\MsBuildFiles\Lanymy.Commons.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

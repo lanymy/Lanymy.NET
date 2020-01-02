@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--MSBuild 是 Visual Studio 的生成系统。 可通过以下链接查看包含 MSBuild 参考信息的主题-->
+  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-reference?view=vs-2019-->
+
+</Project>
