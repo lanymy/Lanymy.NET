@@ -12,7 +12,7 @@ namespace Lanymy.Config.ConfigModels
         /// <summary>
         /// 数据库类型
         /// </summary>
-        public DbTypeEnum CurrentDbType { get; set; }
+        public DbTypeEnum CurrentDbType { get; set; } = DbTypeEnum.UnDefine;
 
         ///// <summary>
         ///// 数据库标记名称
