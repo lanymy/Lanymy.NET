@@ -8,10 +8,15 @@
   <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2019-->
   <!--属性函数 列表-->
   <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/property-functions?view=vs-2019-->
-
+  
   <PropertyGroup>
 
     <CurrentTargetFrameworks>netcoreapp2.2;net48;netstandard2.0</CurrentTargetFrameworks>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+
 
 
     <LanymyCommonProjectName>Lanymy.Common</LanymyCommonProjectName>
@@ -23,15 +28,32 @@
     <LanymyConfigProjectName>Lanymy.Config</LanymyConfigProjectName>
     <LanymyConfigReleaseNumbers>0.1.0</LanymyConfigReleaseNumbers>
 
+    <LanymyDbModelsProjectName>Lanymy.DbModels</LanymyDbModelsProjectName>
+    <LanymyDbModelsReleaseNumbers>0.1.0</LanymyDbModelsReleaseNumbers>
+
+    <LanymyDbProviderProjectName>Lanymy.DbProvider</LanymyDbProviderProjectName>
+    <LanymyDbProviderReleaseNumbers>0.1.0</LanymyDbProviderReleaseNumbers>
+
+    <LanymyDbRepositoryProjectName>Lanymy.DbRepository</LanymyDbRepositoryProjectName>
+    <LanymyDbRepositoryReleaseNumbers>0.1.0</LanymyDbRepositoryReleaseNumbers>
+
+    <LanymyCommonWebProjectName>Lanymy.Common.Web</LanymyCommonWebProjectName>
+    <LanymyCommonWebReleaseNumbers>0.1.0</LanymyCommonWebReleaseNumbers>
+
     <LanymyCommonConsoleProjectName>Lanymy.Common.Console</LanymyCommonConsoleProjectName>
     <LanymyCommonConsoleReleaseNumbers>0.1.2</LanymyCommonConsoleReleaseNumbers>
+
+
+
+  </PropertyGroup>
+
+
+  <PropertyGroup>
 
     <CurrentBuildProjectName>$(MSBuildProjectName)</CurrentBuildProjectName>
     <CurrentReleaseNumbers>0.0.1</CurrentReleaseNumbers>
 
   </PropertyGroup>
-
-
 
 
   <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyCommonProjectName)')) ">
@@ -54,6 +76,37 @@
     <CurrentReleaseNumbers>$(LanymyConfigReleaseNumbers)</CurrentReleaseNumbers>
  
   </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyDbModelsProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyDbModelsProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyDbModelsReleaseNumbers)</CurrentReleaseNumbers>
+ 
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyDbProviderProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyDbProviderProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyDbProviderReleaseNumbers)</CurrentReleaseNumbers>
+ 
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyDbRepositoryProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyDbRepositoryProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyDbRepositoryReleaseNumbers)</CurrentReleaseNumbers>
+ 
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyCommonWebProjectName)')) ">
+
+    <CurrentBuildProjectName>$(LanymyCommonWebProjectName)</CurrentBuildProjectName>
+    <CurrentReleaseNumbers>$(LanymyCommonWebReleaseNumbers)</CurrentReleaseNumbers>
+ 
+  </PropertyGroup>
+
+
+
 
   <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('$(LanymyCommonConsoleProjectName)')) ">
 

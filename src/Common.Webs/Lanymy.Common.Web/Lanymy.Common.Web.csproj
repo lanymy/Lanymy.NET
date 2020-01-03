@@ -1,10 +1,80 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.props" />
+
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
+
+
+
+    <Description>
+      $(CurrentBuildProjectName)-alpha
+      Web通用类库
+      目前版本还在测试阶段,还不够稳定.
+    </Description>
+
+    <PackageTags>helper;console;extension;common;web;webapi;controller;</PackageTags>
+
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(Configuration)'=='Release'">
+
+    <!--<PackageReference Include="Lanymy.Common" Version="0.4.4" />-->
+    <PackageReference Include="Lanymy.Common" Version="$(LanymyCommonReleaseNumbers)" />
+
+  </ItemGroup>
+
+
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net48'">
+
+    <!--<Reference Include="System.Management" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />-->
+
+
+
+
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.2'">
+
+
+
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+
+
+
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Commons\Lanymy.Common\00 Lanymy.Common.csproj" />
+  </ItemGroup>
+
+
+
+
+
+  <!--<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="start &quot;&quot; &quot;$(SolutionDir)..\Build\AutoCopyReleaseDll\AutoCopyReleaseDll.exe&quot; -ArgsJson &quot;{'ProjectFileFullName':'$(TargetFileName)','TargetDirFullPath':'$(TargetPath)..\..\..\','AutoCopyDirFullPath':'$(SolutionDir)..\..\Lanymy.SharedBinary\src\Lanymy.NET\','IgnoreFolderNames':'','IsDebugModel':0}&quot;" />
+  </Target>-->
+
+
+
+
+
+
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
+
 </Project>
+
 
 
 

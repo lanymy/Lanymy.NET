@@ -45,15 +45,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 Build", "02 Build", "{76
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "01 Lanymy.DtoModels", "Commons\Lanymy.DtoModels\01 Lanymy.DtoModels.csproj", "{1432E4F8-1B0A-4568-82E2-1609B50F2D78}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.DbModels", "Commons\Lanymy.DbModels\Lanymy.DbModels.csproj", "{DEC6D56F-52FF-4AF0-A817-DDD0D59D2C9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "03 Lanymy.DbModels", "Commons\Lanymy.DbModels\03 Lanymy.DbModels.csproj", "{DEC6D56F-52FF-4AF0-A817-DDD0D59D2C9F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.DbProvider", "Commons\Lanymy.DbProvider\Lanymy.DbProvider.csproj", "{27E69FAF-E0B1-4698-BAA2-B1A9CBADE100}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "04 Lanymy.DbProvider", "Commons\Lanymy.DbProvider\04 Lanymy.DbProvider.csproj", "{27E69FAF-E0B1-4698-BAA2-B1A9CBADE100}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.DbRepository", "Commons\Lanymy.DbRepository\Lanymy.DbRepository.csproj", "{78BFCC82-C4E3-453F-933A-A62D9CFC55C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "05 Lanymy.DbRepository", "Commons\Lanymy.DbRepository\05 Lanymy.DbRepository.csproj", "{78BFCC82-C4E3-453F-933A-A62D9CFC55C7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04 Common.Webs", "04 Common.Webs", "{9244EE92-8564-4252-8BD3-D458114CE41C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Web", "Common.Webs\Lanymy.Common.Web\Lanymy.Common.Web.csproj", "{43C05202-4687-4AC9-BB6D-B98E55D9CC88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Web", "Common.Webs\Lanymy.Common.Web\Lanymy.Common.Web.csproj", "{43C05202-4687-4AC9-BB6D-B98E55D9CC88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
