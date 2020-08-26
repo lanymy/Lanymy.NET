@@ -9,5 +9,35 @@
   </PropertyGroup>
 
 
+  <PropertyGroup>
+
+    <!--Lanymy.Common.ExtensionFunctions.DeepCloneExtensions-->
+    <LanymyCommonExtensionFunctionsDeepCloneExtensionsReleaseVersion>0.4.4</LanymyCommonExtensionFunctionsDeepCloneExtensionsReleaseVersion>
+    <!--Lanymy.Common.ExtensionFunctions.EnumExtensions-->
+    <LanymyCommonExtensionFunctionsEnumExtensionsReleaseVersion>0.4.4</LanymyCommonExtensionFunctionsEnumExtensionsReleaseVersion>
+    <!--Lanymy.Common.ExtensionFunctions.ObjectExtensions-->
+    <LanymyCommonExtensionFunctionsObjectExtensionsReleaseVersion>0.4.4</LanymyCommonExtensionFunctionsObjectExtensionsReleaseVersion>
+    <!--Lanymy.Common.ExtensionFunctions.StringExtensions-->
+    <LanymyCommonExtensionFunctionsStringExtensionsReleaseVersion>0.4.4</LanymyCommonExtensionFunctionsStringExtensionsReleaseVersion>
+
+  </PropertyGroup>
+
+
+
+
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.DeepCloneExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsDeepCloneExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.EnumExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsEnumExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.ObjectExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsObjectExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.StringExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsStringExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+
+
 
 </Project>

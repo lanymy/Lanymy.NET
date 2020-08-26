@@ -1,12 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Header.props" />
 
-  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Abstractions'">
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.props" />
 
-    <CurrentReleaseNumbers>0.4.4</CurrentReleaseNumbers>
-
-  </PropertyGroup>
 
   <PropertyGroup>
 
@@ -23,7 +19,6 @@
   </PropertyGroup>
 
 
-  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Main.props" />
   <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
 
 

@@ -1,0 +1,56 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+  <PropertyGroup>
+
+    <!--Lanymy.Common.Abstractions-->
+    <LanymyCommonAbstractionsReleaseVersion>0.4.4</LanymyCommonAbstractionsReleaseVersion>
+    <!--Lanymy.Common.ConstKeys-->
+    <LanymyCommonConstKeysReleaseVersion>0.4.4</LanymyCommonConstKeysReleaseVersion>
+    <!--Lanymy.Common.Enums-->
+    <LanymyCommonEnumsReleaseVersion>0.4.4</LanymyCommonEnumsReleaseVersion>
+
+    <!--Lanymy.Common.ExtensionFunctions.All-->
+    <LanymyCommonExtensionFunctionsAllReleaseVersion>0.4.4</LanymyCommonExtensionFunctionsAllReleaseVersion>
+    <!--Lanymy.Common.Instruments.All-->
+    <LanymyCommonInstrumentsAllReleaseVersion>0.4.4</LanymyCommonInstrumentsAllReleaseVersion>
+    <!--Lanymy.Common.Helpers.All-->
+    <LanymyCommonHelpersAllReleaseVersion>0.4.4</LanymyCommonHelpersAllReleaseVersion>
+    <!--Lanymy.Common.All-->
+    <LanymyCommonAllReleaseVersion>0.4.4</LanymyCommonAllReleaseVersion>
+
+
+  </PropertyGroup>
+
+
+
+
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ConstKeys'">
+    <CurrentReleaseNumbers>$(LanymyCommonConstKeysReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Enums'">
+    <CurrentReleaseNumbers>$(LanymyCommonEnumsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+
+
+
+
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.All'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsAllReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.All'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsAllReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Helpers.All'">
+    <CurrentReleaseNumbers>$(LanymyCommonHelpersAllReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.All'">
+    <CurrentReleaseNumbers>$(LanymyCommonAllReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+
+
+
+</Project>

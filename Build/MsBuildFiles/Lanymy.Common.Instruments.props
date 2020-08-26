@@ -9,6 +9,119 @@
   </PropertyGroup>
 
 
+  <PropertyGroup>
+
+
+    <!--Lanymy.Common.Instruments.ArrayManipulater-->
+    <LanymyCommonInstrumentsArrayManipulaterReleaseVersion>0.4.4</LanymyCommonInstrumentsArrayManipulaterReleaseVersion>
+    <!--Lanymy.Common.Instruments.ArrayManipulater.Abstractions-->
+    <LanymyCommonInstrumentsArrayManipulaterAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsArrayManipulaterAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Cache.Abstractions-->
+    <LanymyCommonInstrumentsCacheAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsCacheAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Cache.CoreMemoryCache-->
+    <LanymyCommonInstrumentsCacheCoreMemoryCacheReleaseVersion>0.4.4</LanymyCommonInstrumentsCacheCoreMemoryCacheReleaseVersion>
+    <!--Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions-->
+    <LanymyCommonInstrumentsCacheCoreMemoryCacheAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsCacheCoreMemoryCacheAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Cache.CustomMemoryCache-->
+    <LanymyCommonInstrumentsCacheCustomMemoryCacheReleaseVersion>0.4.4</LanymyCommonInstrumentsCacheCustomMemoryCacheReleaseVersion>
+    <!--Lanymy.Common.Instruments.CMD-->
+    <LanymyCommonInstrumentsCMDReleaseVersion>0.4.4</LanymyCommonInstrumentsCMDReleaseVersion>
+    <!--Lanymy.Common.Instruments.CMD.Abstractions-->
+    <LanymyCommonInstrumentsCMDAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsCMDAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Compresser-->
+    <LanymyCommonInstrumentsCompresserReleaseVersion>0.4.4</LanymyCommonInstrumentsCompresserReleaseVersion>
+    <!--Lanymy.Common.Instruments.Compresser.Abstractions-->
+    <LanymyCommonInstrumentsCompresserAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsCompresserAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.EnumMapper-->
+    <LanymyCommonInstrumentsEnumMapperReleaseVersion>0.4.4</LanymyCommonInstrumentsEnumMapperReleaseVersion>
+    <!--Lanymy.Common.Instruments.EnumMapper.Abstractions-->
+    <LanymyCommonInstrumentsEnumMapperAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsEnumMapperAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Ffmpeg-->
+    <LanymyCommonInstrumentsFfmpegReleaseVersion>0.4.4</LanymyCommonInstrumentsFfmpegReleaseVersion>
+    <!--Lanymy.Common.Instruments.Ffmpeg.Abstractions-->
+    <LanymyCommonInstrumentsFfmpegAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsFfmpegAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.FileTextManipulater-->
+    <LanymyCommonInstrumentsFileTextManipulaterReleaseVersion>0.4.4</LanymyCommonInstrumentsFileTextManipulaterReleaseVersion>
+    <!--Lanymy.Common.Instruments.FileTextManipulater.Abstractions-->
+    <LanymyCommonInstrumentsFileTextManipulaterAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsFileTextManipulaterAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.IsolatedStorages-->
+    <LanymyCommonInstrumentsIsolatedStoragesReleaseVersion>0.4.4</LanymyCommonInstrumentsIsolatedStoragesReleaseVersion>
+    <!--Lanymy.Common.Instruments.IsolatedStorages.Abstractions-->
+    <LanymyCommonInstrumentsIsolatedStoragesAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsIsolatedStoragesAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Serializer.Abstractions-->
+    <LanymyCommonInstrumentsSerializerAbstractionsReleaseVersion>0.4.4</LanymyCommonInstrumentsSerializerAbstractionsReleaseVersion>
+    <!--Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer-->
+    <LanymyCommonInstrumentsSerializerJsonNetJsonSerializerReleaseVersion>0.4.4</LanymyCommonInstrumentsSerializerJsonNetJsonSerializerReleaseVersion>
+
+  
+
+</PropertyGroup>
+
+
+
+
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.ArrayManipulater'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsArrayManipulaterReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.ArrayManipulater.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsArrayManipulaterAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Cache.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCacheAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Cache.CoreMemoryCache'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCacheCoreMemoryCacheReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCacheCoreMemoryCacheAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Cache.CustomMemoryCache'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCacheCustomMemoryCacheReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.CMD'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCMDReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.CMD.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCMDAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Compresser'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCompresserReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Compresser.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsCompresserAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.EnumMapper'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsEnumMapperReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.EnumMapper.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsEnumMapperAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Ffmpeg'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsFfmpegReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Ffmpeg.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsFfmpegAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.FileTextManipulater'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsFileTextManipulaterReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.FileTextManipulater.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsFileTextManipulaterAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.IsolatedStorages'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsIsolatedStoragesReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.IsolatedStorages.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsIsolatedStoragesAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Serializer.Abstractions'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsSerializerAbstractionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer'">
+    <CurrentReleaseNumbers>$(LanymyCommonInstrumentsSerializerJsonNetJsonSerializerReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+
+
 
 
 </Project>

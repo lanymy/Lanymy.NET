@@ -22,11 +22,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MsBuildFiles", "MsBuildFile
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Commons", "Commons", "{23BFC54A-0070-448E-AB0F-B31BD7C25941}"
 	ProjectSection(SolutionItems) = preProject
+		..\Build\MsBuildFiles\Lanymy.Common.All.props = ..\Build\MsBuildFiles\Lanymy.Common.All.props
 		..\Build\MsBuildFiles\Lanymy.Common.ExtensionFunctions.props = ..\Build\MsBuildFiles\Lanymy.Common.ExtensionFunctions.props
 		..\Build\MsBuildFiles\Lanymy.Common.Helpers.props = ..\Build\MsBuildFiles\Lanymy.Common.Helpers.props
 		..\Build\MsBuildFiles\Lanymy.Common.Instruments.props = ..\Build\MsBuildFiles\Lanymy.Common.Instruments.props
-		..\Build\MsBuildFiles\Lanymy.Commons.Header.props = ..\Build\MsBuildFiles\Lanymy.Commons.Header.props
-		..\Build\MsBuildFiles\Lanymy.Commons.Main.props = ..\Build\MsBuildFiles\Lanymy.Commons.Main.props
+		..\Build\MsBuildFiles\Lanymy.Commons.props = ..\Build\MsBuildFiles\Lanymy.Commons.props
 		..\Build\MsBuildFiles\Lanymy.Commons.targets = ..\Build\MsBuildFiles\Lanymy.Commons.targets
 	EndProjectSection
 EndProject
