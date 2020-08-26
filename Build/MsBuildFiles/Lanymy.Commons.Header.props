@@ -38,73 +38,15 @@
   </PropertyGroup>-->
 
 
-  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Abstractions'">
-
-    <!--<CurrentBuildProjectName>Lanymy.Common.Abstractions</CurrentBuildProjectName>-->
-    <CurrentReleaseNumbers>0.4.4</CurrentReleaseNumbers>
-
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ConstKeys'">
-    <CurrentReleaseNumbers>0.4.5</CurrentReleaseNumbers>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Enums'">
-    <CurrentReleaseNumbers>0.4.6</CurrentReleaseNumbers>
-  </PropertyGroup>
-
-
-
-
   <Import Project="Lanymy.Common.ExtensionFunctions.props" />
   <Import Project="Lanymy.Common.Instruments.props" />
   <Import Project="Lanymy.Common.Helpers.props" />
 
 
-  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.All'">
-    <CurrentReleaseNumbers>0.4.6</CurrentReleaseNumbers>
-  </PropertyGroup>
 
 
 
-
-
-  <PropertyGroup>
-
-
-    <TargetFramework>$(CurrentTargetFrameworks)</TargetFramework>
-
-
-    <AssemblyName>$(CurrentBuildProjectName)</AssemblyName>
-    <RootNamespace>$(CurrentRootNamespace)</RootNamespace>
-
-
-    <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
-
-    <FileVersion>$(FileRevision)</FileVersion>
-
-    <Version>$(CurrentReleaseNumbers)</Version>
-
-
-
-    <PackageId>$(CurrentBuildProjectName)</PackageId>
-
-    <Authors>Lanymy</Authors>
-
-    <Company>Copyright © Lanymy 2019</Company>
-
-    <Product>Lanymy.NET</Product>
-
-    <PackageIcon>icon.png</PackageIcon>
-
-    <PackageIconUrl>https://raw.githubusercontent.com/lanymy/Lanymy.SharedBinary.Public/master/src/imgs/icon.ico</PackageIconUrl>
-
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-  </PropertyGroup>
-
+ 
 
 
 </Project>

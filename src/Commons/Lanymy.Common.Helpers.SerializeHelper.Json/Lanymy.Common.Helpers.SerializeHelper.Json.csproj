@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Header.props" />
+
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.Helpers.SerializeHelper.Json'">
+    <CurrentReleaseNumbers>0.4.6</CurrentReleaseNumbers>
+  </PropertyGroup>
+
+  <PropertyGroup>
+
+    
+    <Description>
+      $(CurrentBuildProjectName)-alpha
+      通用辅助类库. 序列化 ; 压缩 ; 数据流加密 ; 文件操作 ; 枚举扩展 ; 沙盒操作 ; 进程 ; 二维码 ; 反射 ; 版本 ; 流水号 ; 验证码 ; CMD命令行操作器 ; ffmpeg辅助类 ; 加密/解密 ;
+      目前版本还在测试阶段,还不够稳定.
+    </Description>
+
+    <PackageTags>common;helpers;extension;serialize;json;stream;zip;file;enum;sandbox;progress;QRCode;reflection;version;SerialNumber;VerificationCode;cmd;ffmpeg;encryption;</PackageTags>
+
+
+  </PropertyGroup>
+
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Main.props" />
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer\Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer.csproj" />
+  </ItemGroup>
+
+
+</Project>

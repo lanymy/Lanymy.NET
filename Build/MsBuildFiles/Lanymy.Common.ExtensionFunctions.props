@@ -1,98 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!--<Import Project="Dependencies.props" />-->
-
-  <!--MSBuild 保留属性表-->
-  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-reserved-and-well-known-properties?view=vs-2019-->
-  <!--MSBuild 常见的项元数据-->
-  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2019-->
-  <!--属性函数 列表-->
-  <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/property-functions?view=vs-2019-->
-  
-  <PropertyGroup>
-
-    <CurrentTargetFrameworks>netcoreapp3.1</CurrentTargetFrameworks>
-    <!--<CurrentTargetFrameworks>netcoreapp2.2;net48;netstandard2.0</CurrentTargetFrameworks>-->
-
-  </PropertyGroup>
 
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.StartsWith('Lanymy.Common.ExtensionFunctions')) ">
 
-    <FileRevision>$([System.DateTime]::Now.ToString("yyyy.MM.dd.HHmm"))</FileRevision>
-    <CurrentBuildProjectName>$(MSBuildProjectName)</CurrentBuildProjectName>
-    <CurrentReleaseNumbers>0.0.1</CurrentReleaseNumbers>
-
-  </PropertyGroup>
-
-
- 
-
-  
-  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('Lanymy.Common.Abstractions')) ">
-
-    <CurrentBuildProjectName>Lanymy.Common.Abstractions</CurrentBuildProjectName>
-    <CurrentReleaseNumbers>0.4.4</CurrentReleaseNumbers>
-
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('Lanymy.Common.ConstKeys')) ">
-
-    <CurrentBuildProjectName>Lanymy.Common.ConstKeys</CurrentBuildProjectName>
-    <CurrentReleaseNumbers>0.4.5</CurrentReleaseNumbers>
-
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" $(CurrentBuildProjectName.EndsWith('Lanymy.Common.Enums')) ">
-
-    <CurrentBuildProjectName>Lanymy.Common.Enums</CurrentBuildProjectName>
-    <CurrentReleaseNumbers>0.4.6</CurrentReleaseNumbers>
-
-  </PropertyGroup>
-
-
-
-
-
-
-
-
-
-
-
-  <PropertyGroup>
-
-
-    <TargetFramework>$(CurrentTargetFrameworks)</TargetFramework>
-
-
-    <AssemblyName>$(CurrentBuildProjectName)</AssemblyName>
-    <RootNamespace>$(CurrentBuildProjectName)</RootNamespace>
-
-
-    <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
-
-    <FileVersion>$(FileRevision)</FileVersion>
-
-    <Version>$(CurrentReleaseNumbers)</Version>
-
-
-
-    <PackageId>$(CurrentBuildProjectName)</PackageId>
-
-    <Authors>Lanymy</Authors>
-
-    <Company>Copyright © Lanymy 2019</Company>
-
-    <Product>Lanymy.NET</Product>
-
-    <PackageIcon>icon.png</PackageIcon>
-
-    <PackageIconUrl>https://raw.githubusercontent.com/lanymy/Lanymy.SharedBinary.Public/master/src/imgs/icon.ico</PackageIconUrl>
-
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <CurrentRootNamespace>Lanymy.Common.ExtensionFunctions</CurrentRootNamespace>
 
   </PropertyGroup>
 
