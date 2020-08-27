@@ -1,0 +1,42 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+  <PropertyGroup>
+
+
+    <TargetFramework>$(CurrentTargetFrameworks)</TargetFramework>
+
+
+    <AssemblyName>$(CurrentBuildProjectName)</AssemblyName>
+    <RootNamespace>$(CurrentRootNamespace)</RootNamespace>
+
+
+    <AssemblyVersion>$(CurrentReleaseNumbers)</AssemblyVersion>
+
+    <FileVersion>$(FileRevision)</FileVersion>
+
+    <Version>$(CurrentReleaseNumbers)</Version>
+
+
+
+    <PackageId>$(CurrentBuildProjectName)</PackageId>
+
+    <Authors>Lanymy</Authors>
+
+    <Company>Copyright © Lanymy 2019</Company>
+
+    <Product>Lanymy.NET</Product>
+
+    <PackageIcon>icon.png</PackageIcon>
+
+    <PackageIconUrl>https://raw.githubusercontent.com/lanymy/Lanymy.SharedBinary.Public/master/src/imgs/icon.ico</PackageIconUrl>
+
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+  </PropertyGroup>
+ 
+
+
+</Project>

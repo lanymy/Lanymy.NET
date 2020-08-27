@@ -1,0 +1,43 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+
+  <PropertyGroup Condition=" $(CurrentBuildProjectName.StartsWith('Lanymy.Common.ExtensionFunctions')) ">
+
+    <CurrentRootNamespace>Lanymy.Common.ExtensionFunctions</CurrentRootNamespace>
+
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+
+    <!--Lanymy.Common.ExtensionFunctions.DeepCloneExtensions-->
+    <LanymyCommonExtensionFunctionsDeepCloneExtensionsReleaseVersion>0.5.0</LanymyCommonExtensionFunctionsDeepCloneExtensionsReleaseVersion>
+    <!--Lanymy.Common.ExtensionFunctions.EnumExtensions-->
+    <LanymyCommonExtensionFunctionsEnumExtensionsReleaseVersion>0.5.0</LanymyCommonExtensionFunctionsEnumExtensionsReleaseVersion>
+    <!--Lanymy.Common.ExtensionFunctions.ObjectExtensions-->
+    <LanymyCommonExtensionFunctionsObjectExtensionsReleaseVersion>0.5.0</LanymyCommonExtensionFunctionsObjectExtensionsReleaseVersion>
+    <!--Lanymy.Common.ExtensionFunctions.StringExtensions-->
+    <LanymyCommonExtensionFunctionsStringExtensionsReleaseVersion>0.5.0</LanymyCommonExtensionFunctionsStringExtensionsReleaseVersion>
+
+  </PropertyGroup>
+
+
+
+
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.DeepCloneExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsDeepCloneExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.EnumExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsEnumExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.ObjectExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsObjectExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CurrentBuildProjectName)'=='Lanymy.Common.ExtensionFunctions.StringExtensions'">
+    <CurrentReleaseNumbers>$(LanymyCommonExtensionFunctionsStringExtensionsReleaseVersion)</CurrentReleaseNumbers>
+  </PropertyGroup>
+
+
+
+</Project>

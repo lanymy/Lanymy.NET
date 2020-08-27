@@ -5,7 +5,8 @@
 
   <PropertyGroup>
 
-    
+    <CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
+
     <Description>
       $(CurrentBuildProjectName)-alpha
       通用辅助类库. 序列化 ; 压缩 ; 数据流加密 ; 文件操作 ; 枚举扩展 ; 沙盒操作 ; 进程 ; 二维码 ; 反射 ; 版本 ; 流水号 ; 验证码 ; CMD命令行操作器 ; ffmpeg辅助类 ; 加密/解密 ;
@@ -18,6 +19,7 @@
   </PropertyGroup>
 
 
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Package.props" />
   <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
 
   <ItemGroup>

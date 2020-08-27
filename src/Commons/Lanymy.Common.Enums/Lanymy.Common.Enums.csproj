@@ -5,6 +5,7 @@
 
   <PropertyGroup>
 
+    <CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
 
     <Description>
       $(CurrentBuildProjectName)-alpha
@@ -18,10 +19,8 @@
   </PropertyGroup>
 
 
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Package.props" />
   <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
-
-
-
 
 
 
