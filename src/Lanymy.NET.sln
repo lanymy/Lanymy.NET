@@ -22,13 +22,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MsBuildFiles", "MsBuildFile
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Commons", "Commons", "{23BFC54A-0070-448E-AB0F-B31BD7C25941}"
 	ProjectSection(SolutionItems) = preProject
-		..\Build\MsBuildFiles\Lanymy.Common.All.props = ..\Build\MsBuildFiles\Lanymy.Common.All.props
 		..\Build\MsBuildFiles\Lanymy.Common.ExtensionFunctions.props = ..\Build\MsBuildFiles\Lanymy.Common.ExtensionFunctions.props
 		..\Build\MsBuildFiles\Lanymy.Common.Helpers.props = ..\Build\MsBuildFiles\Lanymy.Common.Helpers.props
 		..\Build\MsBuildFiles\Lanymy.Common.Instruments.props = ..\Build\MsBuildFiles\Lanymy.Common.Instruments.props
-		..\Build\MsBuildFiles\Lanymy.Commons.Package.props = ..\Build\MsBuildFiles\Lanymy.Commons.Package.props
+		..\Build\MsBuildFiles\Lanymy.Commons.Footer.props = ..\Build\MsBuildFiles\Lanymy.Commons.Footer.props
+		..\Build\MsBuildFiles\Lanymy.Commons.Header.props = ..\Build\MsBuildFiles\Lanymy.Commons.Header.props
+		..\Build\MsBuildFiles\Lanymy.Commons.Package.Footer.props = ..\Build\MsBuildFiles\Lanymy.Commons.Package.Footer.props
+		..\Build\MsBuildFiles\Lanymy.Commons.Package.Header.props = ..\Build\MsBuildFiles\Lanymy.Commons.Package.Header.props
 		..\Build\MsBuildFiles\Lanymy.Commons.props = ..\Build\MsBuildFiles\Lanymy.Commons.props
 		..\Build\MsBuildFiles\Lanymy.Commons.targets = ..\Build\MsBuildFiles\Lanymy.Commons.targets
+		..\Build\MsBuildFiles\Lanymy.Commons.Variables.props = ..\Build\MsBuildFiles\Lanymy.Commons.Variables.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 Commons", "00 Commons", "{83904A3F-7D00-4B29-85FB-3F48E02692B9}"
@@ -152,6 +155,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.All", "Commons\Lanymy.Common.All\Lanymy.Common.All.csproj", "{BD914871-C44A-422F-A14E-B06AA40ED11F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.IsolatedStoragesTests", "UnitTests\Lanymy.Common.Instruments.IsolatedStoragesTests\Lanymy.Common.Instruments.IsolatedStoragesTests.csproj", "{4D1161C6-5C25-48C5-BA70-0F68584A813E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.ExtensionFunctions.ExpressExtensions", "Commons\Lanymy.Common.ExtensionFunctions.ExpressExtensions\Lanymy.Common.ExtensionFunctions.ExpressExtensions.csproj", "{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.PipeLine.Abstractions", "Commons\Lanymy.Common.Instruments.PipeLine.Abstractions\Lanymy.Common.Instruments.PipeLine.Abstractions.csproj", "{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.PipeLine", "Commons\Lanymy.Common.Instruments.PipeLine\Lanymy.Common.Instruments.PipeLine.csproj", "{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -387,6 +396,18 @@ Global
 		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -456,6 +477,9 @@ Global
 		{9E26FD62-E9BF-4126-9C48-7E6EB8A4129C} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 		{BD914871-C44A-422F-A14E-B06AA40ED11F} = {3BD9ED90-63CE-4E9F-ADE5-1C66968405BC}
 		{4D1161C6-5C25-48C5-BA70-0F68584A813E} = {CE7155FA-CD6D-47BD-B832-A19AC8B419F1}
+		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384} = {C468937A-C820-496E-8F25-116117E529AB}
+		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
+		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A243EC36-342D-4E8F-B0D3-5D20B7B8FE81}

@@ -21,12 +21,8 @@
 
   <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Footer.props" />
 
-
-
   <ItemGroup>
-    <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ObjectExtensions\Lanymy.Common.ExtensionFunctions.ObjectExtensions.csproj" />
-    <ProjectReference Include="..\Lanymy.Common.Helpers.ProcessHelper\Lanymy.Common.Helpers.ProcessHelper.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Instruments.PipeLine.Abstractions\Lanymy.Common.Instruments.PipeLine.Abstractions.csproj" />
   </ItemGroup>
-
 
 </Project>

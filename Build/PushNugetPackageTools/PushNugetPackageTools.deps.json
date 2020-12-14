@@ -1,15 +1,15 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v3.0",
+    "name": ".NETCoreApp,Version=v3.1",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
-    ".NETCoreApp,Version=v3.0": {
+    ".NETCoreApp,Version=v3.1": {
       "PushNugetPackageTools/1.0.0": {
         "dependencies": {
-          "Lanymy.Common": "0.2.2",
-          "Lanymy.Common.Console": "0.1.1",
+          "Lanymy.Common": "0.4.3",
+          "Lanymy.Common.Console": "0.1.2",
           "NuGet.Packaging": "5.3.0",
           "NuGet.Protocol": "5.3.0"
         },
@@ -69,7 +69,7 @@
           }
         }
       },
-      "Lanymy.Common/0.2.2": {
+      "Lanymy.Common/0.4.3": {
         "dependencies": {
           "CacheManager.Microsoft.Extensions.Caching.Memory": "1.2.0",
           "CacheManager.Serialization.Json": "1.2.0",
@@ -88,19 +88,19 @@
         },
         "runtime": {
           "lib/netcoreapp2.2/Lanymy.Common.dll": {
-            "assemblyVersion": "0.2.2.0",
-            "fileVersion": "0.2.2.0"
+            "assemblyVersion": "0.4.3.0",
+            "fileVersion": "0.4.3.0"
           }
         }
       },
-      "Lanymy.Common.Console/0.1.1": {
+      "Lanymy.Common.Console/0.1.2": {
         "dependencies": {
-          "Lanymy.Common": "0.2.2"
+          "Lanymy.Common": "0.4.3"
         },
         "runtime": {
           "lib/netcoreapp2.2/Lanymy.Common.Console.dll": {
-            "assemblyVersion": "0.1.1.0",
-            "fileVersion": "0.1.1.0"
+            "assemblyVersion": "0.1.2.0",
+            "fileVersion": "0.1.2.0"
           }
         }
       },
@@ -1414,19 +1414,19 @@
       "path": "commonservicelocator/2.0.4",
       "hashPath": "commonservicelocator.2.0.4.nupkg.sha512"
     },
-    "Lanymy.Common/0.2.2": {
+    "Lanymy.Common/0.4.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3bi1SSPaz1/U8/fVfSzXqvhGCKVo9/0LHou8XbRXpOXLM6tI3KKfKz6hxwlM5Cgihy81UkoEE6GdENaKhky2gA==",
-      "path": "lanymy.common/0.2.2",
-      "hashPath": "lanymy.common.0.2.2.nupkg.sha512"
+      "sha512": "sha512-USld1SZFbfXU3DASUkfPTUOQi/OKYwEmktizWhLj0TKZY+rITvv4yVD23r0ZCFufMn73rF3ljTmkiRPHLIDfaA==",
+      "path": "lanymy.common/0.4.3",
+      "hashPath": "lanymy.common.0.4.3.nupkg.sha512"
     },
-    "Lanymy.Common.Console/0.1.1": {
+    "Lanymy.Common.Console/0.1.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-cfokyN5OYgi7GEp+ArEAq+Heloajs8BC7YMYCTB/WjiERQUri0xhuahTo+Uql+ACoPh75tEahdOZMOTc6SRpIQ==",
-      "path": "lanymy.common.console/0.1.1",
-      "hashPath": "lanymy.common.console.0.1.1.nupkg.sha512"
+      "sha512": "sha512-8kq3q01PLPGRwoP1HeOjXBrEKImQPy7+lpVAaEM34rCPXTr4mVDtsFGX7R+GTZvyRggxM4SQO+iaGOjpUVABHQ==",
+      "path": "lanymy.common.console/0.1.2",
+      "hashPath": "lanymy.common.console.0.1.2.nupkg.sha512"
     },
     "log4net/2.0.8": {
       "type": "package",
@@ -1494,14 +1494,14 @@
     "Microsoft.NETCore.Platforms/2.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-yqFGDNUbDooQlUpkoOrUn5eQfiRgNwea3gQJ7Y0B+X/LmjsS1HAlnxH8ZZEsdp+ZJREOuW4/HbSakJswysHPxw==",
+      "sha512": "sha512-VdLJOCXhZaEMY7Hm2GKiULmn7IEPFE4XC5LPSfBVCUIA8YLZVh846gtfBJalsPQF2PlzdD7ecX7DZEulJ402ZQ==",
       "path": "microsoft.netcore.platforms/2.0.0",
       "hashPath": "microsoft.netcore.platforms.2.0.0.nupkg.sha512"
     },
     "Microsoft.NETCore.Targets/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-a91I0gM+9vw0HumztUSiC+wjaSgjiXDjami3jVRwF4M2a/sxhZXI1XyfGsj6sgfzejvIxy8fNjNixiWWfWFBvg==",
+      "sha512": "sha512-aOZA3BWfz9RXjpzt0sRJJMjAscAUm3Hoa4UWAfceV9UTYxgwZ1lZt5nO2myFf+/jetYQo4uTP7zS8sJY67BBxg==",
       "path": "microsoft.netcore.targets/1.1.0",
       "hashPath": "microsoft.netcore.targets.1.1.0.nupkg.sha512"
     },
@@ -1648,7 +1648,7 @@
     "runtime.native.System.IO.Compression/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-b+V9JC/Ii3sR659flBeaBJww111425tgjcDS1k+hqV4sGh9FALRDBvJnDtQ895gAzpPTUOFDHdqaZ2Et7BpZMg==",
+      "sha512": "sha512-INBPonS5QPEgn7naufQFXJEp3zX6L4bwHgJ/ZH78aBTpeNfQMtf7C6VrAFhlq2xxWBveIOWyFzQjJ8XzHMhdOQ==",
       "path": "runtime.native.system.io.compression/4.3.0",
       "hashPath": "runtime.native.system.io.compression.4.3.0.nupkg.sha512"
     },
@@ -1704,7 +1704,7 @@
     "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-T5NvFgmHX0WH4c7lP72krsnk+IJI10vJf2j2twGE+5QBRA4RyRAgD+ZjEgdmpLOjW4B+nZGaadewTCUcR899OQ==",
+      "sha512": "sha512-nyFNiCk/r+VOiIqreLix8yN+q3Wga9+SE8BCgkf+2BwEKiNx6DyvFjCgkfV743/grxv8jHJ8gUK4XEQw7yzRYg==",
       "path": "runtime.rhel.7-x64.runtime.native.system.security.cryptography.openssl/4.3.0",
       "hashPath": "runtime.rhel.7-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512"
     },
@@ -2313,7 +2313,7 @@
     "System.Threading.ThreadPool/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-SrCOmTvvOOCmJT4BBxdZcwhz6XEMsjBGZvGSVorOxdCznaUNeVotEjDfXGIZ8gcGo00qgPbTV6puHDgcFYl6Iw==",
+      "sha512": "sha512-k/+g4b7vjdd4aix83sTgC9VG6oXYKAktSfNIJUNGxPEj7ryEOfzHHhfnmsZvjxawwcD9HyWXKCXmPjX8U4zeSw==",
       "path": "system.threading.threadpool/4.3.0",
       "hashPath": "system.threading.threadpool.4.3.0.nupkg.sha512"
     },

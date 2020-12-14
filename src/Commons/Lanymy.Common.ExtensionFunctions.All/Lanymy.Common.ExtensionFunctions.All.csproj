@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.props" />
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Header.props" />
 
 
   <PropertyGroup>
 
-    <CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
+    <!--<CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
 
     <Description>
       $(CurrentBuildProjectName)-alpha
@@ -13,18 +13,18 @@
       目前版本还在测试阶段,还不够稳定.
     </Description>
 
-    <PackageTags>common;helpers;extension;serialize;json;stream;zip;file;enum;sandbox;progress;QRCode;reflection;version;SerialNumber;VerificationCode;cmd;ffmpeg;encryption;</PackageTags>
+    <PackageTags>common;helpers;extension;serialize;json;stream;zip;file;enum;sandbox;progress;QRCode;reflection;version;SerialNumber;VerificationCode;cmd;ffmpeg;encryption;</PackageTags>-->
 
 
   </PropertyGroup>
 
 
-  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Package.props" />
-  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.targets" />
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Footer.props" />
 
 
   <ItemGroup>
 
+    <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ExpressExtensions\Lanymy.Common.ExtensionFunctions.ExpressExtensions.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ObjectExtensions\Lanymy.Common.ExtensionFunctions.ObjectExtensions.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.StringExtensions\Lanymy.Common.ExtensionFunctions.StringExtensions.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.DeepCloneExtensions\Lanymy.Common.ExtensionFunctions.DeepCloneExtensions.csproj" />
