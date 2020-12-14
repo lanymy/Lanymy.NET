@@ -1,5 +1,5 @@
 # Lanymy.NET
-Lanymy.NET是.NET ( 适配优先级顺序由左向右依次 : netstandard2.0 -> netcoreapp2.2 -> net48 ) 的通用扩展辅助库.
+Lanymy.NET 是 .NET 5 的通用扩展辅助库.
 <br/>
 封装了常用方法,如:
 <br/>
