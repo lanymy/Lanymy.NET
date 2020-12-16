@@ -1,0 +1,1374 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "PushNugetPackageTools/1.1.0": {
+        "dependencies": {
+          "Lanymy.Common.All": "0.5.1",
+          "NuGet.Packaging": "5.8.0",
+          "NuGet.Protocol": "5.8.0"
+        },
+        "runtime": {
+          "PushNugetPackageTools.dll": {}
+        }
+      },
+      "Lanymy.Common.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.All/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "0.5.1",
+          "Lanymy.Common.ConstKeys": "0.5.1",
+          "Lanymy.Common.Enums": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.All": "0.5.1",
+          "Lanymy.Common.Helpers.All": "0.5.1",
+          "Lanymy.Common.Instruments.All": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.All.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.ConstKeys/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ConstKeys.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Enums/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Enums.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.ExtensionFunctions.All/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.EnumExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ExpressExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ExtensionFunctions.All.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ExtensionFunctions.DeepCloneExtensions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.ExtensionFunctions.EnumExtensions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.EnumHelper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ExtensionFunctions.EnumExtensions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.ExtensionFunctions.ExpressExtensions/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ExtensionFunctions.ExpressExtensions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.ExtensionFunctions.ObjectExtensions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "0.5.1",
+          "Lanymy.Common.Enums": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ExtensionFunctions.ObjectExtensions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.ExtensionFunctions.StringExtensions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.ExtensionFunctions.StringExtensions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.All/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.ArrayHelper": "0.5.1",
+          "Lanymy.Common.Helpers.CompressionHelper": "0.5.1",
+          "Lanymy.Common.Helpers.DateTimeHelper": "0.5.1",
+          "Lanymy.Common.Helpers.EmailHelper": "0.5.1",
+          "Lanymy.Common.Helpers.EnumHelper": "0.5.1",
+          "Lanymy.Common.Helpers.FileHelper": "0.5.1",
+          "Lanymy.Common.Helpers.FormatHelper": "0.5.1",
+          "Lanymy.Common.Helpers.GenericityHelper": "0.5.1",
+          "Lanymy.Common.Helpers.ImageHelper": "0.5.1",
+          "Lanymy.Common.Helpers.IsolatedStorageHelper": "0.5.1",
+          "Lanymy.Common.Helpers.NetworkHelper": "0.5.1",
+          "Lanymy.Common.Helpers.PathHelper": "0.5.1",
+          "Lanymy.Common.Helpers.PcInfoHelper": "0.5.1",
+          "Lanymy.Common.Helpers.ProcessHelper": "0.5.1",
+          "Lanymy.Common.Helpers.QrCodeHelper": "0.5.1",
+          "Lanymy.Common.Helpers.RegexHelper": "0.5.1",
+          "Lanymy.Common.Helpers.SecurityHelper": "0.5.1",
+          "Lanymy.Common.Helpers.SerialNumberHelper": "0.5.1",
+          "Lanymy.Common.Helpers.SerializeHelper.DataTable": "0.5.1",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "0.5.1",
+          "Lanymy.Common.Helpers.VerificationCodeHelper": "0.5.1",
+          "Lanymy.Common.Helpers.VersionHelper": "0.5.1",
+          "Lanymy.Common.Helpers.Win32Helper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.All.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.ArrayHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "0.5.1",
+          "Lanymy.Common.Instruments.ArrayManipulater": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.ArrayHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.CompressionHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.GenericityHelper": "0.5.1",
+          "Lanymy.Common.Instruments.Compresser": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.CompressionHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.DateTimeHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Enums": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.EnumExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.DateTimeHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.EmailHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.EmailHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.EnumHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CustomMemoryCache": "0.5.1",
+          "Lanymy.Common.Instruments.EnumMapper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.EnumHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.FileHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.PathHelper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.FileHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.FormatHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.FormatHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.GenericityHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.GenericityHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.ImageHelper/0.5.1": {
+        "dependencies": {
+          "System.Drawing.Common": "5.0.0"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.ImageHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.IsolatedStorageHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "0.5.1",
+          "Lanymy.Common.Instruments.IsolatedStorages": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.IsolatedStorageHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.NetworkHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.NetworkHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.PathHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.RegexHelper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.PathHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.PcInfoHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.PcInfoHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.ProcessHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Enums": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.ProcessHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.QrCodeHelper/0.5.1": {
+        "dependencies": {
+          "QRCoder": "1.4.1",
+          "System.Drawing.Common": "5.0.0"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.QrCodeHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.RegexHelper/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.RegexHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.SecurityHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "0.5.1",
+          "Lanymy.Common.Enums": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.ArrayHelper": "0.5.1",
+          "Lanymy.Common.Helpers.CompressionHelper": "0.5.1",
+          "Lanymy.Common.Helpers.FileHelper": "0.5.1",
+          "Lanymy.Common.Helpers.ImageHelper": "0.5.1",
+          "Lanymy.Common.Instruments.Compresser": "0.5.1",
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "0.5.1",
+          "System.Drawing.Common": "5.0.0"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.SecurityHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.SerializeHelper.DataTable/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.SerializeHelper.DataTable.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.SerializeHelper.Json/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.SerializeHelper.Json.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.SerialNumberHelper/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.SerialNumberHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.VerificationCodeHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.VerificationCodeHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.VersionHelper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.VersionHelper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Helpers.Win32Helper/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Helpers.Win32Helper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.All/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.CMD": "0.5.1",
+          "Lanymy.Common.Instruments.Cache.CoreMemoryCache": "0.5.1",
+          "Lanymy.Common.Instruments.Cache.CustomMemoryCache": "0.5.1",
+          "Lanymy.Common.Instruments.Compresser": "0.5.1",
+          "Lanymy.Common.Instruments.EnumMapper": "0.5.1",
+          "Lanymy.Common.Instruments.Ffmpeg": "0.5.1",
+          "Lanymy.Common.Instruments.FileTextManipulater": "0.5.1",
+          "Lanymy.Common.Instruments.IsolatedStorages": "0.5.1",
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.All.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.ArrayManipulater/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Instruments.ArrayManipulater.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.ArrayManipulater.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.ArrayManipulater.Abstractions/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.ArrayManipulater.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Cache.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Cache.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Cache.CoreMemoryCache/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Cache.CoreMemoryCache.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "0.5.1",
+          "Microsoft.Extensions.Caching.Memory": "5.0.0"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Cache.CustomMemoryCache/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Cache.CustomMemoryCache.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.CMD/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.CMD.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.CMD.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.CMD.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.ProcessHelper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.CMD.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Compresser/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.GenericityHelper": "0.5.1",
+          "Lanymy.Common.Instruments.Compresser.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Compresser.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Compresser.Abstractions/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Compresser.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.EnumMapper/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.EnumMapper.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.EnumMapper.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.EnumMapper.Abstractions/0.5.1": {
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.EnumMapper.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1712"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Ffmpeg/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.Ffmpeg.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Ffmpeg.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Ffmpeg.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "0.5.1",
+          "Lanymy.Common.Instruments.CMD": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Ffmpeg.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.FileTextManipulater/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.FileTextManipulater.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.FileTextManipulater.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.FileTextManipulater.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.IsolatedStorages/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.SecurityHelper": "0.5.1",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "0.5.1",
+          "Lanymy.Common.Instruments.IsolatedStorages.Abstractions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.IsolatedStorages.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.IsolatedStorages.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1",
+          "Lanymy.Common.Helpers.PathHelper": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.IsolatedStorages.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Serializer.Abstractions/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "0.5.1"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Serializer.Abstractions.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer/0.5.1": {
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "0.5.1",
+          "Lanymy.Common.Instruments.FileTextManipulater": "0.5.1",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "0.5.1",
+          "Newtonsoft.Json": "12.0.3"
+        },
+        "runtime": {
+          "lib/net5.0/Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer.dll": {
+            "assemblyVersion": "0.5.1.0",
+            "fileVersion": "2020.12.15.1713"
+          }
+        }
+      },
+      "Microsoft.Extensions.Caching.Abstractions/5.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "5.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Caching.Abstractions.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.51904"
+          }
+        }
+      },
+      "Microsoft.Extensions.Caching.Memory/5.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Options": "5.0.0",
+          "Microsoft.Extensions.Primitives": "5.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Caching.Memory.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.51904"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/5.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.51904"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/5.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.51904"
+          }
+        }
+      },
+      "Microsoft.Extensions.Options/5.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Primitives": "5.0.0"
+        },
+        "runtime": {
+          "lib/net5.0/Microsoft.Extensions.Options.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.51904"
+          }
+        }
+      },
+      "Microsoft.Extensions.Primitives/5.0.0": {
+        "runtime": {
+          "lib/netcoreapp3.0/Microsoft.Extensions.Primitives.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.51904"
+          }
+        }
+      },
+      "Microsoft.NETCore.Platforms/5.0.0": {},
+      "Microsoft.Win32.SystemEvents/5.0.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "5.0.0"
+        }
+      },
+      "Newtonsoft.Json/12.0.3": {
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.0.3.23909"
+          }
+        }
+      },
+      "NuGet.Common/5.8.0": {
+        "dependencies": {
+          "NuGet.Frameworks": "5.8.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Common.dll": {
+            "assemblyVersion": "5.8.0.6930",
+            "fileVersion": "5.8.0.6930"
+          }
+        }
+      },
+      "NuGet.Configuration/5.8.0": {
+        "dependencies": {
+          "NuGet.Common": "5.8.0",
+          "System.Security.Cryptography.ProtectedData": "4.4.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Configuration.dll": {
+            "assemblyVersion": "5.8.0.6930",
+            "fileVersion": "5.8.0.6930"
+          }
+        }
+      },
+      "NuGet.Frameworks/5.8.0": {
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Frameworks.dll": {
+            "assemblyVersion": "5.8.0.6930",
+            "fileVersion": "5.8.0.6930"
+          }
+        }
+      },
+      "NuGet.Packaging/5.8.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3",
+          "NuGet.Configuration": "5.8.0",
+          "NuGet.Versioning": "5.8.0",
+          "System.Security.Cryptography.Cng": "5.0.0-preview.3.20214.6",
+          "System.Security.Cryptography.Pkcs": "5.0.0-preview.3.20214.6"
+        },
+        "runtime": {
+          "lib/net5.0/NuGet.Packaging.dll": {
+            "assemblyVersion": "5.8.0.6930",
+            "fileVersion": "5.8.0.6930"
+          }
+        }
+      },
+      "NuGet.Protocol/5.8.0": {
+        "dependencies": {
+          "NuGet.Packaging": "5.8.0"
+        },
+        "runtime": {
+          "lib/net5.0/NuGet.Protocol.dll": {
+            "assemblyVersion": "5.8.0.6930",
+            "fileVersion": "5.8.0.6930"
+          }
+        }
+      },
+      "NuGet.Versioning/5.8.0": {
+        "runtime": {
+          "lib/netstandard2.0/NuGet.Versioning.dll": {
+            "assemblyVersion": "5.8.0.6930",
+            "fileVersion": "5.8.0.6930"
+          }
+        }
+      },
+      "QRCoder/1.4.1": {
+        "dependencies": {
+          "System.Drawing.Common": "5.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/QRCoder.dll": {
+            "assemblyVersion": "1.4.1.0",
+            "fileVersion": "1.4.1.0"
+          }
+        }
+      },
+      "System.Drawing.Common/5.0.0": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "5.0.0"
+        }
+      },
+      "System.Security.Cryptography.Cng/5.0.0-preview.3.20214.6": {},
+      "System.Security.Cryptography.Pkcs/5.0.0-preview.3.20214.6": {
+        "dependencies": {
+          "System.Security.Cryptography.Cng": "5.0.0-preview.3.20214.6"
+        }
+      },
+      "System.Security.Cryptography.ProtectedData/4.4.0": {}
+    }
+  },
+  "libraries": {
+    "PushNugetPackageTools/1.1.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Lanymy.Common.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yOX5hdmvukl7KefZr2h49sXXK11/c2PAb89r3UTj730+Rv92CgRqrsp8xPZ0pdfKyQa2KvoMrRSOOrwh86bZ1Q==",
+      "path": "lanymy.common.abstractions/0.5.1",
+      "hashPath": "lanymy.common.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.All/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-09vvWYojoSunHfXTK9Y7H99G8fxsDP6cMOLeh7sy+Mz61ILmEKAXKk1Rq4VxfB3ayp09gm4NNluFwV3+vv8IPw==",
+      "path": "lanymy.common.all/0.5.1",
+      "hashPath": "lanymy.common.all.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ConstKeys/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nFQ9yqebQnME8dwYSiSS3iI8AQ1LevQFOgxgr13n2tYVhErnqdTyfVuwK7elh4LFyHLSvS/aWrDW2f1Voeihmw==",
+      "path": "lanymy.common.constkeys/0.5.1",
+      "hashPath": "lanymy.common.constkeys.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Enums/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iwBV1TgQ/dylUMpDMx8FY/FE4h2th4oS/cD+ieBuGG0ZDiIF3lCJHWU7GtEKqA6aIjbZi4D7ID88LLXg2qtQNg==",
+      "path": "lanymy.common.enums/0.5.1",
+      "hashPath": "lanymy.common.enums.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ExtensionFunctions.All/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nE7zrXqSSZpTqhR59SZE9M4hUNChzb1m6RpfCdy3M4ErLbGthuJj0wWIJ6I544WRS0LahnF/fXOmFbPCQ3dkuQ==",
+      "path": "lanymy.common.extensionfunctions.all/0.5.1",
+      "hashPath": "lanymy.common.extensionfunctions.all.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YzBd4au/0e+CFxnmSEkh3UKLoYPvTDgXnZtznqX5zy1Jetez0J/1pTyalWkokw/nyJa0fCi5s/Tn4yskNm8LLg==",
+      "path": "lanymy.common.extensionfunctions.deepcloneextensions/0.5.1",
+      "hashPath": "lanymy.common.extensionfunctions.deepcloneextensions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ExtensionFunctions.EnumExtensions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3WtyY3cYmIqhTUeBkjayc7Ioc+4+uxvHSIQ40/VBQsNdE7wDL3Fs0AyCq41JFbgg+PK8Z4D9Ti4nwmcMqnyGvQ==",
+      "path": "lanymy.common.extensionfunctions.enumextensions/0.5.1",
+      "hashPath": "lanymy.common.extensionfunctions.enumextensions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ExtensionFunctions.ExpressExtensions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jLbJPESjF2ysErp6rlL6VW0H59rkMiTnRqplRnIrurbV0yfSyxpJtmdXsXopq0knAcP5ec2FCLEKewb8qd+wiA==",
+      "path": "lanymy.common.extensionfunctions.expressextensions/0.5.1",
+      "hashPath": "lanymy.common.extensionfunctions.expressextensions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ExtensionFunctions.ObjectExtensions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JE47096QysKBwIAsmvs6x/gJh5oxSfkPEgSsRoccosY5gz5cYPmUKGH2t5wCvaVNo/RWG4gIOOLrMHzVDkOJGg==",
+      "path": "lanymy.common.extensionfunctions.objectextensions/0.5.1",
+      "hashPath": "lanymy.common.extensionfunctions.objectextensions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.ExtensionFunctions.StringExtensions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9JJXeuuuzG3lKTmV0e4yw3JTvljkC0LvWpQazS5AJ1dJXGeGWy3RM4fFXp4S9O9GMKb4nyRXpTWf8iH2wU0uJw==",
+      "path": "lanymy.common.extensionfunctions.stringextensions/0.5.1",
+      "hashPath": "lanymy.common.extensionfunctions.stringextensions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.All/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OG6RNHoDrNMqAA6MqvR0anVyhY4MpECuvrsRCbgeu5e5zBqbRiKwhGLKa2Ck+lsSCdpA4w7WJV+/HsayHgm1eA==",
+      "path": "lanymy.common.helpers.all/0.5.1",
+      "hashPath": "lanymy.common.helpers.all.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.ArrayHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fT620ERosrGMr1K/cwQV2Rmw2/FyTamIWO2QsV7raSiuZxv0Ey5S7kMFVZFi4R9d6YFjBIUVJPmaBr8NTdg8fg==",
+      "path": "lanymy.common.helpers.arrayhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.arrayhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.CompressionHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dl06GhBqtH/m3W33iHIYuGB0qK0waSzsGFGHT9UNkA9e2qBe7P0LsxGQ/mwB3UehoH157u8xBT0ng4e+74LMGA==",
+      "path": "lanymy.common.helpers.compressionhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.compressionhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.DateTimeHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-uLV0zrLsDkITOazTpKpZB3Goq8diDsqy8bb8ix+BvuiI6hurMJp/wlYap0bzCl3AGLovobaViYcEpSyyCabj0w==",
+      "path": "lanymy.common.helpers.datetimehelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.datetimehelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.EmailHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-DsYo6UqQvWYXh3o21gl5xYIMGC2dSiFH4/m0CIKnsAfXde26gNup3kkoT+eSum+kucFwe+q46rjICWz9CO9Byw==",
+      "path": "lanymy.common.helpers.emailhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.emailhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.EnumHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7g07jnxxJM03Io4lubCrqEd2ttOy5/mGJvp6p3AXhIynirD6ERSNBT8Q7+x4fuao95vOviLJlxqzCXhEvOvYvQ==",
+      "path": "lanymy.common.helpers.enumhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.enumhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.FileHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kQ/CTg84a2g+/bLy6xm+WlznjiqIdYxfgVE/JGgTcrAiqtSQMdOnHVxB8UrHh5S95MWnpt/qJhXKE25hr75MVQ==",
+      "path": "lanymy.common.helpers.filehelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.filehelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.FormatHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RkPjG5D2TLNy+HXyUjoTn9/fEGdatpZ12LCSWK8qIkehU+tvqWta1qWmzcalYP3iar9HGNqfAdwwHjync2aAhQ==",
+      "path": "lanymy.common.helpers.formathelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.formathelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.GenericityHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fBQvMNsCK+e+hFkhGj2GXkAP7C6oKj0X5XiWfoeRhmDKnUe5M59SUKax74kDhWHPhG9SLRk0CleWvdSowoc0Lw==",
+      "path": "lanymy.common.helpers.genericityhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.genericityhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.ImageHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-krPW/NMj5I5oqN3M8Nz+PmtncaHYNA6IEXfupQ5NPemUkAIsfek4nNDdeFxr3glKhx2h1VXMk7vt9Q4mALuYCQ==",
+      "path": "lanymy.common.helpers.imagehelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.imagehelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.IsolatedStorageHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QQbrBEmww6VwR+wP5x78LMLr9L06ouVb90N5L2iDhBbUoqo5iPwHUCVuT87GVMtJIPrckOuklHGR4KgQtYxqJA==",
+      "path": "lanymy.common.helpers.isolatedstoragehelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.isolatedstoragehelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.NetworkHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pCwWBWt/t6qOnXh0IUikcSnMJwH/zxHRMOgD5vmHRWWJMgJEKiChRDh86+wMtd9k8PTw7YHal5X88J7GaKpI5A==",
+      "path": "lanymy.common.helpers.networkhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.networkhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.PathHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dcbPqMzfmZf7lCu+Vrig8muHsPIgHlap2rWjXn7Cac3gS55Bysw7K14txMg00wUgZdGHx3gwuezJx9U9Bks+FA==",
+      "path": "lanymy.common.helpers.pathhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.pathhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.PcInfoHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UsmJucW0nUXWGTKGz+PHqk4VlKaAsWjQRRimVXzjrCmeMAuS7pzJ7rx+PmFnWyI6QoElKjEjD9DzTHgsubL1Bw==",
+      "path": "lanymy.common.helpers.pcinfohelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.pcinfohelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.ProcessHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yRLseeAce5rsPNJuVbL/Lebo4fHAEONiOl5OTJbJBCxZZ0GNKu2pBwHwMTCUCKJX1806CJWyOEKvO+jZO/T0zA==",
+      "path": "lanymy.common.helpers.processhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.processhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.QrCodeHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-t7KQicLN3W7Q0OMKPMVvgXj6jX1iZMe+bPMnDwdVA/i9w2L+wlVg6i0kIpL+1nqYURHdLnDWeB1eli9FJslKdQ==",
+      "path": "lanymy.common.helpers.qrcodehelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.qrcodehelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.RegexHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Cp0BJJdFLurMz2SIE57PAqsgPzH0qFVBe6P/yQJpr/NhDnsHYEARD3mq7lE3ITWeOOHrH7c8iMvgAAnyt4lusQ==",
+      "path": "lanymy.common.helpers.regexhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.regexhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.SecurityHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Wr04HPkdRqmNYCDK6AS8w/mPI5cXPcOdlEDnwC+KBxZ+uk0Xj+72DMZ53rTLWm3a0W/gPn3LxanFxcGwsC/X0w==",
+      "path": "lanymy.common.helpers.securityhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.securityhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.SerializeHelper.DataTable/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fRCJMdSGyrASq3e4y1t1wT52+loEZt+OPht5FBup9qGMCpwqxVGlUfodnTQi611dXVM3QdTxN3Yu1Fv9LodyEA==",
+      "path": "lanymy.common.helpers.serializehelper.datatable/0.5.1",
+      "hashPath": "lanymy.common.helpers.serializehelper.datatable.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.SerializeHelper.Json/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1TywGd/kMStQTLosuEfxuuExF0bU0dxUIzZP3TQ1ZyHXlJOtKoZx42Kq4Fbtu7HuxYcj5Cx1gg07OUYl1pgO1A==",
+      "path": "lanymy.common.helpers.serializehelper.json/0.5.1",
+      "hashPath": "lanymy.common.helpers.serializehelper.json.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.SerialNumberHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RZ9eqyumEmbY29DP8sVWQl11yMNUEIPMCnUljiCGSQ7eLxi14WZVWlBt8Bsz62W8Gkqubi3YSdxX83C0Zoc3gw==",
+      "path": "lanymy.common.helpers.serialnumberhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.serialnumberhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.VerificationCodeHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VrWAAfcen7p5QNKsrJUX8G3NiXLZWltfMHhQBOPv2ou24VzXEKDDaUk2zNWrCLocPJgtFkBf3LSaGY7hFrjSZg==",
+      "path": "lanymy.common.helpers.verificationcodehelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.verificationcodehelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.VersionHelper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6kwhJ9oY+/URhFQwrDDsz84wZVY+xVVXA3zwHCuJ4eppzUirZLmxN9+0xi9LNw/1nqld1N3MECCmU17VYLSgbA==",
+      "path": "lanymy.common.helpers.versionhelper/0.5.1",
+      "hashPath": "lanymy.common.helpers.versionhelper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Helpers.Win32Helper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WgDKYN/micOVbXLuCFLQBMWEgo+uEsxJAQJ/dDTpV6GtC6Vq5VM9qyLCyeUWcGCPzG9nRqZswGgasaPtxnOCzw==",
+      "path": "lanymy.common.helpers.win32helper/0.5.1",
+      "hashPath": "lanymy.common.helpers.win32helper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.All/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-N1P2s0rKEJ9kswKSzbnLCufbhW5GlAAxNc4aKMo77AuzVxCjjFUTvVVMuwa+9rXJqMpZf7BiS5lgL7D/Bua00A==",
+      "path": "lanymy.common.instruments.all/0.5.1",
+      "hashPath": "lanymy.common.instruments.all.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.ArrayManipulater/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-r/rpfWmv5r+Hw2EFw7IRRDxwY6l9Y7deSN58DYy3GtAY+RtTVQNe1zR15pxiSPMgLd+DUmz7bQEjRC+BxEj1lQ==",
+      "path": "lanymy.common.instruments.arraymanipulater/0.5.1",
+      "hashPath": "lanymy.common.instruments.arraymanipulater.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.ArrayManipulater.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GdNeX2Eu3tByXN3gomQtQQb/2e1sD9bvbopQXn492QGlkTRdWktqA3BEF79RTW0ESA8X4K0EH0LNn14tOFxK9A==",
+      "path": "lanymy.common.instruments.arraymanipulater.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.arraymanipulater.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Cache.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CDCF//8y9e/Tk6IR3T+aY/2OZvXHWEFAN3f3EJdIluUjm7rSyGEDQpznQNUTkxWpADlxvKSG3eE9WitnTHU04A==",
+      "path": "lanymy.common.instruments.cache.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.cache.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Cache.CoreMemoryCache/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qpbp1RZPDjT2cvIgq8j/i0/Qo/9y29KJuNODRYvoxDf5E5t6yGGtShWurVyDV7tWQ9Q8wc7n9hZOY7nPqcngXQ==",
+      "path": "lanymy.common.instruments.cache.corememorycache/0.5.1",
+      "hashPath": "lanymy.common.instruments.cache.corememorycache.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SFC1ft+h0CsRfIngUoQmHFyl1KSkNi8YGK4PQNl0/44Q34/BRbJ/YGC2IGl+4fJ6PIRqOFtUXoJSZnoVrHbJFg==",
+      "path": "lanymy.common.instruments.cache.corememorycache.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.cache.corememorycache.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Cache.CustomMemoryCache/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ELAKCC87ESH1OLyjWoLOWosbIOg9ysvICZR2POo0yxcVATFOpoNnOefEdD6hWJkDZ0S3HQbWYmMru0vyCTkxjA==",
+      "path": "lanymy.common.instruments.cache.custommemorycache/0.5.1",
+      "hashPath": "lanymy.common.instruments.cache.custommemorycache.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.CMD/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kQpWbP3kBAZ+kGW/lJammbrMtx3sCyiRcYjSeWee61yYLkMKf7xrqYCybLDksAKIScVTA5PfG+cCZeGV0Mu0Kw==",
+      "path": "lanymy.common.instruments.cmd/0.5.1",
+      "hashPath": "lanymy.common.instruments.cmd.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.CMD.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0kBeLSQx4gUyqDwMguie+oT5iT/VIC48FqhXTnN3jWsnlFdn6PDxk6rZ5b4OFfVotAVQHPzS956j3QgQG3uFDQ==",
+      "path": "lanymy.common.instruments.cmd.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.cmd.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Compresser/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MK4+1D2SeV0UBlH/8KYB+nByDDPl+gGhb3AsxM5wjhx9p64Qzk2fC1SPlwhBkopsRxr29njuraOmHXBkqiZ9Og==",
+      "path": "lanymy.common.instruments.compresser/0.5.1",
+      "hashPath": "lanymy.common.instruments.compresser.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Compresser.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XIGAiPqW+YoS4WL790ZKFDRC5NwkivETefUrk3piDPEjYp4qxfCHjThzwCNC5JsRDgBgmzTIktsE+HzLMtMkcQ==",
+      "path": "lanymy.common.instruments.compresser.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.compresser.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.EnumMapper/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BNMiN69DdXsCH7SbDEBQSeQj8DqxnWZRd/2A1hefd2T1mqgxGXFHiwRm8DePnaWmY4QwLZilX9wGvknRlXzNCA==",
+      "path": "lanymy.common.instruments.enummapper/0.5.1",
+      "hashPath": "lanymy.common.instruments.enummapper.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.EnumMapper.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TAsXOxMLQooB9myAThGMTaN6e2qd5BdbECWLqC8LYg1/67c4Y/eXY54kbyQpQ4mm3ns6XubobsDrFPC93M3TqA==",
+      "path": "lanymy.common.instruments.enummapper.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.enummapper.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Ffmpeg/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ggNdnAFdwfLvv//mGZFWr1JojJnRFAZ6frpJS9+iOb2o+E0J1ggsneX5t2EAuz7+grvvGavFUx5r8u6UwlDYlg==",
+      "path": "lanymy.common.instruments.ffmpeg/0.5.1",
+      "hashPath": "lanymy.common.instruments.ffmpeg.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Ffmpeg.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Q9jOY63JVyMx4pJaXkTvlH9aQjcSCUwa0v4oLVuZn2OZnvFps6V/W+dKlPuz2fbFnl4cJ05GXk6Q86G3zAzK2g==",
+      "path": "lanymy.common.instruments.ffmpeg.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.ffmpeg.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.FileTextManipulater/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-rgz/eTjF1MUTb5GmxZh/QHtm5GlgFfPJoAkrysFKEt9C8VTcXSj3IlyVu142YGQxhvizJNlP4s9kGBMhRFt2cw==",
+      "path": "lanymy.common.instruments.filetextmanipulater/0.5.1",
+      "hashPath": "lanymy.common.instruments.filetextmanipulater.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.FileTextManipulater.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Rjl6HsKuvu/Zpws8oTnXZNjDj1OnK/sN9BYM3bveXGpvW00cr7faMPZrpBVtPMOZrGcTOlktt9sZ16pNfi92yA==",
+      "path": "lanymy.common.instruments.filetextmanipulater.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.filetextmanipulater.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.IsolatedStorages/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BaWZDPUI2zdQGs1UMxjNbc3TkcFFdGPtFa4urbGvEGt1oWMT20AwIaWD8nfSifM1/A743F0mi7uOsP/ZESrSVA==",
+      "path": "lanymy.common.instruments.isolatedstorages/0.5.1",
+      "hashPath": "lanymy.common.instruments.isolatedstorages.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.IsolatedStorages.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-m7b2Zoz2eA0Veiprl7d32o2/cqViXpONOTmSwC9ZOkVbGqBv2o4cln/F5jjujI2Hn+pMRAHJ3dsHaLcCU6P6IA==",
+      "path": "lanymy.common.instruments.isolatedstorages.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.isolatedstorages.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Serializer.Abstractions/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-q86HBA1UhxdcloNWdJ+B3TjZMYPcOLofROQh+z8d1kDlDD1H4/o+TCc5pKz7bLR+Jf8eJsM8mLjmmbeS2tE+HA==",
+      "path": "lanymy.common.instruments.serializer.abstractions/0.5.1",
+      "hashPath": "lanymy.common.instruments.serializer.abstractions.0.5.1.nupkg.sha512"
+    },
+    "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer/0.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9tAeRer2iHs8WAD9blVV3aMJQOlmLA0RD8Fo+6UkybkVr64Lyhhu2AUXfzYiWcH8CaxWNV0s7iAGfJmWAXETwg==",
+      "path": "lanymy.common.instruments.serializer.jsonnetjsonserializer/0.5.1",
+      "hashPath": "lanymy.common.instruments.serializer.jsonnetjsonserializer.0.5.1.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Caching.Abstractions/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bu8As90/SBAouMZ6fJ+qRNo1X+KgHGrVueFhhYi+E5WqEhcnp2HoWRFnMzXQ6g4RdZbvPowFerSbKNH4Dtg5yg==",
+      "path": "microsoft.extensions.caching.abstractions/5.0.0",
+      "hashPath": "microsoft.extensions.caching.abstractions.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Caching.Memory/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/1qPCleFOkJe0O+xmFqCNLFYQZTJz965sVw8CUB/BQgsApBwzAUsL2BUkDvQW+geRUVTXUS9zLa0pBjC2VJ1gA==",
+      "path": "microsoft.extensions.caching.memory/5.0.0",
+      "hashPath": "microsoft.extensions.caching.memory.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ORj7Zh81gC69TyvmcUm9tSzytcy8AVousi+IVRAI8nLieQjOFryRusSFh7+aLk16FN9pQNqJAiMd7BTKINK0kA==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/5.0.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NxP6ahFcBnnSfwNBi2KH2Oz8Xl5Sm2krjId/jRR3I7teFphwiUoUeZPwTNA21EX+5PtjqmyAvKaOeBXcJjcH/w==",
+      "path": "microsoft.extensions.logging.abstractions/5.0.0",
+      "hashPath": "microsoft.extensions.logging.abstractions.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Options/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CBvR92TCJ5uBIdd9/HzDSrxYak+0W/3+yxrNg8Qm6Bmrkh5L+nu6m3WeazQehcZ5q1/6dDA7J5YdQjim0165zg==",
+      "path": "microsoft.extensions.options/5.0.0",
+      "hashPath": "microsoft.extensions.options.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Primitives/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cI/VWn9G1fghXrNDagX9nYaaB/nokkZn0HYAawGaELQrl8InSezfe9OnfPZLcJq3esXxygh3hkq2c3qoV3SDyQ==",
+      "path": "microsoft.extensions.primitives/5.0.0",
+      "hashPath": "microsoft.extensions.primitives.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.NETCore.Platforms/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
+      "path": "microsoft.netcore.platforms/5.0.0",
+      "hashPath": "microsoft.netcore.platforms.5.0.0.nupkg.sha512"
+    },
+    "Microsoft.Win32.SystemEvents/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Bh6blKG8VAKvXiLe2L+sEsn62nc1Ij34MrNxepD2OCrS5cpCwQa9MeLyhVQPQ/R4Wlzwuy6wMK8hLb11QPDRsQ==",
+      "path": "microsoft.win32.systemevents/5.0.0",
+      "hashPath": "microsoft.win32.systemevents.5.0.0.nupkg.sha512"
+    },
+    "Newtonsoft.Json/12.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
+      "path": "newtonsoft.json/12.0.3",
+      "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
+    },
+    "NuGet.Common/5.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ipJzbjfJsfkjeCzvbIimbnAnDgPXBrPhQP9rmFYxmyt3Zh8Kw5F78Th/CWeY58D25uq7OwOwAGodXDhdmqNdpw==",
+      "path": "nuget.common/5.8.0",
+      "hashPath": "nuget.common.5.8.0.nupkg.sha512"
+    },
+    "NuGet.Configuration/5.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gmgN/33Q3UtK/HRnBdwiZkSwUXubjswqLjagNbVyQBNyH5/lO6ceWJ2ePKcwkZxtgdiYGG32FDs02DZdGuXl+Q==",
+      "path": "nuget.configuration/5.8.0",
+      "hashPath": "nuget.configuration.5.8.0.nupkg.sha512"
+    },
+    "NuGet.Frameworks/5.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qmHdiRcRNSZS9cNMzzCyAb4veOBQnc4r/y+VKkPKpIm6cXBTYgVEoX6J7zVwTwT83xNIuRWwBrDotIUIc4nOSQ==",
+      "path": "nuget.frameworks/5.8.0",
+      "hashPath": "nuget.frameworks.5.8.0.nupkg.sha512"
+    },
+    "NuGet.Packaging/5.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-4L/wKykECl34rK6wmkzrqpjh8tNOpGyJmUbBO/BY/wMQh0KcmTuBqVYnOrjfwzbT0uLeUHanzCX5WJa+09RUgA==",
+      "path": "nuget.packaging/5.8.0",
+      "hashPath": "nuget.packaging.5.8.0.nupkg.sha512"
+    },
+    "NuGet.Protocol/5.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5SOtSbO7jJP2f5jXBSdmm+Hd1sTPBibzJorw+DywjKU8JCF0yBw3h81Ek6qOuHVc8stmfR+srn3u9ExRxuwcUA==",
+      "path": "nuget.protocol/5.8.0",
+      "hashPath": "nuget.protocol.5.8.0.nupkg.sha512"
+    },
+    "NuGet.Versioning/5.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0JqM9Tbpg3+CwXBXzLv64BMUru//UZVxfVy48ng7CQ5rNuI/4xI43jxXWkqM8MfLs6RibhadzQeNWB82gW7JDw==",
+      "path": "nuget.versioning/5.8.0",
+      "hashPath": "nuget.versioning.5.8.0.nupkg.sha512"
+    },
+    "QRCoder/1.4.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-W8KwCwsOJe9SI7Cm7XeIMawd08F/US6xNw34lg2Qnx6m7GYYakxbyBQaNoW1Q75oJOmX/32sJUZr6Cix2B6GUQ==",
+      "path": "qrcoder/1.4.1",
+      "hashPath": "qrcoder.1.4.1.nupkg.sha512"
+    },
+    "System.Drawing.Common/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-SztFwAnpfKC8+sEKXAFxCBWhKQaEd97EiOL7oZJZP56zbqnLpmxACWA8aGseaUExciuEAUuR9dY8f7HkTRAdnw==",
+      "path": "system.drawing.common/5.0.0",
+      "hashPath": "system.drawing.common.5.0.0.nupkg.sha512"
+    },
+    "System.Security.Cryptography.Cng/5.0.0-preview.3.20214.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dqufaGuwo4a3yhe49TuH0ZCSCAktOAkbSMCpH2JcGHBxJzy8h1q4RVM5p2XzshduIRXn646ipkKg9qPIEnjr6g==",
+      "path": "system.security.cryptography.cng/5.0.0-preview.3.20214.6",
+      "hashPath": "system.security.cryptography.cng.5.0.0-preview.3.20214.6.nupkg.sha512"
+    },
+    "System.Security.Cryptography.Pkcs/5.0.0-preview.3.20214.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wg02cS0DJRtdcYF0N0hRjY7WCFWFZXZyOXNvJeWD0SSFk6zrrp1t3iFVfRcHg2vIJ/q5NFcXVRvS6TLbSWxdzw==",
+      "path": "system.security.cryptography.pkcs/5.0.0-preview.3.20214.6",
+      "hashPath": "system.security.cryptography.pkcs.5.0.0-preview.3.20214.6.nupkg.sha512"
+    },
+    "System.Security.Cryptography.ProtectedData/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cJV7ScGW7EhatRsjehfvvYVBvtiSMKgN8bOVI0bQhnF5bU7vnHVIsH49Kva7i7GWaWYvmEzkYVk1TC+gZYBEog==",
+      "path": "system.security.cryptography.protecteddata/4.4.0",
+      "hashPath": "system.security.cryptography.protecteddata.4.4.0.nupkg.sha512"
+    }
+  }
+}
