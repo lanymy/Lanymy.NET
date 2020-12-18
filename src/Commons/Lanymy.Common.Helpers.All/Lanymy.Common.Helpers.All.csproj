@@ -29,7 +29,9 @@
     <ProjectReference Include="..\Lanymy.Common.Helpers.GenericityHelper\Lanymy.Common.Helpers.GenericityHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.PathHelper\Lanymy.Common.Helpers.PathHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.RegexHelper\Lanymy.Common.Helpers.RegexHelper.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.Binary\Lanymy.Common.Helpers.SerializeHelper.Binary.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.DataTable\Lanymy.Common.Helpers.SerializeHelper.DataTable.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.File\Lanymy.Common.Helpers.SerializeHelper.File.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.Json\Lanymy.Common.Helpers.SerializeHelper.Json.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.ProcessHelper\Lanymy.Common.Helpers.ProcessHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.PcInfoHelper\Lanymy.Common.Helpers.PcInfoHelper.csproj" />
