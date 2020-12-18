@@ -156,11 +156,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.All", "Common
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.IsolatedStoragesTests", "UnitTests\Lanymy.Common.Instruments.IsolatedStoragesTests\Lanymy.Common.Instruments.IsolatedStoragesTests.csproj", "{4D1161C6-5C25-48C5-BA70-0F68584A813E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.ExtensionFunctions.ExpressExtensions", "Commons\Lanymy.Common.ExtensionFunctions.ExpressExtensions\Lanymy.Common.ExtensionFunctions.ExpressExtensions.csproj", "{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.ExtensionFunctions.ExpressExtensions", "Commons\Lanymy.Common.ExtensionFunctions.ExpressExtensions\Lanymy.Common.ExtensionFunctions.ExpressExtensions.csproj", "{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.PipeLine.Abstractions", "Commons\Lanymy.Common.Instruments.PipeLine.Abstractions\Lanymy.Common.Instruments.PipeLine.Abstractions.csproj", "{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.PipeLine.Abstractions", "Commons\Lanymy.Common.Instruments.PipeLine.Abstractions\Lanymy.Common.Instruments.PipeLine.Abstractions.csproj", "{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.PipeLine", "Commons\Lanymy.Common.Instruments.PipeLine\Lanymy.Common.Instruments.PipeLine.csproj", "{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.PipeLine", "Commons\Lanymy.Common.Instruments.PipeLine\Lanymy.Common.Instruments.PipeLine.csproj", "{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Helpers.SerializeHelper.File", "Commons\Lanymy.Common.Helpers.SerializeHelper.File\Lanymy.Common.Helpers.SerializeHelper.File.csproj", "{57D6FFDE-8341-45F1-9E38-8642B8E5E551}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Helpers.SerializeHelper.Binary", "Commons\Lanymy.Common.Helpers.SerializeHelper.Binary\Lanymy.Common.Helpers.SerializeHelper.Binary.csproj", "{370E9694-EEA5-4C90-8952-78B79006036C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -408,6 +412,14 @@ Global
 		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57D6FFDE-8341-45F1-9E38-8642B8E5E551}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57D6FFDE-8341-45F1-9E38-8642B8E5E551}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57D6FFDE-8341-45F1-9E38-8642B8E5E551}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57D6FFDE-8341-45F1-9E38-8642B8E5E551}.Release|Any CPU.Build.0 = Release|Any CPU
+		{370E9694-EEA5-4C90-8952-78B79006036C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{370E9694-EEA5-4C90-8952-78B79006036C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{370E9694-EEA5-4C90-8952-78B79006036C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{370E9694-EEA5-4C90-8952-78B79006036C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -480,6 +492,8 @@ Global
 		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384} = {C468937A-C820-496E-8F25-116117E529AB}
 		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
+		{57D6FFDE-8341-45F1-9E38-8642B8E5E551} = {3B900869-179B-40F2-AA49-7C55517A46E4}
+		{370E9694-EEA5-4C90-8952-78B79006036C} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A243EC36-342D-4E8F-B0D3-5D20B7B8FE81}
