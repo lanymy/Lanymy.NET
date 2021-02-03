@@ -33,7 +33,7 @@
     <ProjectReference Include="..\Lanymy.Common.Instruments.Compresser\Lanymy.Common.Instruments.Compresser.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Ffmpeg\Lanymy.Common.Instruments.Ffmpeg.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.IsolatedStorages\Lanymy.Common.Instruments.IsolatedStorages.csproj" />
-
+    <ProjectReference Include="..\Lanymy.Common.Instruments.WorkTaskQueue\Lanymy.Common.Instruments.WorkTaskQueue.csproj" />
   </ItemGroup>
 
 

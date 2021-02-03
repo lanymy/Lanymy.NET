@@ -162,9 +162,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.PipeLine", "Commons\Lanymy.Common.Instruments.PipeLine\Lanymy.Common.Instruments.PipeLine.csproj", "{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Helpers.SerializeHelper.File", "Commons\Lanymy.Common.Helpers.SerializeHelper.File\Lanymy.Common.Helpers.SerializeHelper.File.csproj", "{57D6FFDE-8341-45F1-9E38-8642B8E5E551}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Helpers.SerializeHelper.File", "Commons\Lanymy.Common.Helpers.SerializeHelper.File\Lanymy.Common.Helpers.SerializeHelper.File.csproj", "{57D6FFDE-8341-45F1-9E38-8642B8E5E551}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Helpers.SerializeHelper.Binary", "Commons\Lanymy.Common.Helpers.SerializeHelper.Binary\Lanymy.Common.Helpers.SerializeHelper.Binary.csproj", "{370E9694-EEA5-4C90-8952-78B79006036C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Helpers.SerializeHelper.Binary", "Commons\Lanymy.Common.Helpers.SerializeHelper.Binary\Lanymy.Common.Helpers.SerializeHelper.Binary.csproj", "{370E9694-EEA5-4C90-8952-78B79006036C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.WorkTaskQueue", "Commons\Lanymy.Common.Instruments.WorkTaskQueue\Lanymy.Common.Instruments.WorkTaskQueue.csproj", "{F6A84E7E-0520-4A61-952B-2A7D85CE5111}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -420,6 +422,10 @@ Global
 		{370E9694-EEA5-4C90-8952-78B79006036C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{370E9694-EEA5-4C90-8952-78B79006036C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{370E9694-EEA5-4C90-8952-78B79006036C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -494,6 +500,7 @@ Global
 		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 		{57D6FFDE-8341-45F1-9E38-8642B8E5E551} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 		{370E9694-EEA5-4C90-8952-78B79006036C} = {3B900869-179B-40F2-AA49-7C55517A46E4}
+		{F6A84E7E-0520-4A61-952B-2A7D85CE5111} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A243EC36-342D-4E8F-B0D3-5D20B7B8FE81}

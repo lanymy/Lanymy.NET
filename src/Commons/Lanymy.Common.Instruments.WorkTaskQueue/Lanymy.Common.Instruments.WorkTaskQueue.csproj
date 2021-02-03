@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Header.props" />
+
+
+  <PropertyGroup>
+ 
+
+  </PropertyGroup>
+
+
+  <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Footer.props" />
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ObjectExtensions\Lanymy.Common.ExtensionFunctions.ObjectExtensions.csproj" />
+  </ItemGroup>
+
+
+
+
+
+</Project>
