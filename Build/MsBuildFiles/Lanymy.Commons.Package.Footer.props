@@ -21,6 +21,12 @@
 
     <PackageId>$(CurrentBuildProjectName)</PackageId>
 
+    <PackageProjectUrl>https://github.com/lanymy/Lanymy.NET</PackageProjectUrl>
+
+    <RepositoryUrl>https://github.com/lanymy/Lanymy.NET</RepositoryUrl>
+
+    <RepositoryType>git</RepositoryType>
+
     <Authors>Lanymy</Authors>
 
     <Company>Copyright © Lanymy 2019</Company>
