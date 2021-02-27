@@ -1,7 +1,7 @@
 ﻿using System;
 using Lanymy.Common.Enums;
 
-namespace Xb.Common.Helpers.SecurityModels
+namespace Lanymy.Common.Helpers.SecurityModels
 {
     /// <summary>
     /// 加密 摘要信息 基类 实体类

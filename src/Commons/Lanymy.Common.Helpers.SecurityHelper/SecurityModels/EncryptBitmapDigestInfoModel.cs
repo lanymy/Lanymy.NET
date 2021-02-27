@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Xb.Common.Helpers.SecurityModels
+namespace Lanymy.Common.Helpers.SecurityModels
 {
     public class EncryptBitmapDigestInfoModel : EncryptDigestInfoModel
     {

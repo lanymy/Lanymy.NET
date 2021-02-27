@@ -9,11 +9,12 @@ using System.Text;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
-using Xb.Common.Helpers;
-using Xb.Common.Helpers.SecurityModels;
+using Lanymy.Common.Helpers.SecurityModels;
 
 namespace Lanymy.Common.Helpers
 {
+
+
     /// <summary>
     /// 安全加密类 辅助方法
     /// </summary>
@@ -21,7 +22,7 @@ namespace Lanymy.Common.Helpers
     {
 
 
-        private const string SPLIT_STRING = "[$@xbcx@$]";
+        private const string SPLIT_STRING = "[$@lanymy@$]";
 
 
         /// <summary>
