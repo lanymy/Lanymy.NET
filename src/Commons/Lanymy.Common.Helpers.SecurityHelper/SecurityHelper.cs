@@ -9,10 +9,14 @@ using System.Text;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
-using Lanymy.Common.Helpers.SecurityModels;
+using Lanymy.Common.Instruments;
+using Lanymy.Common.Instruments.CryptoModels;
+using Lanymy.Common.Instruments.Interfaces;
 
 namespace Lanymy.Common.Helpers
 {
+
+
 
 
     /// <summary>
@@ -22,912 +26,165 @@ namespace Lanymy.Common.Helpers
     {
 
 
-        private const string SPLIT_STRING = "[$@lanymy@$]";
 
+        public static readonly ICrypto DefaultLanymyCrypto = new LanymyCrypto();
 
-        /// <summary>
-        /// 默认密钥
-        /// </summary>
-        private const string DEFAULT_SECURITY_KEY = DefaultSettingKeys.DEFAULT_SECURITY_KEY;
+        #region Stream
 
-        /// <summary>
-        /// 加密文件头摘要信息的长度 二进制数组的 长度
-        /// </summary>
-        private const int ENCRYPT_HEADER_INFO_BYTES_LENGTH = sizeof(int);
-
-        /// <summary>
-        /// 加密 后 正文二进制数组 长度
-        /// </summary>
-        private const int ENCRYPT_AFTER_CONTENT_BYTES_LENGTH = sizeof(long);
-
-        /// <summary>
-        /// 加密种子头部标识数据长度
-        /// </summary>
-        private const int ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH = 17;
-
-        ///// <summary>
-        ///// 二进制 数组 SHA256 哈希散列算法 哈希值 长度
-        ///// </summary>
-        //private const int BYTES_HASH_CODE_LENGTH = 64;
-
-        /// <summary>
-        /// 二进制 数组 SHA1 哈希散列算法 哈希值 长度
-        /// </summary>
-        private const int BYTES_HASH_CODE_LENGTH = 40;
-
-        /// <summary>
-        /// 当前 哈希散列算法 加密类型
-        /// </summary>
-        private static readonly HashAlgorithmTypeEnum _CurrentHashAlgorithmType = HashAlgorithmTypeEnum.SHA1;
-
-
-
-        private static byte[] GetSecurityKey16Bytes(string securityKey, Encoding encoding)
+        public static EncryptDigestInfoModel EncryptStreamToStream(Stream sourceStream, Stream encryptStream, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoStream cryptoStream = null)
         {
-            const int keySize = 16;
-            byte[] bytes = encoding.GetBytes(securityKey);
+            return GenericityHelper.GetInterface(cryptoStream, DefaultLanymyCrypto).EncryptStreamToStream(sourceStream, encryptStream, secretKey, ifRandom, encoding);
+        }
 
-            return bytes.Length >= keySize ? bytes.Take(keySize).ToArray() : ArrayHelper.MergerArray(bytes, new byte[keySize - bytes.Length]);
+        public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, Encoding encoding = null, ICryptoStream cryptoStream = null)
+        {
+            return GenericityHelper.GetInterface(cryptoStream, DefaultLanymyCrypto).GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, encoding);
         }
 
 
-        //public static TEncryptResultModel EncryptStreamToStream<TEncryptHeaderInfoModel, TEncryptResultModel>(Stream sourceStream, Stream encryptStream, string secretKey = null, bool ifRandom = true, TEncryptHeaderInfoModel encryptHeaderInfoModel = null, Encoding encoding = null)
-        //    where TEncryptHeaderInfoModel : BaseEncryptHeaderInfoModel, new()
-        //    where TEncryptResultModel : BaseEncryptResultModel<TEncryptHeaderInfoModel>, new()
-        public static TEncryptDigestInfoModel EncryptStreamToStream<TEncryptDigestInfoModel>(Stream sourceStream, Stream encryptStream, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType, string secretKey = null, bool ifRandom = true, TEncryptDigestInfoModel encryptDigestInfoModel = null, Encoding encoding = null)
-            where TEncryptDigestInfoModel : EncryptDigestInfoModel, new()
+        public static EncryptDigestInfoModel DencryptStreamFromStream(Stream encryptedStream, Stream sourceStream, string secretKey = null, Encoding encoding = null, ICryptoStream cryptoStream = null)
         {
-
-
-            if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_SECURITY_KEY;
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            //密钥必须16位
-            byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
-
-            long contentStartPosition = 0;
-
-            using (var compressionStream = new GZipStream(encryptStream, CompressionMode.Compress, true))
-            using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateEncryptor(secretKeyBytes, secretKeyBytes))
-            using (CryptoStream cryptoStream = new CryptoStream(compressionStream, transform, CryptoStreamMode.Write))
-            {
-
-                //byte序列说明 byte1随机种子标识位 (----17位时间戳随机数----) utf8编码40头摘要哈希值 int4头摘要长度 byte*头摘要信息(不使用随机种子加密的时候,不能带时间日期属性,否则加密结果信息无法每次固定一致) long8正文大小 utf8编码40正文哈希值  
-
-                if (encryptDigestInfoModel.IfIsNullOrEmpty())
-                {
-                    encryptDigestInfoModel = new TEncryptDigestInfoModel();
-                }
-
-                encryptDigestInfoModel.SecurityEncryptDirectionType = securityEncryptDirectionType;
-                encryptDigestInfoModel.IsRandomEncrypt = ifRandom;
-                encryptDigestInfoModel.SourceBytesSize = sourceStream.Length;
-                encryptDigestInfoModel.SourceBytesHashCode = FileHelper.GetStreamHashCode(sourceStream, hashAlgorithmType: _CurrentHashAlgorithmType);
-                encryptDigestInfoModel.CreateDateTime = null;
-
-                sourceStream.Position = 0;
-
-
-                //写入 随机加密 标识符
-                encryptStream.Write(new[] { ifRandom ? (byte)1 : (byte)0 }, 0, 1);
-
-
-                if (ifRandom)
-                {
-                    //当不使用随机加密时,此属性没有实际意义,因为无法把不固定的时间戳编码到加密后二进制序列中,使加密后二进制序列每次加密结果都一致
-                    //只有在随机加密情况下 才会 赋值时间戳
-                    encryptDigestInfoModel.CreateDateTime = DateTime.Now;
-
-                    string headerFlagDataString = new string(DateTime.Now.ToString(DateTimeFormatKeys.DATE_TIME_FORMAT_2).Reverse().ToArray());
-                    var headerFlagDataStringBytes = Encoding.UTF8.GetBytes(headerFlagDataString);
-
-                    //写入随机种子标识位
-                    encryptStream.Write(headerFlagDataStringBytes, 0, ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH);
-
-
-                }
-
-
-                //头摘要实体类二进制数据
-                var encryptModelJson = JsonSerializeHelper.SerializeToJson(encryptDigestInfoModel);
-                var encryptModelJsonBytes = CompressionHelper.CompressStringToBytes(encryptModelJson, encoding);
-                //头摘要实体类二进制数据 长度的二进制数据
-                int encryptModelBytesLength = encryptModelJsonBytes.Length;
-                var encryptModelBytesLengthBytes = BitConverter.GetBytes(encryptModelBytesLength);
-                //头摘要实体类二进制数据 哈希值 二进制数据
-                var encryptModelJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
-                var encryptModelJsonBytesHashCodeBytes = encoding.GetBytes(encryptModelJsonBytesHashCode);
-
-                //写入 头摘要 哈希值
-                encryptStream.Write(encryptModelJsonBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
-
-                //写入头摘要长度
-                encryptStream.Write(encryptModelBytesLengthBytes, 0, ENCRYPT_HEADER_INFO_BYTES_LENGTH);
-
-                //写入头摘要数据
-                encryptStream.Write(encryptModelJsonBytes, 0, encryptModelJsonBytes.Length);
-
-                //写入 正文 大小占位符
-                encryptStream.Write(new byte[ENCRYPT_AFTER_CONTENT_BYTES_LENGTH], 0, ENCRYPT_AFTER_CONTENT_BYTES_LENGTH);
-
-                //写入 正文 大小哈希值 占位符
-                encryptStream.Write(new byte[BYTES_HASH_CODE_LENGTH], 0, BYTES_HASH_CODE_LENGTH);
-
-                encryptStream.Flush();
-
-                contentStartPosition = encryptStream.Position;
-
-                //写入 正文 数据流
-                sourceStream.CopyToAsync(cryptoStream).Wait();
-                cryptoStream.FlushFinalBlock();
-
-            }
-
-
-            encryptStream.Flush();
-
-
-
-            //加密后数据流总大小
-            long encryptAfterBytesLength = encryptStream.Length;
-            var encryptAfterBytesLengthBytes = BitConverter.GetBytes(encryptAfterBytesLength);
-
-            //加密后 正文数据流 大小
-            long encryptAfterContentBytesLength = encryptAfterBytesLength - contentStartPosition;
-            var encryptAfterContentBytesLengthBytes = BitConverter.GetBytes(encryptAfterContentBytesLength);
-
-            //加密后 正文数据流 哈希值
-            var encryptAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptStream, (int)contentStartPosition, _CurrentHashAlgorithmType);
-            var encryptAfterContentBytesHashCodeBytes = encoding.GetBytes(encryptAfterContentBytesHashCode);
-
-            encryptStream.Position = contentStartPosition - BYTES_HASH_CODE_LENGTH - ENCRYPT_AFTER_CONTENT_BYTES_LENGTH;
-
-            //写入正文大小二进制数据
-            encryptStream.Write(encryptAfterContentBytesLengthBytes, 0, ENCRYPT_AFTER_CONTENT_BYTES_LENGTH);
-
-            //写入正文哈希值二进制数据
-            encryptStream.Write(encryptAfterContentBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
-
-            encryptStream.Flush();
-
-            //加密后完整数据流哈希值
-            var encryptAfterBytesHashCode = FileHelper.GetStreamHashCode(encryptStream, hashAlgorithmType: _CurrentHashAlgorithmType);
-
-            encryptDigestInfoModel.EncryptBytesSize = encryptAfterBytesLength;
-            encryptDigestInfoModel.EncryptBytesHashCode = encryptAfterBytesHashCode;
-            encryptDigestInfoModel.EncryptContentBytesSize = encryptAfterContentBytesLength;
-            encryptDigestInfoModel.EncryptContentBytesHashCode = encryptAfterContentBytesHashCode;
-
-            encryptStream.Position = encryptAfterBytesLength;
-
-            //var encryptResultModel = new EncryptResultModel<TEncryptDigestInfoModel>
-            //{
-            //    IsSuccess = true,
-            //    HeaderInfoModel = encryptDigestInfoModel,
-            //};
-
-            //return encryptResultModel;
-
-            encryptDigestInfoModel.IsSuccess = true;
-
-            return encryptDigestInfoModel;
-
+            return GenericityHelper.GetInterface(cryptoStream, DefaultLanymyCrypto).DencryptStreamFromStream(encryptedStream, sourceStream, secretKey, encoding);
         }
 
 
-        //public static TEncryptResultModel GetHeaderInfoModelFromEncryptedStream<TEncryptHeaderInfoModel, TEncryptResultModel>(Stream encryptedStream, string secretKey = null, Encoding encoding = null)
-        //    where TEncryptHeaderInfoModel : BaseEncryptHeaderInfoModel, new()
-        //    where TEncryptResultModel : BaseEncryptResultModel<TEncryptHeaderInfoModel>, new()
-        //public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, string secretKey = null, Encoding encoding = null)
-        public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, Encoding encoding = null)
+        #endregion
+
+
+        #region Bytes
+
+
+        public static EncryptBytesDigestInfoModel EncryptBytesToBytes(byte[] bytesToEncrypt, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoBytes cryptoBytes = null)
         {
-
-            //if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_SECURITY_KEY;
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            //var encryptResultModel = new EncryptResultModel<EncryptDigestInfoModel>
-            //{
-            //    IsSuccess = false,
-            //};
-
-            var encryptResultModel = new EncryptDigestInfoModel
-            {
-                IsSuccess = false,
-            };
-
-            ////密钥必须16位
-            //byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
-
-
-            encryptedStream.Position = 0;
-
-            //提取随机种子标识位
-            var ifRandomBytes = new byte[1];
-            encryptedStream.Read(ifRandomBytes, 0, 1);
-
-            bool ifRandom = ifRandomBytes[0] != 0;
-
-            if (ifRandom)
-            {
-
-                //encryptedStream.Position += ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH;
-
-                //提取随机种子标识位
-                var headerFlagDataStringBytes = new byte[ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH];
-                encryptedStream.Read(headerFlagDataStringBytes, 0, ENCRYPT_RANDOM_HEADER_FLAG_DATA_LENGTH);
-                var headerFlagDataString = Encoding.UTF8.GetString(headerFlagDataStringBytes);
-
-            }
-
-            //提取头摘要哈希值
-            var encryptModelJsonBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
-            encryptedStream.Read(encryptModelJsonBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
-            var encryptModelJsonBytesHashCode = encoding.GetString(encryptModelJsonBytesHashCodeBytes);
-
-            //提取头摘要长度
-            var encryptModelBytesLengthBytes = new byte[ENCRYPT_HEADER_INFO_BYTES_LENGTH];
-            encryptedStream.Read(encryptModelBytesLengthBytes, 0, ENCRYPT_HEADER_INFO_BYTES_LENGTH);
-            int encryptModelBytesLength = BitConverter.ToInt32(encryptModelBytesLengthBytes, 0);
-
-            //提取头摘要信息
-            var encryptModelJsonBytes = new byte[encryptModelBytesLength];
-            encryptedStream.Read(encryptModelJsonBytes, 0, encryptModelBytesLength);
-            var encryptModelHeaderJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
-
-            if (encryptModelJsonBytesHashCode != encryptModelHeaderJsonBytesHashCode)
-            {
-                encryptResultModel.ErrorMessage = "指纹信息效验失败,无法继续解析";
-                return encryptResultModel;
-            }
-
-            var encryptModelJson = string.Empty;
-            EncryptDigestInfoModel encryptHeaderModel;
-
-            try
-            {
-
-                encryptModelJson = CompressionHelper.DecompressStringFromBytes(encryptModelJsonBytes);
-                encryptHeaderModel = JsonSerializeHelper.DeserializeFromJson<EncryptDigestInfoModel>(encryptModelJson);
-                encryptHeaderModel.DencryptHeaderInfoModelJsonString = encryptModelJson;
-
-            }
-            catch (Exception e)
-            {
-                encryptResultModel.ErrorMessage = "指纹信息解析失败,无法继续解析";
-                return encryptResultModel;
-            }
-
-
-            //提取正文大小
-            var encryptAfterContentBytesLengthBytes = new byte[ENCRYPT_AFTER_CONTENT_BYTES_LENGTH];
-            encryptedStream.Read(encryptAfterContentBytesLengthBytes, 0, ENCRYPT_AFTER_CONTENT_BYTES_LENGTH);
-            long encryptAfterContentBytesLength = BitConverter.ToInt64(encryptAfterContentBytesLengthBytes, 0);
-            //提取正文哈希值
-            var encryptAfterContentBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
-            encryptedStream.Read(encryptAfterContentBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
-            var encryptAfterContentBytesHashCode = encoding.GetString(encryptAfterContentBytesHashCodeBytes);
-
-            var currentPosition = encryptedStream.Position;
-
-            var encryptedAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, (int)currentPosition, _CurrentHashAlgorithmType);
-
-            if (encryptAfterContentBytesHashCode != encryptedAfterContentBytesHashCode)
-            {
-                encryptResultModel.ErrorMessage = "加密信息效验失败,无法继续解析";
-                return encryptResultModel;
-            }
-
-            //只有在随机加密情况下 时间戳才有值
-            //encryptHeaderModel.CreateDateTime
-
-            encryptHeaderModel.EncryptBytesSize = encryptedStream.Length;
-            encryptHeaderModel.EncryptBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, hashAlgorithmType: _CurrentHashAlgorithmType);
-            encryptHeaderModel.EncryptContentBytesSize = encryptAfterContentBytesLength;
-            encryptHeaderModel.EncryptContentBytesHashCode = encryptAfterContentBytesHashCode;
-
-            dynamic json = Newtonsoft.Json.Linq.JToken.Parse(encryptHeaderModel.DencryptHeaderInfoModelJsonString);
-            json.EncryptBytesSize = encryptHeaderModel.EncryptBytesSize;
-            json.EncryptBytesHashCode = encryptHeaderModel.EncryptBytesHashCode;
-            json.EncryptContentBytesSize = encryptHeaderModel.EncryptContentBytesSize;
-            json.EncryptContentBytesHashCode = encryptHeaderModel.EncryptContentBytesHashCode;
-            var jsonNew = json.ToString();
-            encryptHeaderModel.DencryptHeaderInfoModelJsonString = jsonNew;
-
-            encryptedStream.Position = currentPosition;
-
-            //encryptResultModel.IsSuccess = true;
-            //encryptResultModel.HeaderInfoModel = encryptHeaderModel;
-
-            //return encryptResultModel;
-
-            encryptHeaderModel.IsSuccess = true;
-
-            return encryptHeaderModel;
-
+            return GenericityHelper.GetInterface(cryptoBytes, DefaultLanymyCrypto).EncryptBytesToBytes(bytesToEncrypt, secretKey, ifRandom, encoding);
         }
 
-        public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedFile(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null)
+        public static EncryptBytesDigestInfoModel DecryptBytesFromBytes(byte[] bytesToDecrypt, string secretKey = null, Encoding encoding = null, ICryptoBytes cryptoBytes = null)
         {
-            EncryptDigestInfoModel encryptDigestInfoModel;
-
-            using (var encryptedStream = File.OpenRead(encryptedFileFullPath))
-            {
-                //encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, secretKey, encoding);
-                encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, encoding);
-
-            }
-
-            return encryptDigestInfoModel;
+            return GenericityHelper.GetInterface(cryptoBytes, DefaultLanymyCrypto).DecryptBytesFromBytes(bytesToDecrypt, secretKey, encoding);
         }
 
-
-        public static EncryptDigestInfoModel DencryptStreamFromStream(Stream encryptedStream, Stream sourceStream, string secretKey = null, Encoding encoding = null)
+        public static EncryptStringFileDigestInfoModel EncryptBytesToFile(byte[] sourceBytes, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoBytes cryptoBytes = null)
         {
-
-            if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_SECURITY_KEY;
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            //var encryptResultModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, secretKey, encoding);
-            var encryptResultModel = GetEncryptDigestInfoModelFromEncryptedStream(encryptedStream, encoding);
-
-            if (!encryptResultModel.IsSuccess)
-            {
-                return encryptResultModel;
-            }
-
-            //密钥必须16位
-            byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
-
-            using (var decompressionStream = new GZipStream(encryptedStream, CompressionMode.Decompress, true))
-            using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateDecryptor(secretKeyBytes, secretKeyBytes))
-            using (CryptoStream cryptoStream = new CryptoStream(decompressionStream, transform, CryptoStreamMode.Read))
-            {
-
-                cryptoStream.CopyToAsync(sourceStream).Wait();
-
-            }
-
-            ////效验头摘要信息和解密后数据流大小和哈希值
-            ////var sourceStreamLength = sourceStream.Length;
-            //var sourceStreamHashCode = FileHelper.GetStreamHashCode(sourceStream);
-
-            //if (encryptResultModel.HeaderInfoModel.SourceBytesHashCode != sourceStreamHashCode)
-            //{
-
-            //}
-
-            return encryptResultModel;
-
+            return GenericityHelper.GetInterface(cryptoBytes, DefaultLanymyCrypto).EncryptBytesToFile(sourceBytes, encryptFileFullPath, secretKey, ifRandom, encoding);
         }
 
-
-        /// <summary>
-        /// 二进制数组加密 返回加密后的二进制数组
-        /// </summary>
-        /// <param name="bytesToEncrypt">要加密的二进制数组</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
-        /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptBytesDigestInfoModel EncryptBytesToBytes(byte[] bytesToEncrypt, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.BytesToBytes, EncryptDigestInfoModel encryptDigestInfoModel = null)
+        public static EncryptStringFileDigestInfoModel DecryptBytesFromFile(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBytes cryptoBytes = null)
         {
+            return GenericityHelper.GetInterface(cryptoBytes, DefaultLanymyCrypto).DecryptBytesFromFile(encryptedFileFullPath, secretKey, encoding);
+        }
 
-            if (bytesToEncrypt.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(bytesToEncrypt));
-
-            EncryptBytesDigestInfoModel encryptBytesDigestInfoModel;
-
-            using (var sourceStream = new MemoryStream(bytesToEncrypt))
-            using (var encryptStream = new MemoryStream())
-            {
-                encryptDigestInfoModel = EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
-                encryptBytesDigestInfoModel = encryptDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBytesDigestInfoModel>();
-                if (encryptBytesDigestInfoModel.IsSuccess)
-                {
-                    encryptBytesDigestInfoModel.EncryptedBytes = encryptStream.ToArray();
-                }
-            }
+        #endregion
 
 
-            return encryptBytesDigestInfoModel;
 
+        #region String
+
+
+        public static EncryptStringDigestInfoModel EncryptStringToBytes(string strToEncrypt, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoString cryptoString = null)
+        {
+            return GenericityHelper.GetInterface(cryptoString, DefaultLanymyCrypto).EncryptStringToBytes(strToEncrypt, secretKey, ifRandom, encoding);
+        }
+
+        public static EncryptStringDigestInfoModel DecryptStringFromBytes(byte[] bytesToDecrypt, string secretKey = null, Encoding encoding = null, ICryptoString cryptoString = null)
+        {
+            return GenericityHelper.GetInterface(cryptoString, DefaultLanymyCrypto).DecryptStringFromBytes(bytesToDecrypt, secretKey, encoding);
         }
 
 
 
-        /// <summary>
-        /// 解密二进制数组 返回 解密后的二进制数组
-        /// </summary>
-        /// <param name="bytesToDecrypt">要解密的二进制数组</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="encoding">解密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptBytesDigestInfoModel DecryptBytesFromBytes(byte[] bytesToDecrypt, string secretKey = null, Encoding encoding = null)
+        public static EncryptBase64StringDigestInfoModel EncryptStringToBase64String(string strToEncrypt, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoString cryptoString = null)
         {
-
-            if (bytesToDecrypt.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(bytesToDecrypt));
-
-            EncryptBytesDigestInfoModel encryptBytesResultModel;
-
-            using (var sourceStream = new MemoryStream())
-            using (var encryptedStream = new MemoryStream(bytesToDecrypt))
-            {
-
-                var encryptDigestInfoModel = DencryptStreamFromStream(encryptedStream, sourceStream, secretKey, encoding);
-
-                if (encryptDigestInfoModel.IsSuccess)
-                {
-                    var dencryptHeaderInfoModelJsonString = encryptDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                    encryptBytesResultModel = JsonSerializeHelper.DeserializeFromJson<EncryptBytesDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                    encryptBytesResultModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                    encryptBytesResultModel.SourceBytes = sourceStream.ToArray();
-                }
-                else
-                {
-                    encryptBytesResultModel = new EncryptBytesDigestInfoModel();
-                }
-
-                encryptBytesResultModel.IsSuccess = encryptDigestInfoModel.IsSuccess;
-                encryptBytesResultModel.ErrorMessage = encryptDigestInfoModel.ErrorMessage;
-
-            }
+            return GenericityHelper.GetInterface(cryptoString, DefaultLanymyCrypto).EncryptStringToBase64String(strToEncrypt, secretKey, ifRandom, encoding);
+        }
 
 
-            return encryptBytesResultModel;
 
+        public static EncryptBase64StringDigestInfoModel DecryptStringFromBase64String(string base64StringToDecrypt, string secretKey = null, Encoding encoding = null, ICryptoString cryptoString = null)
+        {
+            return GenericityHelper.GetInterface(cryptoString, DefaultLanymyCrypto).DecryptStringFromBase64String(base64StringToDecrypt, secretKey, encoding);
+        }
+
+
+
+        public static EncryptStringFileDigestInfoModel EncryptStringToFile(string sourceString, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoString cryptoString = null)
+        {
+            return GenericityHelper.GetInterface(cryptoString, DefaultLanymyCrypto).EncryptStringToFile(sourceString, encryptFileFullPath, secretKey, ifRandom, encoding);
         }
 
 
 
 
-        /// <summary>
-        /// 字符串加密 返回 加密后的二进制数组
-        /// </summary>
-        /// <param name="strToEncrypt">要加密的字符串</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
-        /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptStringDigestInfoModel EncryptStringToBytes(string strToEncrypt, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.StringToBytes, EncryptDigestInfoModel encryptDigestInfoModel = null)
+        public static EncryptStringFileDigestInfoModel DecryptStringFromFile(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoString cryptoString = null)
         {
-
-            if (strToEncrypt.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(strToEncrypt));
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            EncryptStringDigestInfoModel encryptStringDigestInfoModel;
-            var bytesToEncrypt = encoding.GetBytes(strToEncrypt);
-
-            var encryptBytesDigestInfoModel = EncryptBytesToBytes(bytesToEncrypt, secretKey, ifRandom, encoding, securityEncryptDirectionType, encryptDigestInfoModel);
-
-            if (encryptBytesDigestInfoModel.IsSuccess)
-            {
-                var encryptedBytes = encryptBytesDigestInfoModel.EncryptedBytes;
-                encryptBytesDigestInfoModel.EncryptedBytes = null;
-                encryptStringDigestInfoModel = encryptBytesDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptStringDigestInfoModel>();
-                encryptStringDigestInfoModel.EncryptedBytes = encryptedBytes;
-            }
-            else
-            {
-                encryptStringDigestInfoModel = new EncryptStringDigestInfoModel();
-            }
-
-            encryptStringDigestInfoModel.IsSuccess = encryptBytesDigestInfoModel.IsSuccess;
-            encryptStringDigestInfoModel.ErrorMessage = encryptBytesDigestInfoModel.ErrorMessage;
-
-            return encryptStringDigestInfoModel;
-
-        }
-
-        /// <summary>
-        /// 解密二进制数组 返回 解密后的字符串
-        /// </summary>
-        /// <param name="bytesToDecrypt">要解密的二进制数组</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="encoding">解密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptStringDigestInfoModel DecryptStringFromBytes(byte[] bytesToDecrypt, string secretKey = null, Encoding encoding = null)
-        {
-
-            if (bytesToDecrypt.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(bytesToDecrypt));
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            EncryptStringDigestInfoModel encryptStringDigestInfoModel;
-
-            var encryptBytesDigestInfoModel = DecryptBytesFromBytes(bytesToDecrypt, secretKey, encoding);
-
-            if (encryptBytesDigestInfoModel.IsSuccess)
-            {
-                var dencryptHeaderInfoModelJsonString = encryptBytesDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptStringDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptStringDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                encryptStringDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                encryptStringDigestInfoModel.SourceString = encoding.GetString(encryptBytesDigestInfoModel.SourceBytes);
-            }
-            else
-            {
-                encryptStringDigestInfoModel = new EncryptStringDigestInfoModel();
-            }
-
-            encryptStringDigestInfoModel.IsSuccess = encryptBytesDigestInfoModel.IsSuccess;
-            encryptStringDigestInfoModel.ErrorMessage = encryptBytesDigestInfoModel.ErrorMessage;
-
-
-            return encryptStringDigestInfoModel;
-
-        }
-
-        /// <summary>
-        /// 字符串加密 返回 加密后的 Base64 字符串
-        /// </summary>
-        /// <param name="strToEncrypt">要加密的字符串</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
-        /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptStringDigestInfoModel EncryptStringToBase64String(string strToEncrypt, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.StringToBase64String, EncryptDigestInfoModel encryptDigestInfoModel = null)
-        {
-
-
-            var encryptStringDigestInfoModel = EncryptStringToBytes(strToEncrypt, secretKey, ifRandom, encoding, securityEncryptDirectionType, encryptDigestInfoModel);
-
-            if (encryptStringDigestInfoModel.IsSuccess)
-            {
-                encryptStringDigestInfoModel.EncryptedBase64String = Convert.ToBase64String(encryptStringDigestInfoModel.EncryptedBytes);
-                encryptStringDigestInfoModel.EncryptedBytes = null;
-            }
-
-            return encryptStringDigestInfoModel;
-
-
+            return GenericityHelper.GetInterface(cryptoString, DefaultLanymyCrypto).DecryptStringFromFile(encryptedFileFullPath, secretKey, encoding);
         }
 
 
-        /// <summary>
-        /// 解密字符串 返回 解密后的字符串
-        /// </summary>
-        /// <param name="base64StringToDecrypt">要解密的Base64字符串</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="encoding">解密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptStringDigestInfoModel DecryptStringFromBase64String(string base64StringToDecrypt, string secretKey = null, Encoding encoding = null)
+        #endregion
+
+
+        #region File
+
+        public static EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedFile(string encryptedFileFullPath, Encoding encoding = null, ICryptoFile cryptoFile = null)
         {
-
-            if (base64StringToDecrypt.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(base64StringToDecrypt));
-            return DecryptStringFromBytes(Convert.FromBase64String(base64StringToDecrypt), secretKey, encoding);
-
+            return GenericityHelper.GetInterface(cryptoFile, DefaultLanymyCrypto).GetEncryptDigestInfoModelFromEncryptedFile(encryptedFileFullPath, encoding);
         }
 
 
-        /// <summary>
-        /// 加密并序列化Model成字节数组
-        /// </summary>
-        /// <typeparam name="T">要加密序列化的实体类型</typeparam>
-        /// <param name="t">要加密序列化的实体实例</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
-        /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptModelDigestInfoModel<T> EncryptModelToBytes<T>(T t, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.ModelToBytes, EncryptModelDigestInfoModel<T> encryptModelDigestInfoModel = null) where T : class
+        public static EncryptStringFileDigestInfoModel EncryptFileToFile(string sourceFileFullPath, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoFile cryptoFile = null)
         {
-
-            //if (encoding.IfIsNullOrEmpty()) encoding = GlobalSettings.DEFAULT_ENCODING;
-
-            if (encryptModelDigestInfoModel.IfIsNullOrEmpty())
-            {
-                encryptModelDigestInfoModel = new EncryptModelDigestInfoModel<T>();
-            }
-
-            var modelType = typeof(T);
-            encryptModelDigestInfoModel.ModelTypeName = modelType.Name;
-            encryptModelDigestInfoModel.ModelTypeFullName = modelType.FullName;
-
-            var jsonString = JsonSerializeHelper.SerializeToJson(t);
-
-            var encryptStringDigestInfoModel = EncryptStringToBytes(jsonString, secretKey, ifRandom, encoding, securityEncryptDirectionType, encryptModelDigestInfoModel);
-
-            if (encryptStringDigestInfoModel.IsSuccess)
-            {
-                encryptModelDigestInfoModel.EncryptedBytes = encryptStringDigestInfoModel.EncryptedBytes;
-            }
-
-            encryptModelDigestInfoModel.IsSuccess = encryptStringDigestInfoModel.IsSuccess;
-            encryptModelDigestInfoModel.ErrorMessage = encryptStringDigestInfoModel.ErrorMessage;
-
-
-            return encryptModelDigestInfoModel;
-
-
+            return GenericityHelper.GetInterface(cryptoFile, DefaultLanymyCrypto).EncryptFileToFile(sourceFileFullPath, encryptFileFullPath, secretKey, ifRandom, encoding);
         }
 
 
-        /// <summary>
-        /// 解密并反序列化字节数组 返回 Model
-        /// </summary>
-        /// <typeparam name="T">要解密并反序列化的实体类型</typeparam>
-        /// <param name="ecryptedBytes">要解密并反序列化的实体实例</param>
-        /// <param name="secretKey">密钥 , Null 表示 使用默认密钥</param>
-        /// <param name="encoding">编码 , Null 表示 使用默认编码</param>
-        /// <returns></returns>
-        public static EncryptModelDigestInfoModel<T> DecryptModelFromBytes<T>(byte[] ecryptedBytes, string secretKey = null, Encoding encoding = null) where T : class
+        public static EncryptStringFileDigestInfoModel DecryptFileFromFile(string encryptedFileFullPath, string sourceFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoFile cryptoFile = null)
         {
-
-            //if (encoding.IfIsNullOrEmpty()) encoding = GlobalSettings.DEFAULT_ENCODING;
-
-            EncryptModelDigestInfoModel<T> encryptModelDigestInfoModel;
-
-            var encryptStringDigestInfoModel = DecryptStringFromBytes(ecryptedBytes, secretKey, encoding);
-
-            if (encryptStringDigestInfoModel.IsSuccess)
-            {
-                var dencryptHeaderInfoModelJsonString = encryptStringDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptModelDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptModelDigestInfoModel<T>>(dencryptHeaderInfoModelJsonString);
-                encryptModelDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                var json = encryptStringDigestInfoModel.SourceString;
-                encryptModelDigestInfoModel.SourceModel = JsonSerializeHelper.DeserializeFromJson<T>(json);
-            }
-            else
-            {
-                encryptModelDigestInfoModel = new EncryptModelDigestInfoModel<T>();
-            }
-
-            encryptModelDigestInfoModel.IsSuccess = encryptStringDigestInfoModel.IsSuccess;
-            encryptModelDigestInfoModel.ErrorMessage = encryptStringDigestInfoModel.ErrorMessage;
-
-
-
-            return encryptModelDigestInfoModel;
-
+            return GenericityHelper.GetInterface(cryptoFile, DefaultLanymyCrypto).DecryptFileFromFile(encryptedFileFullPath, sourceFileFullPath, secretKey, encoding);
         }
 
 
-        /// <summary>
-        /// 加密并序列化Model成Base64字符串
-        /// </summary>
-        /// <typeparam name="T">要序列化的实体类型</typeparam>
-        /// <param name="t">要序列化的实体 实例</param>
-        /// <param name="secretKey">密钥 Null 使用默认密钥</param>
-        /// <returns></returns>
-        public static EncryptModelDigestInfoModel<T> EncryptModelToBase64String<T>(T t, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.ModelToBase64String, EncryptModelDigestInfoModel<T> encryptModelDigestInfoModel = null) where T : class
+        #endregion
+
+
+        #region Bitmap
+
+
+        public static EncryptStringBitmapDigestInfoModel EncryptBytesToBitmap(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
-
-            //EncryptModelDigestInfoModel<T> resultModel;
-
-            var encryptModelToBytes = EncryptModelToBytes(t, secretKey, ifRandom, encoding, securityEncryptDirectionType, encryptModelDigestInfoModel);
-
-            if (encryptModelToBytes.IsSuccess)
-            {
-                var encryptedBytes = encryptModelToBytes.EncryptedBytes;
-                encryptModelToBytes.EncryptedBytes = null;
-                encryptModelToBytes.EncryptedBase64String = Convert.ToBase64String(encryptedBytes);
-            }
-
-
-            return encryptModelToBytes;
-
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptBytesToBitmap(bytesToEncrypt, secretKey, encoding);
         }
 
 
-        /// <summary>
-        /// 解密并反序列化Base64字符串成实体实例
-        /// </summary>
-        /// <typeparam name="T">要反序列化成的实体类型</typeparam>
-        /// <param name="encryptBase64String">要解密的Base64字符串</param>
-        /// <param name="secretKey">密钥 Null 使用默认密钥</param>
-        /// <returns></returns>
-        public static EncryptModelDigestInfoModel<T> DecryptModelFromBase64String<T>(string encryptBase64String, string secretKey = null, Encoding encoding = null) where T : class
+        public static EncryptStringBitmapDigestInfoModel DecryptBytesFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
-            if (encryptBase64String.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(encryptBase64String));
-            return DecryptModelFromBytes<T>(Convert.FromBase64String(encryptBase64String), secretKey, encoding);
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptBytesFromBitmap(encryptedBitmap, secretKey, encoding);
         }
 
 
-
-        public static EncryptBytesDigestInfoModel EncryptBytesToFile(byte[] sourceBytes, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.BytesToFile, EncryptDigestInfoModel encryptDigestInfoModel = null)
+        public static EncryptStringBitmapDigestInfoModel EncryptStringToBitmap(string strToEncrypt, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
-
-
-            if (sourceBytes.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(sourceBytes));
-
-            EncryptBytesDigestInfoModel encryptBytesDigestInfoModel;
-            using (var sourceStream = new MemoryStream(sourceBytes))
-            using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
-            {
-
-                encryptDigestInfoModel = EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptDigestInfoModel, encoding);
-                encryptBytesDigestInfoModel = encryptDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBytesDigestInfoModel>();
-            }
-
-            return encryptBytesDigestInfoModel;
-
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptStringToBitmap(strToEncrypt, secretKey, encoding);
         }
 
 
-        public static EncryptBytesDigestInfoModel DecryptBytesFromFile(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null)
+        public static EncryptStringBitmapDigestInfoModel DecryptStringFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
+
         {
-
-            EncryptBytesDigestInfoModel encryptBytesDigestInfoModel;
-
-            using (var sourceStream = new MemoryStream())
-            using (var encryptedStream = File.OpenRead(encryptedFileFullPath))
-            {
-                var encryptDigestInfoModel = DencryptStreamFromStream(encryptedStream, sourceStream, secretKey, encoding);
-
-                if (encryptDigestInfoModel.IsSuccess)
-                {
-                    var dencryptHeaderInfoModelJsonString = encryptDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                    encryptBytesDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptBytesDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                    encryptBytesDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                    encryptBytesDigestInfoModel.SourceBytes = sourceStream.ToArray();
-                }
-                else
-                {
-                    encryptBytesDigestInfoModel = new EncryptBytesDigestInfoModel();
-                }
-
-                encryptBytesDigestInfoModel.IsSuccess = encryptDigestInfoModel.IsSuccess;
-                encryptBytesDigestInfoModel.ErrorMessage = encryptDigestInfoModel.ErrorMessage;
-
-            }
-
-            return encryptBytesDigestInfoModel;
-
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptStringFromBitmap(encryptedBitmap, secretKey, encoding);
         }
 
 
 
 
-        public static EncryptStringDigestInfoModel EncryptStringToFile(string sourceString, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.StringToFile, EncryptDigestInfoModel encryptDigestInfoModel = null)
+        public static EncryptModelBitmapDigestInfoModel<T> EncryptModelToBitmap<T>(T t, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
         {
-
-            if (sourceString.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(sourceString));
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            EncryptStringDigestInfoModel encryptStringDigestInfoModel;
-
-            var encryptBytesDigestInfoModel = EncryptBytesToFile(encoding.GetBytes(sourceString), encryptFileFullPath, secretKey, ifRandom, encoding, securityEncryptDirectionType, encryptDigestInfoModel);
-            if (encryptBytesDigestInfoModel.IsSuccess)
-            {
-                encryptStringDigestInfoModel = encryptBytesDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptStringDigestInfoModel>();
-            }
-            else
-            {
-                encryptStringDigestInfoModel = new EncryptStringDigestInfoModel();
-            }
-
-            encryptStringDigestInfoModel.IsSuccess = encryptBytesDigestInfoModel.IsSuccess;
-            encryptStringDigestInfoModel.ErrorMessage = encryptBytesDigestInfoModel.ErrorMessage;
-
-            return encryptStringDigestInfoModel;
-
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptModelToBitmap(t, secretKey, encoding);
         }
 
-        public static EncryptStringDigestInfoModel DecryptStringFromFile(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null)
+        public static EncryptModelBitmapDigestInfoModel<T> DecryptModelFromBitmap<T>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
         {
-
-            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-
-            EncryptStringDigestInfoModel encryptStringDigestInfoModel;
-
-            var encryptBytesDigestInfoModel = DecryptBytesFromFile(encryptedFileFullPath, secretKey, encoding);
-
-            if (encryptBytesDigestInfoModel.IsSuccess)
-            {
-                var dencryptHeaderInfoModelJsonString = encryptBytesDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptStringDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptStringDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                encryptStringDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                encryptStringDigestInfoModel.SourceString = encoding.GetString(encryptBytesDigestInfoModel.EncryptedBytes);
-            }
-            else
-            {
-                encryptStringDigestInfoModel = new EncryptStringDigestInfoModel();
-            }
-
-            encryptStringDigestInfoModel.IsSuccess = encryptBytesDigestInfoModel.IsSuccess;
-            encryptStringDigestInfoModel.ErrorMessage = encryptBytesDigestInfoModel.ErrorMessage;
-
-
-            return encryptStringDigestInfoModel;
-        }
-
-
-
-
-        public static EncryptModelDigestInfoModel<T> EncryptModelToFile<T>(T t, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.ModelToFile, EncryptModelDigestInfoModel<T> encryptModelDigestInfoModel = null) where T : class
-        {
-
-            EncryptModelToBytes(t, secretKey, ifRandom, encoding, securityEncryptDirectionType, encryptModelDigestInfoModel);
-
-            if (encryptModelDigestInfoModel.IsSuccess)
-            {
-                File.WriteAllBytes(encryptFileFullPath, encryptModelDigestInfoModel.EncryptedBytes);
-                encryptModelDigestInfoModel.EncryptedBytes = null;
-            }
-
-            return encryptModelDigestInfoModel;
-
-        }
-
-
-        public static EncryptModelDigestInfoModel<T> DecryptModelFromFile<T>(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null) where T : class
-        {
-
-            var ecryptedBytes = File.ReadAllBytes(encryptedFileFullPath);
-
-            return DecryptModelFromBytes<T>(ecryptedBytes, secretKey, encoding);
-
-        }
-
-
-
-
-
-
-        public static EncryptFileDigestInfoModel EncryptFileToFile(string sourceFileFullPath, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.FileToFile, EncryptFileDigestInfoModel encryptFileDigestInfoModel = null)
-        {
-
-            if (encryptFileDigestInfoModel.IfIsNullOrEmpty())
-            {
-                encryptFileDigestInfoModel = new EncryptFileDigestInfoModel();
-            }
-
-            encryptFileDigestInfoModel.SourceFileFullName = Path.GetFileName(sourceFileFullPath);
-            encryptFileDigestInfoModel.EncryptedFileFullName = Path.GetFileName(encryptFileFullPath);
-
-            using (var sourceStream = File.OpenRead(sourceFileFullPath))
-            using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
-            {
-
-                encryptFileDigestInfoModel = EncryptStreamToStream(sourceStream, encryptStream, securityEncryptDirectionType, secretKey, ifRandom, encryptFileDigestInfoModel, encoding);
-
-            }
-
-            return encryptFileDigestInfoModel;
-
-        }
-
-
-        public static EncryptFileDigestInfoModel DecryptFileFromFile(string encryptedFileFullPath, string sourceFileFullPath, bool ifOverWriteFile = false, string secretKey = null, Encoding encoding = null)
-        {
-
-            EncryptFileDigestInfoModel encryptFileDigestInfoModel;
-
-            var encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedFile(encryptedFileFullPath, secretKey, encoding);
-
-            if (encryptDigestInfoModel.IsSuccess)
-            {
-
-                var dencryptHeaderInfoModelJsonString = encryptDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptFileDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptFileDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                encryptFileDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-
-                if (!ifOverWriteFile && File.Exists(sourceFileFullPath))
-                {
-
-                    var sourceFileRootDirectoryFullPath = Path.GetDirectoryName(sourceFileFullPath);
-                    var sourceFileFullName = Path.GetFileName(sourceFileFullPath);
-                    sourceFileFullName = string.Format("{0}[{1:HHmmss}]{2}", Path.GetFileNameWithoutExtension(sourceFileFullName), DateTime.Now, Path.GetExtension(sourceFileFullName));
-                    sourceFileFullPath = Path.Combine(sourceFileRootDirectoryFullPath, sourceFileFullName);
-
-                }
-
-                encryptFileDigestInfoModel.SourceFileFullName = Path.GetFileName(sourceFileFullPath);
-                encryptFileDigestInfoModel.EncryptedFileFullName = Path.GetFileName(encryptedFileFullPath);
-
-                using (var encryptedStream = File.OpenRead(encryptedFileFullPath))
-                using (var sourceStream = File.Create(sourceFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
-                {
-                    DencryptStreamFromStream(encryptedStream, sourceStream, secretKey, encoding);
-                }
-
-            }
-            else
-            {
-                encryptFileDigestInfoModel = new EncryptFileDigestInfoModel();
-            }
-
-            encryptFileDigestInfoModel.IsSuccess = encryptDigestInfoModel.IsSuccess;
-            encryptFileDigestInfoModel.ErrorMessage = encryptDigestInfoModel.ErrorMessage;
-
-            return encryptFileDigestInfoModel;
-
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptModelFromBitmap<T>(encryptedBitmap, secretKey, encoding);
         }
 
 
@@ -939,16 +196,91 @@ namespace Lanymy.Common.Helpers
 
 
 
+        public static EncryptStringImageFileDigestInfoModel EncryptBytesToImageFile(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
+        {
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptBytesToImageFile(bytesToEncrypt, imageFileFullPath, secretKey, encoding);
+        }
+
+
+
+        public static EncryptStringImageFileDigestInfoModel DecryptBytesFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
+        {
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptBytesFromImageFile(imageFileFullPath, secretKey, encoding);
+        }
+
+
+
+
+        public static EncryptStringImageFileDigestInfoModel EncryptStringToImageFile(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
+        {
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptStringToImageFile(strToEncrypt, imageFileFullPath, secretKey, encoding);
+        }
 
 
 
 
 
+        public static EncryptStringImageFileDigestInfoModel DecryptStringFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
+        {
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptStringFromImageFile(imageFileFullPath, secretKey, encoding);
+        }
 
 
 
+        public static EncryptModelImageFileDigestInfoModel<T> EncryptModelToImageFile<T>(T t, string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptModelToImageFile(t, imageFileFullPath, secretKey, encoding);
+        }
+
+        public static EncryptModelImageFileDigestInfoModel<T> DecryptModelFromImageFile<T>(string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptModelFromImageFile<T>(imageFileFullPath, secretKey, encoding);
+        }
 
 
+        #endregion
+
+
+        #region Model
+
+
+
+        public static EncryptModelDigestInfoModel<T> EncryptModelToBytes<T>(T t, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoModel cryptoModel = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoModel, DefaultLanymyCrypto).EncryptModelToBytes(t, secretKey, ifRandom, encoding);
+        }
+
+
+        public static EncryptModelDigestInfoModel<T> DecryptModelFromBytes<T>(byte[] ecryptedBytes, string secretKey = null, Encoding encoding = null, ICryptoModel cryptoModel = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoModel, DefaultLanymyCrypto).DecryptModelFromBytes<T>(ecryptedBytes, secretKey, encoding);
+        }
+
+
+        public static EncryptModelDigestInfoModel<T> EncryptModelToBase64String<T>(T t, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoModel cryptoModel = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoModel, DefaultLanymyCrypto).EncryptModelToBase64String(t, secretKey, ifRandom, encoding);
+        }
+
+
+        public static EncryptModelDigestInfoModel<T> DecryptModelFromBase64String<T>(string encryptBase64String, string secretKey = null, Encoding encoding = null, ICryptoModel cryptoModel = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoModel, DefaultLanymyCrypto).DecryptModelFromBase64String<T>(encryptBase64String, secretKey, encoding);
+        }
+
+
+        public static EncryptModelFileDigestInfoModel<T> EncryptModelToFile<T>(T t, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null, ICryptoModel cryptoModel = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoModel, DefaultLanymyCrypto).EncryptModelToFile(t, encryptFileFullPath, secretKey, ifRandom, encoding);
+        }
+
+        public static EncryptModelFileDigestInfoModel<T> DecryptModelFromFile<T>(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoModel cryptoModel = null) where T : class
+        {
+            return GenericityHelper.GetInterface(cryptoModel, DefaultLanymyCrypto).DecryptModelFromFile<T>(encryptedFileFullPath, secretKey, encoding);
+        }
+
+
+        #endregion
 
 
 
@@ -1081,6 +413,7 @@ namespace Lanymy.Common.Helpers
             Encoding encoding = null)
         {
 
+
             if (fileName.IfIsNullOrEmpty()) return string.Empty;
             var encryptStringDigestInfoModel = EncryptStringToBytes(fileName, secretKey, ifRandom, encoding);
             if (!encryptStringDigestInfoModel.IsSuccess)
@@ -1089,6 +422,7 @@ namespace Lanymy.Common.Helpers
             }
 
             return encryptStringDigestInfoModel.EncryptContentBytesHashCode + encryptFileExtension;
+
 
         }
 
@@ -1279,421 +613,6 @@ namespace Lanymy.Common.Helpers
             return decryptString;
 
         }
-
-
-
-        private static void EncryptBitmapBytes(Random random, byte[] bitmapBytes)
-        {
-
-            //var random = new Random((int)DateTime.Now.Ticks);
-            //var random = new Random(Guid.NewGuid().GetHashCode());
-            var randomBytes = BitConverter.GetBytes(random.Next(int.MinValue, int.MaxValue));
-            //除了第一个元素本值反转,其他三个全部随机翻转
-            for (int i = 0; i < bitmapBytes.Length; i++)
-            {
-                if (i > 0)
-                {
-                    //bitmapBytes[i] = (byte)random.Next(0, 256);
-                    bitmapBytes[i] = randomBytes[i];
-                }
-                bitmapBytes[i] = (byte)(255 - bitmapBytes[i]);
-            }
-
-            //bitmapBytes = bitmapBytes.Reverse().ToArray();
-
-            //for (int i = 0; i < bitmapBytes.Length; i++)
-            //{
-            //    bitmapBytes[i] = (byte)(255 - bitmapBytes[i]);
-            //}
-
-            //return bitmapBytes;
-
-        }
-
-        private static void DecryptBitmapBytes(byte[] bitmapBytes)
-        {
-
-            bitmapBytes[0] = (byte)(255 - bitmapBytes[0]);
-            bitmapBytes[1] = 0;
-            bitmapBytes[2] = 0;
-            bitmapBytes[3] = 0;
-
-            //return new byte[] { (byte)(255 - bitmapBytes[0]), 0, 0, 0 };
-
-            //for (int i = 0; i < bitmapBytes.Length; i++)
-            //{
-            //    bitmapBytes[i] = (byte)(255 - bitmapBytes[i]);
-            //}
-
-            //return bitmapBytes.Reverse().ToArray();
-        }
-
-        private static Bitmap GetEncryptedBitmap(string strToBitmap)
-        {
-
-            const string endStr = SPLIT_STRING;
-
-
-            var message = new StringBuilder(strToBitmap + endStr);
-
-            int messageLength = message.Length;
-            int endStrLength = endStr.Length;
-
-            //补齐二进制序列成正方形阵列
-            int sqrt = (int)Math.Sqrt(messageLength) + 1;
-            int sqrtLength = sqrt * sqrt;
-
-            var overlength = sqrtLength - messageLength;
-
-            for (int i = 0; i < overlength / endStrLength; i++)
-            {
-                message.Append(endStr);
-            }
-
-            //for (int i = 0; i < overlength % endStrLength; i++)
-            //{
-            //    message.Append(endStr[i]);
-            //}
-
-            message.Append(endStr.Substring(0, overlength % endStrLength));
-
-            var messageChars = message.ToString().ToArray();
-
-            var random = new Random((int)DateTime.Now.Ticks);
-            var image = new Bitmap(sqrt, sqrt);
-
-            for (int i = 0; i < sqrt; i++)
-            {
-                for (int j = 0; j < sqrt; j++)
-                {
-
-                    //byte[] bytes = Encoding.UTF32.GetBytes(message[i * sqrt + j].ToString());
-                    byte[] bytes = Encoding.UTF32.GetBytes(messageChars, i * sqrt + j, 1);
-                    EncryptBitmapBytes(random, bytes);
-                    image.SetPixel(i, j, System.Drawing.Color.FromArgb(bytes[0], bytes[1], bytes[2], bytes[3]));
-
-                }
-            }
-
-            return image;
-
-        }
-
-        private static string GetStringFromEncryptedBitmap(Bitmap encryptedBitmap)
-        {
-
-            if (encryptedBitmap.Width != encryptedBitmap.Height)
-            {
-                throw new ArgumentException("不是有效的加密位图数据源");
-            }
-
-            var sb = new StringBuilder();
-
-            for (int i = 0; i < encryptedBitmap.Width; i++)
-            {
-                for (int j = 0; j < encryptedBitmap.Height; j++)
-                {
-                    var color = encryptedBitmap.GetPixel(i, j);
-                    var bytes = new[] { color.A, color.R, color.G, color.B };
-                    DecryptBitmapBytes(bytes);
-                    sb.Append(Encoding.UTF32.GetString(bytes));
-
-                }
-            }
-
-            return sb.ToString().LeftSubString(SPLIT_STRING);
-
-        }
-
-
-        public static EncryptBitmapDigestInfoModel EncryptBytesToBitmap(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.BytesToBitmap, EncryptDigestInfoModel encryptDigestInfoModel = null)
-        {
-
-            //if (encoding.IfIsNullOrEmpty()) encoding = GlobalSettings.DEFAULT_ENCODING;
-
-            EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel;
-
-            var encryptBytesDigestInfoModel = EncryptBytesToBytes(bytesToEncrypt, secretKey, true, encoding, securityEncryptDirectionType, encryptDigestInfoModel);
-
-            if (encryptBytesDigestInfoModel.IsSuccess)
-            {
-
-                encryptBitmapDigestInfoModel = encryptBytesDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBitmapDigestInfoModel>();
-                var encryptedBytes = encryptBytesDigestInfoModel.EncryptedBytes;
-                encryptBitmapDigestInfoModel.EncryptedBitmap = GetEncryptedBitmap(Convert.ToBase64String(encryptedBytes));
-
-            }
-            else
-            {
-                encryptBitmapDigestInfoModel = new EncryptBitmapDigestInfoModel();
-            }
-
-            encryptBitmapDigestInfoModel.IsSuccess = encryptBytesDigestInfoModel.IsSuccess;
-            encryptBitmapDigestInfoModel.ErrorMessage = encryptBytesDigestInfoModel.ErrorMessage;
-
-            return encryptBitmapDigestInfoModel;
-
-        }
-
-
-        public static EncryptBitmapDigestInfoModel DecryptBytesFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
-        {
-
-            EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel;
-
-            var bitmapBase64String = GetStringFromEncryptedBitmap(encryptedBitmap);
-            var encryptedBytes = Convert.FromBase64String(bitmapBase64String);
-            var encryptBytesDigestInfoModel = DecryptBytesFromBytes(encryptedBytes, secretKey, encoding);
-
-            if (encryptBytesDigestInfoModel.IsSuccess)
-            {
-                var dencryptHeaderInfoModelJsonString = encryptBytesDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptBitmapDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptBitmapDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                encryptBitmapDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                encryptBitmapDigestInfoModel.SourceBytes = encryptBytesDigestInfoModel.SourceBytes;
-            }
-            else
-            {
-                encryptBitmapDigestInfoModel = new EncryptBitmapDigestInfoModel();
-            }
-
-            encryptBitmapDigestInfoModel.IsSuccess = encryptBytesDigestInfoModel.IsSuccess;
-            encryptBitmapDigestInfoModel.ErrorMessage = encryptBytesDigestInfoModel.ErrorMessage;
-
-            return encryptBitmapDigestInfoModel;
-
-        }
-
-
-        public static EncryptBitmapDigestInfoModel EncryptStringToBitmap(string strToEncrypt, string secretKey = null, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.StringToBitmap, EncryptDigestInfoModel encryptDigestInfoModel = null)
-        {
-
-            EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel;
-
-            var encryptStringDigestInfoModel = EncryptStringToBytes(strToEncrypt, secretKey, true, encoding, securityEncryptDirectionType, encryptDigestInfoModel);
-
-            if (encryptStringDigestInfoModel.IsSuccess)
-            {
-
-                encryptBitmapDigestInfoModel = encryptStringDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBitmapDigestInfoModel>();
-                var encryptedBytes = encryptStringDigestInfoModel.EncryptedBytes;
-                encryptBitmapDigestInfoModel.EncryptedBitmap = GetEncryptedBitmap(Convert.ToBase64String(encryptedBytes));
-
-            }
-            else
-            {
-                encryptBitmapDigestInfoModel = new EncryptBitmapDigestInfoModel();
-            }
-
-            encryptBitmapDigestInfoModel.IsSuccess = encryptStringDigestInfoModel.IsSuccess;
-            encryptBitmapDigestInfoModel.ErrorMessage = encryptStringDigestInfoModel.ErrorMessage;
-
-            return encryptBitmapDigestInfoModel;
-
-        }
-
-
-        /// <summary>
-        /// Decrypts the string from bitmap.
-        /// </summary>
-        /// <param name="decryptBitmap">The decrypt bitmap.</param>
-        /// <param name="isDecryptStringFromBase64String">是否 从 Base64String 字符串中 解密 出 原始字符串</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException">不是有效的加密位图数据源</exception>
-        public static EncryptBitmapDigestInfoModel DecryptStringFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
-        {
-
-            EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel;
-
-            var bitmapBase64String = GetStringFromEncryptedBitmap(encryptedBitmap);
-            var encryptedBytes = Convert.FromBase64String(bitmapBase64String);
-            var encryptStringDigestInfoModel = DecryptStringFromBytes(encryptedBytes, secretKey, encoding);
-
-            if (encryptStringDigestInfoModel.IsSuccess)
-            {
-                var dencryptHeaderInfoModelJsonString = encryptStringDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptBitmapDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptBitmapDigestInfoModel>(dencryptHeaderInfoModelJsonString);
-                encryptBitmapDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                encryptBitmapDigestInfoModel.SourceString = encryptStringDigestInfoModel.SourceString;
-            }
-            else
-            {
-                encryptBitmapDigestInfoModel = new EncryptBitmapDigestInfoModel();
-            }
-
-            encryptBitmapDigestInfoModel.IsSuccess = encryptStringDigestInfoModel.IsSuccess;
-            encryptBitmapDigestInfoModel.ErrorMessage = encryptStringDigestInfoModel.ErrorMessage;
-
-            return encryptBitmapDigestInfoModel;
-
-        }
-
-
-
-
-        public static EncryptModelBitmapDigestInfoModel<T> EncryptModelToBitmap<T>(T t, string secretKey = null, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.ModelToBitmap, EncryptModelBitmapDigestInfoModel<T> encryptModelBitmapDigestInfoModel = null) where T : class
-        {
-
-            //EncryptModelBitmapDigestInfoModel<T> encryptModelBitmapDigestInfoModel;
-
-            EncryptModelToBytes(t, secretKey, true, encoding, securityEncryptDirectionType, encryptModelBitmapDigestInfoModel);
-
-            if (encryptModelBitmapDigestInfoModel.IsSuccess)
-            {
-
-                //encryptBitmapDigestInfoModel = encryptStringDigestInfoModel.AsTypeByDeepClone<EncryptDigestInfoModel, EncryptBitmapDigestInfoModel>();
-                var encryptedBytes = encryptModelBitmapDigestInfoModel.EncryptedBytes;
-                encryptModelBitmapDigestInfoModel.EncryptedBitmap = GetEncryptedBitmap(Convert.ToBase64String(encryptedBytes));
-                encryptModelBitmapDigestInfoModel.EncryptedBytes = null;
-
-            }
-
-
-            return encryptModelBitmapDigestInfoModel;
-
-
-        }
-
-
-        public static EncryptModelBitmapDigestInfoModel<T> DecryptModelFromBitmap<T>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null) where T : class
-        {
-
-            //if (encoding.IfIsNullOrEmpty()) encoding = GlobalSettings.DEFAULT_ENCODING;
-
-            EncryptModelBitmapDigestInfoModel<T> encryptModelBitmapDigestInfoModel;
-
-            var bitmapBase64String = GetStringFromEncryptedBitmap(encryptedBitmap);
-            var encryptedBytes = Convert.FromBase64String(bitmapBase64String);
-            var encryptModelDigestInfoModel = DecryptModelFromBytes<T>(encryptedBytes, secretKey, encoding);
-
-            if (encryptModelDigestInfoModel.IsSuccess)
-            {
-                var dencryptHeaderInfoModelJsonString = encryptModelDigestInfoModel.DencryptHeaderInfoModelJsonString;
-                encryptModelBitmapDigestInfoModel = JsonSerializeHelper.DeserializeFromJson<EncryptModelBitmapDigestInfoModel<T>>(dencryptHeaderInfoModelJsonString);
-                encryptModelBitmapDigestInfoModel.DencryptHeaderInfoModelJsonString = dencryptHeaderInfoModelJsonString;
-                encryptModelBitmapDigestInfoModel.SourceModel = encryptModelDigestInfoModel.SourceModel;
-            }
-            else
-            {
-                encryptModelBitmapDigestInfoModel = new EncryptModelBitmapDigestInfoModel<T>();
-            }
-
-            encryptModelBitmapDigestInfoModel.IsSuccess = encryptModelDigestInfoModel.IsSuccess;
-            encryptModelBitmapDigestInfoModel.ErrorMessage = encryptModelDigestInfoModel.ErrorMessage;
-
-
-
-            return encryptModelBitmapDigestInfoModel;
-
-        }
-
-
-
-        /// <summary>
-        /// Encrypts the bytes to image file.
-        /// </summary>
-        /// <param name="bytesToEncrypt">The bytes to encrypt.</param>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public static EncryptBitmapDigestInfoModel EncryptBytesToImageFile(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.BytesToImageFile, EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel = null)
-        {
-            EncryptBytesToBitmap(bytesToEncrypt, secretKey, encoding, securityEncryptDirectionType, encryptBitmapDigestInfoModel);
-            if (encryptBitmapDigestInfoModel.IsSuccess)
-            {
-                ImageHelper.SaveBitmapToImageFile(encryptBitmapDigestInfoModel.EncryptedBitmap, imageFileFullPath);
-                encryptBitmapDigestInfoModel.EncryptedBitmap = null;
-            }
-            return encryptBitmapDigestInfoModel;
-        }
-
-        /// <summary>
-        /// Decrypts the bytes from image file.
-        /// </summary>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <returns>System.Byte[].</returns>
-        public static EncryptBitmapDigestInfoModel DecryptBytesFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
-        {
-
-            EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel;
-
-            using (var encryptedBitmap = ImageHelper.GetBitmapFromImageFile(imageFileFullPath))
-            {
-                encryptBitmapDigestInfoModel = DecryptBytesFromBitmap(encryptedBitmap, secretKey, encoding);
-            }
-
-
-            return encryptBitmapDigestInfoModel;
-
-
-        }
-
-
-
-        /// <summary>
-        /// Encrypts the string to image file.
-        /// </summary>
-        /// <param name="strToEncrypt">The string to encrypt.</param>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public static EncryptBitmapDigestInfoModel EncryptStringToImageFile(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.StringToImageFile, EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel = null)
-        {
-            var result = EncryptStringToBitmap(strToEncrypt, secretKey, encoding, securityEncryptDirectionType, encryptBitmapDigestInfoModel);
-            if (result.IsSuccess)
-            {
-                ImageHelper.SaveBitmapToImageFile(result.EncryptedBitmap, imageFileFullPath);
-                result.EncryptedBitmap = null;
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Decrypts the string from image file.
-        /// </summary>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <returns>System.String.</returns>
-        public static EncryptBitmapDigestInfoModel DecryptStringFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
-        {
-
-            EncryptBitmapDigestInfoModel encryptBitmapDigestInfoModel;
-
-            using (var encryptedBitmap = ImageHelper.GetBitmapFromImageFile(imageFileFullPath))
-            {
-                encryptBitmapDigestInfoModel = DecryptStringFromBitmap(encryptedBitmap, secretKey, encoding);
-            }
-
-            return encryptBitmapDigestInfoModel;
-
-        }
-
-
-
-        public static EncryptModelBitmapDigestInfoModel<T> EncryptModelToImageFile<T>(T t, string imageFileFullPath, string secretKey = null, Encoding encoding = null, SecurityEncryptDirectionTypeEnum securityEncryptDirectionType = SecurityEncryptDirectionTypeEnum.ModelToImageFile, EncryptModelBitmapDigestInfoModel<T> encryptModelBitmapDigestInfoModel = null) where T : class
-        {
-            var result = EncryptModelToBitmap(t, secretKey, encoding, securityEncryptDirectionType, encryptModelBitmapDigestInfoModel);
-            if (result.IsSuccess)
-            {
-                ImageHelper.SaveBitmapToImageFile(result.EncryptedBitmap, imageFileFullPath);
-                result.EncryptedBitmap = null;
-            }
-            return result;
-
-        }
-
-
-        public static EncryptModelBitmapDigestInfoModel<T> DecryptModelFromImageFile<T>(string imageFileFullPath, string secretKey = null, Encoding encoding = null) where T : class
-        {
-
-            EncryptModelBitmapDigestInfoModel<T> encryptModelBitmapDigestInfoModel;
-
-            using (var encryptedBitmap = ImageHelper.GetBitmapFromImageFile(imageFileFullPath))
-            {
-                encryptModelBitmapDigestInfoModel = DecryptModelFromBitmap<T>(encryptedBitmap, secretKey, encoding);
-            }
-
-            return encryptModelBitmapDigestInfoModel;
-
-        }
-
 
 
 

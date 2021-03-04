@@ -166,7 +166,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Helpers.Seria
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Helpers.SerializeHelper.Binary", "Commons\Lanymy.Common.Helpers.SerializeHelper.Binary\Lanymy.Common.Helpers.SerializeHelper.Binary.csproj", "{370E9694-EEA5-4C90-8952-78B79006036C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.WorkTaskQueue", "Commons\Lanymy.Common.Instruments.WorkTaskQueue\Lanymy.Common.Instruments.WorkTaskQueue.csproj", "{F6A84E7E-0520-4A61-952B-2A7D85CE5111}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.WorkTaskQueue", "Commons\Lanymy.Common.Instruments.WorkTaskQueue\Lanymy.Common.Instruments.WorkTaskQueue.csproj", "{F6A84E7E-0520-4A61-952B-2A7D85CE5111}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.Crypto.Abstractions", "Commons\Lanymy.Common.Instruments.Crypto.Abstractions\Lanymy.Common.Instruments.Crypto.Abstractions.csproj", "{72FC6194-C051-4EAE-8D88-961DACADD34C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.Crypto", "Commons\Lanymy.Common.Instruments.Crypto\Lanymy.Common.Instruments.Crypto.csproj", "{E1285130-B78B-4FD8-9364-70DD396A05BC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.AllTests", "UnitTests\Lanymy.Common.AllTests\Lanymy.Common.AllTests.csproj", "{2623E4EE-4EBE-42CC-B42C-E77DEC7BA65B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -426,6 +432,18 @@ Global
 		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6A84E7E-0520-4A61-952B-2A7D85CE5111}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72FC6194-C051-4EAE-8D88-961DACADD34C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72FC6194-C051-4EAE-8D88-961DACADD34C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72FC6194-C051-4EAE-8D88-961DACADD34C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72FC6194-C051-4EAE-8D88-961DACADD34C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1285130-B78B-4FD8-9364-70DD396A05BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1285130-B78B-4FD8-9364-70DD396A05BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1285130-B78B-4FD8-9364-70DD396A05BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1285130-B78B-4FD8-9364-70DD396A05BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2623E4EE-4EBE-42CC-B42C-E77DEC7BA65B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2623E4EE-4EBE-42CC-B42C-E77DEC7BA65B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2623E4EE-4EBE-42CC-B42C-E77DEC7BA65B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2623E4EE-4EBE-42CC-B42C-E77DEC7BA65B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -501,6 +519,9 @@ Global
 		{57D6FFDE-8341-45F1-9E38-8642B8E5E551} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 		{370E9694-EEA5-4C90-8952-78B79006036C} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 		{F6A84E7E-0520-4A61-952B-2A7D85CE5111} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
+		{72FC6194-C051-4EAE-8D88-961DACADD34C} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
+		{E1285130-B78B-4FD8-9364-70DD396A05BC} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
+		{2623E4EE-4EBE-42CC-B42C-E77DEC7BA65B} = {CE7155FA-CD6D-47BD-B832-A19AC8B419F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A243EC36-342D-4E8F-B0D3-5D20B7B8FE81}

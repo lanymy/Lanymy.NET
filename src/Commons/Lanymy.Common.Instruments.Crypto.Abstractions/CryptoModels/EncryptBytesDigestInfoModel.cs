@@ -1,4 +1,4 @@
-﻿namespace Lanymy.Common.Helpers.SecurityModels
+﻿namespace Lanymy.Common.Instruments.CryptoModels
 {
     public class EncryptBytesDigestInfoModel : EncryptDigestInfoModel
     {
@@ -14,7 +14,7 @@
         public byte[] EncryptedBytes { get; set; }
 
         //public string EncryptFileFullName { get; set; }
-        public string EncryptFileFullPath { get; set; }
+        //public string EncryptFileFullPath { get; set; }
 
 
     }

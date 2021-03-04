@@ -119,7 +119,7 @@ namespace Lanymy.Common.Instruments
 
             token = MatchFileFullName(token);
             if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-            if (securityKey.IfIsNullOrEmpty()) securityKey = DefaultSettingKeys.DEFAULT_SECURITY_KEY;
+            if (securityKey.IfIsNullOrEmpty()) securityKey = DefaultSettingKeys.DEFAULT_CRYPTO_KEY;
 
             if (IfIsCustomIsolatedStorageMode)
             {
@@ -164,7 +164,7 @@ namespace Lanymy.Common.Instruments
             string result = string.Empty;
             token = MatchFileFullName(token);
             if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
-            if (securityKey.IfIsNullOrEmpty()) securityKey = DefaultSettingKeys.DEFAULT_SECURITY_KEY;
+            if (securityKey.IfIsNullOrEmpty()) securityKey = DefaultSettingKeys.DEFAULT_CRYPTO_KEY;
 
             if (IfIsCustomIsolatedStorageMode)
             {

@@ -1,7 +1,6 @@
 ﻿using System;
-using Lanymy.Common.Enums;
 
-namespace Lanymy.Common.Helpers.SecurityModels
+namespace Lanymy.Common.Instruments.CryptoModels
 {
     /// <summary>
     /// 加密 摘要信息 基类 实体类
@@ -19,7 +18,7 @@ namespace Lanymy.Common.Helpers.SecurityModels
         /// </summary>
         public string ErrorMessage { get; set; }
 
-        public SecurityEncryptDirectionTypeEnum SecurityEncryptDirectionType { get; set; }
+        //public SecurityEncryptDirectionTypeEnum SecurityEncryptDirectionType { get; set; }
 
         /// <summary>
         /// 是否 随机种子 加密

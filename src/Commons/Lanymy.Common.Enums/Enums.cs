@@ -175,37 +175,37 @@ namespace Lanymy.Common.Enums
 
     #region 安全加密方法中 加密方向类型 枚举
 
-    /// <summary>
-    /// 安全加密方法中 加密类型 枚举
-    /// </summary>
-    public enum SecurityEncryptDirectionTypeEnum
-    {
+    ///// <summary>
+    ///// 安全加密方法中 加密类型 枚举
+    ///// </summary>
+    //public enum SecurityEncryptDirectionTypeEnum
+    //{
 
-        UnDefine,
+    //    UnDefine,
 
-        BytesToBytes,
-        BytesToFile,
+    //    BytesToBytes,
+    //    BytesToFile,
 
-        StringToBytes,
-        StringToFile,
-        StringToBase64String,
+    //    StringToBytes,
+    //    StringToFile,
+    //    StringToBase64String,
 
-        ModelToBytes,
-        ModelToBase64String,
-        ModelToFile,
+    //    ModelToBytes,
+    //    ModelToBase64String,
+    //    ModelToFile,
 
-        FileToFile,
+    //    FileToFile,
 
-        BytesToBitmap,
-        StringToBitmap,
-        ModelToBitmap,
+    //    BytesToBitmap,
+    //    StringToBitmap,
+    //    ModelToBitmap,
 
-        BytesToImageFile,
-        StringToImageFile,
-        ModelToImageFile,
+    //    BytesToImageFile,
+    //    StringToImageFile,
+    //    ModelToImageFile,
 
 
-    }
+    //}
 
 
     #endregion

@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Lanymy.Common.Instruments.Cache.CoreMemoryCache\Lanymy.Common.Instruments.Cache.CoreMemoryCache.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Cache.CustomMemoryCache\Lanymy.Common.Instruments.Cache.CustomMemoryCache.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Instruments.Crypto\Lanymy.Common.Instruments.Crypto.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.EnumMapper\Lanymy.Common.Instruments.EnumMapper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.FileTextManipulater\Lanymy.Common.Instruments.FileTextManipulater.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer\Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer.csproj" />
