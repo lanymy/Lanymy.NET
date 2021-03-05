@@ -287,21 +287,25 @@ namespace Lanymy.Common.Helpers
 
 
 
+        #region MD5
+
 
         /// <summary>
-        /// 通用MD5加密
+        /// 字节数组转MD5
         /// </summary>
-        /// <param name="strToEncrypt"></param>
+        /// <param name="bytes"></param>
         /// <returns></returns>
-        public static string EncryptToMD5(string strToEncrypt)
+        public static string BytesToMD5(byte[] bytes)
         {
 
-            if (strToEncrypt.IfIsNullOrEmpty()) throw new ArgumentNullException("strToEncrypt");
-            var md5 = new MD5CryptoServiceProvider();
-            //byte[] bytes = Encoding.UTF8.GetBytes(strToEncrypt.ToLower());
-            byte[] bytes = Encoding.UTF8.GetBytes(strToEncrypt);
-            byte[] hashedBytes = md5.ComputeHash(bytes);
-            StringBuilder sb = new StringBuilder();
+            if (bytes.IfIsNull()) throw new ArgumentNullException(nameof(bytes));
+
+            using var md5 = new MD5CryptoServiceProvider();
+
+            var hashedBytes = md5.ComputeHash(bytes);
+
+            var sb = new StringBuilder();
+
             foreach (var b in hashedBytes)
             {
                 //sb.Append(b.ToString("x2").ToLower());
@@ -311,6 +315,28 @@ namespace Lanymy.Common.Helpers
             return sb.ToString();
 
         }
+
+
+
+
+        /// <summary>
+        /// 字符串转成MD5
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string StringToMD5(string str, Encoding encoding = null)
+        {
+
+
+            if (str.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(str));
+            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
+
+            return BytesToMD5(encoding.GetBytes(str));
+
+        }
+
+
+        #endregion
 
 
 
