@@ -27,7 +27,6 @@
     <ProjectReference Include="..\Lanymy.Common.Helpers.ArrayHelper\Lanymy.Common.Helpers.ArrayHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.CompressionHelper\Lanymy.Common.Helpers.CompressionHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.FileHelper\Lanymy.Common.Helpers.FileHelper.csproj" />
-    <ProjectReference Include="..\Lanymy.Common.Helpers.ImageHelper\Lanymy.Common.Helpers.ImageHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.Json\Lanymy.Common.Helpers.SerializeHelper.Json.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Crypto.Abstractions\Lanymy.Common.Instruments.Crypto.Abstractions.csproj" />
   </ItemGroup>

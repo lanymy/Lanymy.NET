@@ -22,15 +22,12 @@
   <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Footer.props" />
 
 
-  <ItemGroup>
-    
-    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
 
-  </ItemGroup>
 
 
   <ItemGroup>
     <ProjectReference Include="..\Lanymy.Common.Enums\Lanymy.Common.Enums.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Helpers.ImageHelper\Lanymy.Common.Helpers.ImageHelper.csproj" />
   </ItemGroup>
 
 
