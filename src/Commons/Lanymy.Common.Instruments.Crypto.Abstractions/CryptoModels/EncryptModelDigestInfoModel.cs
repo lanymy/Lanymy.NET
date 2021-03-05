@@ -1,7 +1,9 @@
-﻿namespace Lanymy.Common.Instruments.CryptoModels
+﻿using Lanymy.Common.Instruments.Interfaces;
+
+namespace Lanymy.Common.Instruments.CryptoModels
 {
 
-    public class EncryptModelDigestInfoModel<T> : EncryptBase64StringDigestInfoModel where T : class
+    public class EncryptModelDigestInfoModel<T> : EncryptBase64StringDigestInfoModel, ICryptoModelProperty<T> where T : class
     {
 
         public string ModelTypeName { get; set; }
