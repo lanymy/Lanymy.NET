@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v5.0": {
-      "PushNugetPackageTools/1.2.0": {
+      "PushNugetPackageTools/1.2.1": {
         "dependencies": {
           "Lanymy.Common.All": "0.5.1",
           "NuGet.Packaging": "5.8.0",
@@ -840,7 +840,7 @@
     }
   },
   "libraries": {
-    "PushNugetPackageTools/1.2.0": {
+    "PushNugetPackageTools/1.2.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
