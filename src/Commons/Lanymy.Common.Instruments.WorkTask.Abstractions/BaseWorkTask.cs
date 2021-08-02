@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
@@ -10,7 +7,29 @@ namespace Lanymy.Common.Instruments
     public abstract class BaseWorkTask : IDisposable
     {
 
-        public bool IsRunning { get; protected set; }
+        protected readonly object _Locker = new();
+
+        private bool _IsRunning = false;
+
+        public bool IsRunning
+        {
+            get { return _IsRunning; }
+            private set
+            {
+
+                if (_IsRunning == value) return;
+
+                lock (_Locker)
+                {
+                    if (!_IsRunning.Equals(value))
+                    {
+                        _IsRunning = value;
+                    }
+                }
+
+            }
+        }
+
 
         protected BaseWorkTask()
         {
@@ -21,6 +40,11 @@ namespace Lanymy.Common.Instruments
 
         public async Task StartAsync()
         {
+
+            if (IsRunning)
+            {
+                return;
+            }
 
             IsRunning = true;
 
@@ -34,25 +58,33 @@ namespace Lanymy.Common.Instruments
         public async Task StopAsync()
         {
 
+
             if (!IsRunning)
             {
                 return;
             }
 
-            try
-            {
+            IsRunning = false;
 
-                await OnStopAsync();
+            await OnStopAsync();
 
-            }
-            catch (Exception ex)
-            {
 
-            }
-            finally
-            {
-                IsRunning = false;
-            }
+
+            //try
+            //{
+
+            //    await OnStopAsync();
+
+            //}
+            //catch (Exception ex)
+            //{
+
+            //}
+            //finally
+            //{
+            //    IsRunning = false;
+            //}
+
         }
 
 
@@ -65,7 +97,7 @@ namespace Lanymy.Common.Instruments
         public void Dispose()
         {
 
-            OnStopAsync().Wait();
+            //OnStopAsync().Wait();
 
             OnDisposeAsync().Wait();
 
