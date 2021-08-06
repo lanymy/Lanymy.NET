@@ -1,27 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Lanymy.Common.Instruments.CrawlerDataContextModels;
 using Lanymy.Common.Instruments.Models;
 
 namespace Lanymy.Common.Instruments.Crawlers
 {
 
 
-    public class LanymyDownloadCrawler : BaseDownloadCrawler<Guid, BaseDownloadCrawlerDataModel, DownloadCrawlerDataContext>
+    public class LanymyDownloadCrawler : BaseDownloadCrawler<Guid, BaseDownloadCrawlerDataModel>
     {
 
 
-        /// <summary>
-        /// 下载资源处理逻辑
-        /// </summary>
-        /// <param name="crawlerDataModel"></param>
-        protected override void OnDownload(BaseDownloadCrawlerDataModel crawlerDataModel)
+        public LanymyDownloadCrawler(Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount = 3, int taskDelayMilliseconds = 3 * 1000, int channelCapacityCount = 0) : base(taskProgressAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
 
+        }
+
+
+        protected override void OnDownload(BaseDownloadCrawlerDataModel crawlerDataModel)
+        {
             //下载m3u8资源例子
             if (crawlerDataModel.ResourceType == ResourceTypeEnum.Video && crawlerDataModel.ResourceDownloadType == ResourceDownloadTypeEnum.M3u8)
             {
@@ -50,10 +49,18 @@ namespace Lanymy.Common.Instruments.Crawlers
             }
 
 
-            Task.Delay(_TaskDelayMilliseconds).Wait();
+            Task.Delay(TaskDelayMilliseconds).Wait();
 
         }
 
 
+        protected override async Task OnDisposeAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+
     }
+
+
 }

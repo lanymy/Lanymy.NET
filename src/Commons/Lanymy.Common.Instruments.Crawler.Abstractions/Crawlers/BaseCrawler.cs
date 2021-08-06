@@ -1,66 +1,64 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
 using Lanymy.Common.Instruments.Models;
 
 namespace Lanymy.Common.Instruments.Crawlers
 {
 
-    public abstract class BaseCrawler<TKey, TCrawlerDataModel, TCrawlerDataContext> : BaseWorkTask
+    public abstract class BaseCrawler<TKey, TCrawlerDataModel> : BaseWorkTask
         where TCrawlerDataModel : BaseCrawlerDataModel<TKey>
-        where TCrawlerDataContext : BaseCrawlerDataContext<TKey, TCrawlerDataModel>, new()
     {
 
         public string SpiderID => GetType().Name;
 
-        //protected readonly int _TaskDelayMilliseconds = 5 * 1000;
-        protected readonly int _TaskDelayMilliseconds;
+        public int TaskDelayMilliseconds { get; }
+        public int WorkTaskTotalCount { get; }
+        public int ChannelCapacityCount { get; }
 
-        protected TCrawlerDataContext _CurrentCrawlerDataContext;
 
-        //protected readonly string _CurrentWorkTaskDataContextFileFullPath;
+        //private readonly string _CurrentWorkTaskDataContextFileToken;
+        //protected readonly string _CurrentWorkTaskDataRootDirectoryFullPath;
+        //protected readonly LanymyIsolatedStorage _CurrentLanymyIsolatedStorage;
 
-        private readonly string _CurrentWorkTaskDataContextFileToken;
+        protected TimerWorkTask _CurrentProgressTimerWorkTask;
+        protected WorkTaskQueue<TCrawlerDataModel> _CurrentWorkTaskQueue;
+        protected readonly TaskProgressModel _CurrentTaskProgressModel = new();
+        /// <summary>
+        /// 总任务数
+        /// </summary>
+        protected int _CurrentTaskProgressTotalCount = 0;
+        /// <summary>
+        /// 已完成任务数
+        /// </summary>
+        protected int _CurrentTaskProgressCompleteCount = 0;
 
-        protected readonly string _CurrentWorkTaskDataRootDirectoryFullPath;
+        protected readonly Action<TaskProgressModel> _TaskProgressAction;
 
-        private readonly LanymyIsolatedStorage _CurrentLanymyIsolatedStorage;
-
-        protected BaseCrawler(string workTaskDataRootDirectoryFullPath = null, int taskDelayMilliseconds = 5 * 1000)
+        //protected BaseCrawlerN(string workTaskDataRootDirectoryFullPath = null, int taskDelayMilliseconds = 5 * 1000)
+        protected BaseCrawler(Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount)
         {
 
-            if (workTaskDataRootDirectoryFullPath.IfIsNullOrEmpty())
-            {
-                workTaskDataRootDirectoryFullPath = string.Empty;
-            }
+            //if (workTaskDataRootDirectoryFullPath.IfIsNullOrEmpty())
+            //{
+            //    workTaskDataRootDirectoryFullPath = string.Empty;
+            //}
 
-            _CurrentWorkTaskDataRootDirectoryFullPath = workTaskDataRootDirectoryFullPath;
-            _TaskDelayMilliseconds = taskDelayMilliseconds;
+            //_CurrentWorkTaskDataRootDirectoryFullPath = workTaskDataRootDirectoryFullPath;
 
-            _CurrentWorkTaskDataContextFileToken = SpiderID + "_" + typeof(TCrawlerDataContext).Name;
+            _TaskProgressAction = taskProgressAction;
+            TaskDelayMilliseconds = taskDelayMilliseconds;
+            WorkTaskTotalCount = workTaskTotalCount;
+            ChannelCapacityCount = channelCapacityCount;
 
-            _CurrentLanymyIsolatedStorage = new LanymyIsolatedStorage(_CurrentWorkTaskDataRootDirectoryFullPath);
+            //_CurrentWorkTaskDataContextFileToken = SpiderID + "_" + typeof(TCrawlerDataModel).Name;
 
-            //OnLoadWorkTaskDataContextAsync().Wait();
-            LoadWorkTaskDataContextAsync().Wait();
+            //_CurrentLanymyIsolatedStorage = new LanymyIsolatedStorage(_CurrentWorkTaskDataRootDirectoryFullPath);
 
-        }
-
-
-        private async Task LoadWorkTaskDataContextAsync()
-        {
-            var workTaskDataContext = await OnLoadWorkTaskDataContextAsync();
-            if (workTaskDataContext.IfIsNullOrEmpty())
-            {
-                workTaskDataContext = new TCrawlerDataContext();
-            }
-            _CurrentCrawlerDataContext = workTaskDataContext;
-        }
-
-
-        private async Task SaveWorkTaskDataContextAsync()
-        {
-
-            await OnSaveWorkTaskDataContextAsync(_CurrentCrawlerDataContext);
 
         }
 
@@ -68,32 +66,35 @@ namespace Lanymy.Common.Instruments.Crawlers
 
 
 
-        protected virtual async Task<TCrawlerDataContext> OnLoadWorkTaskDataContextAsync()
+        protected virtual void OnProgressTimerWorkTask()
         {
 
-            var workTaskDataContext = _CurrentLanymyIsolatedStorage.GetModel<TCrawlerDataContext>(_CurrentWorkTaskDataContextFileToken);
+            _CurrentTaskProgressModel.TotalCount = _CurrentTaskProgressTotalCount;
+            _CurrentTaskProgressModel.CompleteCount = _CurrentTaskProgressCompleteCount;
 
-            return await Task.FromResult(workTaskDataContext);
-
-        }
-
-        protected virtual async Task OnSaveWorkTaskDataContextAsync(TCrawlerDataContext crawlerDataContext)
-        {
-
-            _CurrentLanymyIsolatedStorage.SaveModel(crawlerDataContext, _CurrentWorkTaskDataContextFileToken);
-
-            await Task.CompletedTask;
+            _TaskProgressAction(_CurrentTaskProgressModel);
 
         }
 
 
-        protected override async Task OnDisposeAsync()
+        protected override async Task OnStartAsync()
         {
 
-            await SaveWorkTaskDataContextAsync();
+            _CurrentProgressTimerWorkTask = new TimerWorkTask(OnProgressTimerWorkTask, TaskDelayMilliseconds);
+            await _CurrentProgressTimerWorkTask.StartAsync();
 
         }
+
+        protected override async Task OnStopAsync()
+        {
+
+            await _CurrentProgressTimerWorkTask.StopAsync();
+            _CurrentProgressTimerWorkTask.Dispose();
+            _CurrentProgressTimerWorkTask = null;
+
+        }
+
+
 
     }
-
 }

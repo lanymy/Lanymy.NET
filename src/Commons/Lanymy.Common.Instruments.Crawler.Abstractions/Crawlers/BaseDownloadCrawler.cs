@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.Instruments.Models;
 
@@ -9,65 +10,65 @@ namespace Lanymy.Common.Instruments.Crawlers
 {
 
 
-    public abstract class BaseDownloadCrawler<TKey, TCrawlerDataModel, TCrawlerDataContext> : BaseCrawler<TKey, TCrawlerDataModel, TCrawlerDataContext>
+
+    public abstract class BaseDownloadCrawler<TKey, TCrawlerDataModel> : BaseCrawler<TKey, TCrawlerDataModel>
         where TCrawlerDataModel : BaseCrawlerDataModel<TKey>
-        where TCrawlerDataContext : BaseCrawlerDataContext<TKey, TCrawlerDataModel>, new()
     {
 
-        protected readonly WorkTaskQueueContext<TCrawlerDataModel> _CurrentWorkTaskQueueContext;
 
-        /// <summary>
-        /// 同时下载数 默认值 3
-        /// </summary>
-        /// <param name="taskCountDownload"></param>
-        protected BaseDownloadCrawler(ushort taskCountDownload = 3)
+        protected BaseDownloadCrawler(Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount) : base(taskProgressAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
 
-            _CurrentWorkTaskQueueContext = new WorkTaskQueueContext<TCrawlerDataModel>(_CurrentCrawlerDataContext.CurrentCrawlerDataQueue, false, taskCountDownload, OnDownloadTask);
-
-        }
-
-
-        protected abstract void OnDownload(TCrawlerDataModel crawlerDataModel);
-
-        private void OnDownloadTask(TCrawlerDataModel crawlerDataModel)
-        {
-            OnDownload(crawlerDataModel);
         }
 
 
         protected override async Task OnStartAsync()
         {
 
-            //await _CurrentWorkTaskQueueContext.StartAsync();
-            _CurrentWorkTaskQueueContext.StartAsync().Wait();
+            _CurrentWorkTaskQueue = new WorkTaskQueue<TCrawlerDataModel>(OnWorkTaskQueue, WorkTaskTotalCount, TaskDelayMilliseconds, ChannelCapacityCount);
 
-            await Task.CompletedTask;
+            await _CurrentWorkTaskQueue.StartAsync();
+
+            await base.OnStartAsync();
 
         }
-
 
         protected override async Task OnStopAsync()
         {
 
-            //await _CurrentWorkTaskQueueContext.StopAsync();
-            _CurrentWorkTaskQueueContext.StopAsync().Wait();
+            await _CurrentWorkTaskQueue.StopAsync();
 
-            await Task.CompletedTask;
+            _CurrentWorkTaskQueue.Dispose();
+            _CurrentWorkTaskQueue = null;
+
+            await base.OnStopAsync();
 
         }
 
-        public virtual void AddToDownloadQueue(TCrawlerDataModel crawlerDataModel)
+
+        public async Task AddToDownloadAsync(TCrawlerDataModel crawlerDataModel)
         {
 
-            _CurrentCrawlerDataContext.Add(crawlerDataModel);
-            //_CurrentCrawlerDataContext.CurrentCrawlerDataQueue.Enqueue(crawlerDataModel);
+            if (IsRunning)
+            {
+                Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
+                await _CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel);
+            }
 
         }
+
+
+        protected abstract void OnDownload(TCrawlerDataModel crawlerDataModel);
+
+
+        protected virtual void OnWorkTaskQueue(TCrawlerDataModel crawlerDataModel)
+        {
+            Interlocked.Increment(ref _CurrentTaskProgressCompleteCount);
+            OnDownload(crawlerDataModel);
+        }
+
+
 
 
     }
-
-
-
 }

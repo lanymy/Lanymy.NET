@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
@@ -7,21 +10,20 @@ using Lanymy.Common.Instruments.Models;
 namespace Lanymy.Common.Instruments.Crawlers
 {
 
-    public abstract class BaseResourceCrawler<TKey, TCrawlerDataModel, TCrawlerDataContext> : BaseCrawler<TKey, TCrawlerDataModel, TCrawlerDataContext>
+
+    public abstract class BaseResourceCrawler<TKey, TCrawlerDataModel> : BaseCrawler<TKey, TCrawlerDataModel>
         where TCrawlerDataModel : BaseCrawlerDataModel<TKey>
-        where TCrawlerDataContext : BaseCrawlerDataContext<TKey, TCrawlerDataModel>, new()
     {
+
 
         public abstract bool IsEnabled { get; set; }
 
         public string HostUrl { get; }
 
-        private CancellationTokenSource _CurrentCancellationTokenSource;
+        protected TimerWorkTask _CurrentAnalysisResourceListTimerWorkTask;
 
-        private Task _CurrentAnalysisResourceListTask;
-        private Task _CurrentAnalysisResourceDetailTask;
 
-        protected BaseResourceCrawler(string hostUrl)
+        protected BaseResourceCrawler(string hostUrl, Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount) : base(taskProgressAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
             HostUrl = hostUrl;
         }
@@ -36,67 +38,30 @@ namespace Lanymy.Common.Instruments.Crawlers
                 return;
             }
 
-            _CurrentCancellationTokenSource = new CancellationTokenSource();
-            var token = _CurrentCancellationTokenSource.Token;
+            _CurrentAnalysisResourceListTimerWorkTask = new TimerWorkTask(OnAnalysisResourceListTimerWorkTask, TaskDelayMilliseconds);
+            _CurrentWorkTaskQueue = new WorkTaskQueue<TCrawlerDataModel>(OnWorkTaskQueue, WorkTaskTotalCount, TaskDelayMilliseconds, ChannelCapacityCount);
 
-            _CurrentAnalysisResourceListTask = new Task(OnAnalysisResourceListTask, token, token, TaskCreationOptions.LongRunning);
-            _CurrentAnalysisResourceListTask.Start();
+            await _CurrentWorkTaskQueue.StartAsync();
 
-            _CurrentAnalysisResourceDetailTask = new Task(OnAnalysisResourceDetailTask, token, token, TaskCreationOptions.LongRunning);
-            _CurrentAnalysisResourceDetailTask.Start();
+            await _CurrentAnalysisResourceListTimerWorkTask.StartAsync();
 
-
-            await Task.CompletedTask;
+            await base.OnStartAsync();
 
         }
-
 
         protected override async Task OnStopAsync()
         {
 
-            if (!_CurrentCancellationTokenSource.IfIsNullOrEmpty())
-            {
+            await _CurrentAnalysisResourceListTimerWorkTask.StopAsync();
+            await _CurrentWorkTaskQueue.StopAsync();
 
-                _CurrentCancellationTokenSource.Cancel();
+            _CurrentAnalysisResourceListTimerWorkTask.Dispose();
+            _CurrentAnalysisResourceListTimerWorkTask = null;
 
-                if (_CurrentAnalysisResourceDetailTask.Status == TaskStatus.Running)
-                {
-                    //await _CurrentAnalysisResourceDetailTask;
-                    _CurrentAnalysisResourceDetailTask.Wait();
-                }
+            _CurrentWorkTaskQueue.Dispose();
+            _CurrentWorkTaskQueue = null;
 
-                if (_CurrentAnalysisResourceListTask.Status == TaskStatus.Running)
-                {
-                    //await _CurrentAnalysisResourceListTask;
-                    _CurrentAnalysisResourceListTask.Wait();
-
-                }
-
-
-            }
-
-
-            if (!_CurrentAnalysisResourceDetailTask.IfIsNullOrEmpty())
-            {
-                _CurrentAnalysisResourceDetailTask.Dispose();
-                _CurrentAnalysisResourceDetailTask = null;
-            }
-
-
-            if (!_CurrentAnalysisResourceListTask.IfIsNullOrEmpty())
-            {
-                _CurrentAnalysisResourceListTask.Dispose();
-                _CurrentAnalysisResourceListTask = null;
-            }
-
-
-            if (!_CurrentCancellationTokenSource.IfIsNullOrEmpty())
-            {
-                _CurrentCancellationTokenSource.Dispose();
-                _CurrentCancellationTokenSource = null;
-            }
-
-            await Task.CompletedTask;
+            await base.OnStopAsync();
 
         }
 
@@ -105,84 +70,50 @@ namespace Lanymy.Common.Instruments.Crawlers
         /// <summary>
         /// 获取要解析明细页集合
         /// </summary>
-        /// <param name="list">填充要解析明细页集合</param>
         /// <returns>是否中断此任务: True中断;False不中断继续执行下一次循环</returns>
-        protected abstract bool OnAnalysisResourceList(List<TCrawlerDataModel> list);
-
-
-        private void OnAnalysisResourceListTask(object obj)
-        {
-
-
-            var token = (CancellationToken)obj;
-            var list = new List<TCrawlerDataModel>();
-
-            while (!token.IsCancellationRequested)
-            {
-
-                Task.Delay(_TaskDelayMilliseconds).Wait();
-
-                if (token.IsCancellationRequested) break;
-
-                try
-                {
-
-                    list.Clear();
-
-                    var isBreak = OnAnalysisResourceList(list);
-
-                    foreach (var crawlerDataModel in list)
-                    {
-                        _CurrentCrawlerDataContext.Add(crawlerDataModel);
-                    }
-
-                    if (isBreak)
-                    {
-                        break;
-                    }
-
-                }
-                catch
-                {
-
-                }
-
-            }
-
-
-        }
-
-
+        protected abstract AnalysisResourceListResult<TKey, TCrawlerDataModel> OnAnalysisResourceList();
         protected abstract void OnAnalysisResourceDetail(TCrawlerDataModel crawlerDataModel);
 
-        private void OnAnalysisResourceDetailTask(object obj)
+
+        protected virtual void OnAnalysisResourceListTimerWorkTask()
         {
 
-
-            var token = (CancellationToken)obj;
-
-            while (!token.IsCancellationRequested)
+            var analysisResourceListResult = OnAnalysisResourceList();
+            if (analysisResourceListResult.IsBreak)
+            {
+                _CurrentAnalysisResourceListTimerWorkTask.StopAsync().Wait();
+            }
+            else
             {
 
-                Task.Delay(_TaskDelayMilliseconds).Wait();
+                if (analysisResourceListResult.AnalysisResourceList.IfIsNull())
+                {
+                    analysisResourceListResult.AnalysisResourceList = new List<TCrawlerDataModel>();
+                }
 
-                if (token.IsCancellationRequested) break;
+                foreach (var crawlerDataModel in analysisResourceListResult.AnalysisResourceList)
+                {
+                    Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
+                    _CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel).Wait();
+                }
 
-                var crawlerDataModel = _CurrentCrawlerDataContext.Get();
-
-                if (crawlerDataModel.IfIsNullOrEmpty()) continue;
-
-                OnAnalysisResourceDetail(crawlerDataModel);
+                analysisResourceListResult.AnalysisResourceList.Clear();
+                analysisResourceListResult.AnalysisResourceList = null;
 
             }
 
         }
 
 
-
+        protected virtual void OnWorkTaskQueue(TCrawlerDataModel crawlerDataModel)
+        {
+            Interlocked.Increment(ref _CurrentTaskProgressCompleteCount);
+            OnAnalysisResourceDetail(crawlerDataModel);
+        }
 
 
 
     }
+
 
 }

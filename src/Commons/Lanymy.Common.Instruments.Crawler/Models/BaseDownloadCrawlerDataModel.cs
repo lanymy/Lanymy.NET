@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments.Models
 {
-
-    public abstract class BaseDownloadCrawlerDataModel : BaseCrawlerDataModel<Guid>
+    public class BaseDownloadCrawlerDataModel : BaseCrawlerDataModel<Guid>
     {
 
         public ResourceTypeEnum ResourceType { get; set; }
@@ -18,8 +17,8 @@ namespace Lanymy.Common.Instruments.Models
         /// 下载地址
         /// </summary>
         public string DownloadUrl { get; set; }
+
         public DateTime CreateDateTime { get; set; }
 
     }
-
 }

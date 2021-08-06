@@ -14,7 +14,7 @@ namespace Lanymy.Common.Instruments
         public bool IsRunning
         {
             get { return _IsRunning; }
-            private set
+            protected set
             {
 
                 if (_IsRunning == value) return;
