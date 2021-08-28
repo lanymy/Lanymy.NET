@@ -18,7 +18,7 @@ namespace Lanymy.Common.Instruments
 
         public readonly ushort WorkTaskCount;
 
-        private readonly List<WorkTaskTriggerQueue<TDataModel>> _WorkTaskQueueList = new();
+        private readonly List<WorkTaskTriggerQueue<TDataModel>> _WorkTaskQueueList = new List<WorkTaskTriggerQueue<TDataModel>>();
 
         private readonly Action<List<TDataModel>> _WorkTriggerAction;
 

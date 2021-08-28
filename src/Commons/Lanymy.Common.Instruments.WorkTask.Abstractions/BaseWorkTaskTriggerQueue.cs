@@ -16,7 +16,7 @@ namespace Lanymy.Common.Instruments
     {
 
 
-        protected readonly ConcurrentQueue<TDataModel> _CurrentCacheConcurrentQueue = new();
+        protected readonly ConcurrentQueue<TDataModel> _CurrentCacheConcurrentQueue = new ConcurrentQueue<TDataModel>();
         protected Task _TimeTriggerTask;
         protected CancellationTokenSource _TimeTriggerTasktCancellationTokenSource;
 
@@ -27,7 +27,8 @@ namespace Lanymy.Common.Instruments
         /// 触发事件的数据数量阀值,如: 每1000个数据量 触发一次事件
         /// </summary>
         public ushort OnActionTriggerCount { get; private set; }
-        protected uint _OnActionTriggerCountIndex = 0;
+        //protected uint _OnActionTriggerCountIndex = 0;
+        protected int _OnActionTriggerCountIndex = 0;
 
         /// <summary>
         ///  触发事件的闲置时间,如: 消息队列内数据只有100个数据不满足 数据数量触发阀值条件,并且 5分钟 内 数据数量依然不满足触发条件的时候,满足5分钟定时触发条件

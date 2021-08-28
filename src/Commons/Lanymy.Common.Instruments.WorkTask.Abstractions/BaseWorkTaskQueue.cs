@@ -15,7 +15,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        protected readonly List<Task> _CurrentWorkTaskList = new();
+        protected readonly List<Task> _CurrentWorkTaskList = new List<Task>();
         protected CancellationTokenSource _CurrentCancellationTokenSource;
 
 

@@ -7,7 +7,7 @@ namespace Lanymy.Common.Instruments
     public abstract class BaseWorkTask : IDisposable
     {
 
-        protected readonly object _Locker = new();
+        protected readonly object _Locker = new object();
 
         private bool _IsRunning = false;
 

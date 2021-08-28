@@ -27,7 +27,7 @@ namespace Lanymy.Common.Instruments.Crawlers
 
         protected TimerWorkTask _CurrentProgressTimerWorkTask;
         protected WorkTaskQueue<TCrawlerDataModel> _CurrentWorkTaskQueue;
-        protected readonly TaskProgressModel _CurrentTaskProgressModel = new();
+        protected readonly TaskProgressModel _CurrentTaskProgressModel = new TaskProgressModel();
         /// <summary>
         /// 总任务数
         /// </summary>
