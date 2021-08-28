@@ -4,8 +4,9 @@
   <PropertyGroup>
 
 
-    <TargetFramework>$(CurrentTargetFrameworks)</TargetFramework>
-
+    <!--<TargetFramework>$(CurrentTargetFrameworks)</TargetFramework>-->
+    <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
+    
 
     <AssemblyName>$(CurrentBuildProjectName)</AssemblyName>
     <RootNamespace>$(CurrentRootNamespace)</RootNamespace>
