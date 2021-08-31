@@ -19,23 +19,23 @@ namespace Lanymy.Common.AllTests.Crawlers
         public void LanymyResourceCrawlerTest()
         {
 
-            ////var lanymyResourceCrawler = new LanymyResourceCrawler("www.baidu.com",
-            ////    taskProgressModel =>
-            ////    {
-            ////        var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
-            ////    });
+            var lanymyResourceCrawler = new LanymyResourceCrawler("www.baidu.com",
+                taskProgressModel =>
+                {
+                    var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
+                });
 
 
-            ////lanymyResourceCrawler.StartAsync().Wait();
+            lanymyResourceCrawler.StartAsync().Wait();
 
 
-            //////Task.Delay(24 * 60 * 60 * 1000).Wait();
-            ////Task.Delay(10 * 1000).Wait();
+            Task.Delay(24 * 60 * 60 * 1000).Wait();
+            //Task.Delay(10 * 1000).Wait();
 
 
-            ////lanymyResourceCrawler.StopAsync().Wait();
+            lanymyResourceCrawler.StopAsync().Wait();
 
-            //////Task.Delay(24 * 60 * 60 * 1000).Wait();
+            //Task.Delay(24 * 60 * 60 * 1000).Wait();
 
 
 

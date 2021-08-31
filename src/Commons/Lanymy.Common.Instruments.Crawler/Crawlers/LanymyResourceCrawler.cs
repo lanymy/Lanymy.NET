@@ -40,24 +40,24 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             var analysisResourceListResult = new AnalysisResourceListResult<string, ResourceCrawlerDataModel>();
 
-            //不中断定时器,等待下一次事件触发
-            analysisResourceListResult.IsBreak = false;
-            analysisResourceListResult.AnalysisResourceList = new List<ResourceCrawlerDataModel>();
-            for (int i = 0; i < 5; i++)
-            {
-                analysisResourceListResult.AnalysisResourceList.Add(new ResourceCrawlerDataModel
-                {
-                    ID = i.ToString(),
-                    CreateDateTime = DateTime.Now,
-                });
-            }
+            ////不中断定时器,等待下一次事件触发
+            //analysisResourceListResult.IsBreak = false;
+            //analysisResourceListResult.AnalysisResourceList = new List<ResourceCrawlerDataModel>();
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    analysisResourceListResult.AnalysisResourceList.Add(new ResourceCrawlerDataModel
+            //    {
+            //        ID = i.ToString(),
+            //        CreateDateTime = DateTime.Now,
+            //    });
+            //}
 
-            return analysisResourceListResult;
+            //return analysisResourceListResult;
 
-            //analysisResourceListResult.IsBreak = true;
+            analysisResourceListResult.IsBreak = true;
 
             //如果要中断此循环定时器 则 返回 true
-            //return analysisResourceListResult;
+            return analysisResourceListResult;
 
         }
 

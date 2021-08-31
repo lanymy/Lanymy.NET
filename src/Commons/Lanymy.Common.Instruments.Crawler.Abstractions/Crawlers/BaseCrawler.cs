@@ -66,13 +66,15 @@ namespace Lanymy.Common.Instruments.Crawlers
 
 
 
-        protected virtual void OnProgressTimerWorkTask()
+        protected virtual TimerWorkTaskDataResult OnProgressTimerWorkTask()
         {
 
             _CurrentTaskProgressModel.TotalCount = _CurrentTaskProgressTotalCount;
             _CurrentTaskProgressModel.CompleteCount = _CurrentTaskProgressCompleteCount;
 
             _TaskProgressAction(_CurrentTaskProgressModel);
+
+            return null;
 
         }
 

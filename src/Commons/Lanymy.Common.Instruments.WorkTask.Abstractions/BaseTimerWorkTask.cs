@@ -13,25 +13,26 @@ namespace Lanymy.Common.Instruments
     public abstract class BaseTimerWorkTask : BaseWorkTask
     {
 
-        protected readonly Action _CurrentWorkAction;
+        protected readonly Func<TimerWorkTaskDataResult> _CurrentWorkFunc;
         public int TaskSleepMilliseconds { get; }
         protected CancellationTokenSource _CurrentCancellationTokenSource;
         protected Task _CurrentTask;
 
 
-        protected BaseTimerWorkTask(Action workAction, int taskSleepMilliseconds = 3 * 1000)
+        protected BaseTimerWorkTask(Func<TimerWorkTaskDataResult> workFunc, int taskSleepMilliseconds = 3 * 1000)
         {
 
-            _CurrentWorkAction = workAction;
+            _CurrentWorkFunc = workFunc;
             TaskSleepMilliseconds = taskSleepMilliseconds;
 
         }
 
 
-        protected virtual void OnWorkAction()
+        protected virtual TimerWorkTaskDataResult OnWorkFunc()
         {
-            _CurrentWorkAction();
+            return _CurrentWorkFunc();
         }
+
 
         protected virtual void OnTask(object obj)
         {
@@ -43,7 +44,13 @@ namespace Lanymy.Common.Instruments
 
                 Task.Delay(TaskSleepMilliseconds).Wait();
 
-                OnWorkAction();
+                var timerWorkTaskDataResult = OnWorkFunc();
+
+                if (!timerWorkTaskDataResult.IfIsNullOrEmpty() && timerWorkTaskDataResult.IsBreak)
+                {
+                    break;
+                }
+
             }
 
         }

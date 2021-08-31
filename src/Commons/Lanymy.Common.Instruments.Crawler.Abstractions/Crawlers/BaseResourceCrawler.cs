@@ -75,32 +75,37 @@ namespace Lanymy.Common.Instruments.Crawlers
         protected abstract void OnAnalysisResourceDetail(TCrawlerDataModel crawlerDataModel);
 
 
-        protected virtual void OnAnalysisResourceListTimerWorkTask()
+        protected virtual TimerWorkTaskDataResult OnAnalysisResourceListTimerWorkTask()
         {
 
             var analysisResourceListResult = OnAnalysisResourceList();
             if (analysisResourceListResult.IsBreak)
             {
-                _CurrentAnalysisResourceListTimerWorkTask.StopAsync().Wait();
+
+                //_CurrentAnalysisResourceListTimerWorkTask.StopAsync().Wait();
+                return new TimerWorkTaskDataResult
+                {
+                    IsBreak = true,
+                };
+
             }
-            else
+
+
+            if (analysisResourceListResult.AnalysisResourceList.IfIsNull())
             {
-
-                if (analysisResourceListResult.AnalysisResourceList.IfIsNull())
-                {
-                    analysisResourceListResult.AnalysisResourceList = new List<TCrawlerDataModel>();
-                }
-
-                foreach (var crawlerDataModel in analysisResourceListResult.AnalysisResourceList)
-                {
-                    Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
-                    _CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel).Wait();
-                }
-
-                analysisResourceListResult.AnalysisResourceList.Clear();
-                analysisResourceListResult.AnalysisResourceList = null;
-
+                analysisResourceListResult.AnalysisResourceList = new List<TCrawlerDataModel>();
             }
+
+            foreach (var crawlerDataModel in analysisResourceListResult.AnalysisResourceList)
+            {
+                Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
+                _CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel).Wait();
+            }
+
+            analysisResourceListResult.AnalysisResourceList.Clear();
+            analysisResourceListResult.AnalysisResourceList = null;
+
+            return null;
 
         }
 
