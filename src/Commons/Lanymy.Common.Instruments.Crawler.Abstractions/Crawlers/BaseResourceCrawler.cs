@@ -79,16 +79,17 @@ namespace Lanymy.Common.Instruments.Crawlers
         {
 
             var analysisResourceListResult = OnAnalysisResourceList();
-            if (analysisResourceListResult.IsBreak)
-            {
 
-                //_CurrentAnalysisResourceListTimerWorkTask.StopAsync().Wait();
-                return new TimerWorkTaskDataResult
-                {
-                    IsBreak = true,
-                };
+            //if (analysisResourceListResult.IsBreak)
+            //{
 
-            }
+            //    //_CurrentAnalysisResourceListTimerWorkTask.StopAsync().Wait();
+            //    return new TimerWorkTaskDataResult
+            //    {
+            //        IsBreak = true,
+            //    };
+
+            //}
 
 
             if (analysisResourceListResult.AnalysisResourceList.IfIsNull())
@@ -104,6 +105,17 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             analysisResourceListResult.AnalysisResourceList.Clear();
             analysisResourceListResult.AnalysisResourceList = null;
+
+            if (analysisResourceListResult.IsBreak)
+            {
+
+                //_CurrentAnalysisResourceListTimerWorkTask.StopAsync().Wait();
+                return new TimerWorkTaskDataResult
+                {
+                    IsBreak = true,
+                };
+
+            }
 
             return null;
 
