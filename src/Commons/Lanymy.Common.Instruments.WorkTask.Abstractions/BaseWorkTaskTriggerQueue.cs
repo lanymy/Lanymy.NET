@@ -56,9 +56,13 @@ namespace Lanymy.Common.Instruments
                 actionTriggerCount = 1;
             }
 
-            if (actionTriggerTimeSpan.TotalSeconds < 3)
+            //if (actionTriggerTimeSpan.TotalSeconds < 3)
+            //{
+            //    actionTriggerTimeSpan = TimeSpan.FromSeconds(3);
+            //}
+            if (actionTriggerTimeSpan.TotalSeconds < 1)
             {
-                actionTriggerTimeSpan = TimeSpan.FromSeconds(3);
+                actionTriggerTimeSpan = TimeSpan.FromSeconds(1);
             }
 
             OnActionTriggerCount = actionTriggerCount;
