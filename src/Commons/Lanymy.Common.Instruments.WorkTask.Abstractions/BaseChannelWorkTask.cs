@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
@@ -14,6 +15,10 @@ namespace Lanymy.Common.Instruments
 
         protected Channel<TDataModel> _CurrentChannel;
         protected readonly Action<TDataModel> _CurrentWorkAction;
+
+        protected List<TDataModel> _CurrentReadQueueAllDataList = new List<TDataModel>();
+        protected bool _IsReadQueueAllData = false;
+
         public int ChannelCapacityCount { get; }
 
         public BoundedChannelFullMode ChannelFullMode { get; }
@@ -111,6 +116,8 @@ namespace Lanymy.Common.Instruments
         }
 
 
+        //返回当前消息队列中的全部数据
+        public abstract Task<List<TDataModel>> StopAndReadQueueAllDataAsync();
 
 
     }

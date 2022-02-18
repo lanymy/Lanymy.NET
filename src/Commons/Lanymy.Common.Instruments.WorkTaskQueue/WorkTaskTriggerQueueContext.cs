@@ -116,6 +116,18 @@ namespace Lanymy.Common.Instruments
                     workTaskQueueModel.Dispose();
                 }
 
+                if (_IsReadQueueAllData)
+                {
+
+                    _IsReadQueueAllData = false;
+
+                    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
+                    {
+                        _CurrentReadQueueAllDataList.Add(item);
+                    }
+
+                }
+
                 await _CurrentChannel.Reader.Completion;
 
                 _WorkTaskQueueList.Clear();
@@ -131,9 +143,29 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()
+        {
+
+            _IsReadQueueAllData = true;
+
+            await StopAsync();
+
+            return _CurrentReadQueueAllDataList;
+
+        }
+
+
         protected override async Task OnDisposeAsync()
         {
+
+            if (!_CurrentReadQueueAllDataList.IfIsNullOrEmpty())
+            {
+                _CurrentReadQueueAllDataList.Clear();
+                _CurrentReadQueueAllDataList = null;
+            }
+
             await Task.CompletedTask;
+
         }
 
 
