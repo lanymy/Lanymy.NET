@@ -23,7 +23,7 @@ namespace Lanymy.Common.AllTests.Crawlers
                 taskProgressModel =>
                 {
                     var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
-                });
+                }, null);
 
 
             lanymyResourceCrawler.StartAsync().Wait();

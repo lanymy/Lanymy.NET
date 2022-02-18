@@ -9,15 +9,16 @@ namespace Lanymy.Common.Instruments
 
 
 
-    public abstract class BaseChannelWorkTask<TDataModel> : BaseWorkTask
+    public abstract class BaseChannelWorkTask<TDataModel> : BaseWorkTask//, IChannelWorkTask<TDataModel>
         where TDataModel : IWorkTaskQueueDataModel
     {
 
         protected Channel<TDataModel> _CurrentChannel;
         protected readonly Action<TDataModel> _CurrentWorkAction;
+        protected readonly Action<List<TDataModel>> _CurrentStopAndReadQueueAllDataAction;
 
-        protected List<TDataModel> _CurrentReadQueueAllDataList = new List<TDataModel>();
-        protected bool _IsReadQueueAllData = false;
+        //protected List<TDataModel> _CurrentReadQueueAllDataList = new List<TDataModel>();
+        //protected bool _IsReadQueueAllData = false;
 
         public int ChannelCapacityCount { get; }
 
@@ -28,13 +29,15 @@ namespace Lanymy.Common.Instruments
         protected readonly bool _IsInternalChannel = false;
 
 
-        protected BaseChannelWorkTask(Channel<TDataModel> channel, Action<TDataModel> workAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
+        protected BaseChannelWorkTask(Channel<TDataModel> channel, Action<TDataModel> workAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
         {
 
             if (workAction.IfIsNull())
             {
                 throw new ArgumentNullException(nameof(workAction));
             }
+
+            _CurrentStopAndReadQueueAllDataAction = stopAndReadQueueAllDataAction;
 
             if (workTaskTotalCount < 1)
             {
@@ -116,8 +119,11 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        //返回当前消息队列中的全部数据
-        public abstract Task<List<TDataModel>> StopAndReadQueueAllDataAsync();
+        ///// <summary>
+        ///// 停止执行任务,并返回当前消息队列中的全部数据
+        ///// </summary>
+        ///// <returns></returns>
+        //public abstract Task<List<TDataModel>> StopAndReadQueueAllDataAsync();
 
 
     }

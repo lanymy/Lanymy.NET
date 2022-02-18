@@ -34,7 +34,7 @@ namespace Lanymy.Common.Instruments
 
 
         public WorkTaskTriggerQueueContext(Action<List<TDataModel>> workTriggerAction, ushort workTaskCount, ushort actionTriggerCount, TimeSpan actionTriggerTimeSpan, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
-            : base(null, _ => { }, 1, 3 * 1000, channelCapacityCount, channelFullMode)
+            : base(null, _ => { }, null, 1, 3 * 1000, channelCapacityCount, channelFullMode)
         {
 
             if (workTriggerAction.IfIsNull())
@@ -116,17 +116,17 @@ namespace Lanymy.Common.Instruments
                     workTaskQueueModel.Dispose();
                 }
 
-                if (_IsReadQueueAllData)
-                {
+                //if (_IsReadQueueAllData)
+                //{
 
-                    _IsReadQueueAllData = false;
+                //    _IsReadQueueAllData = false;
 
-                    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
-                    {
-                        _CurrentReadQueueAllDataList.Add(item);
-                    }
+                //    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
+                //    {
+                //        _CurrentReadQueueAllDataList.Add(item);
+                //    }
 
-                }
+                //}
 
                 await _CurrentChannel.Reader.Completion;
 
@@ -143,26 +143,26 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()
-        {
+        //public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()
+        //{
 
-            _IsReadQueueAllData = true;
+        //    _IsReadQueueAllData = true;
 
-            await StopAsync();
+        //    await StopAsync();
 
-            return _CurrentReadQueueAllDataList;
+        //    return _CurrentReadQueueAllDataList;
 
-        }
+        //}
 
 
         protected override async Task OnDisposeAsync()
         {
 
-            if (!_CurrentReadQueueAllDataList.IfIsNullOrEmpty())
-            {
-                _CurrentReadQueueAllDataList.Clear();
-                _CurrentReadQueueAllDataList = null;
-            }
+            //if (!_CurrentReadQueueAllDataList.IfIsNullOrEmpty())
+            //{
+            //    _CurrentReadQueueAllDataList.Clear();
+            //    _CurrentReadQueueAllDataList = null;
+            //}
 
             await Task.CompletedTask;
 

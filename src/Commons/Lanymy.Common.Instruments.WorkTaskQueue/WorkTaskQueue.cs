@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Channels;
 
 namespace Lanymy.Common.Instruments
@@ -13,16 +14,16 @@ namespace Lanymy.Common.Instruments
 
 
 
-        internal WorkTaskQueue(Channel<TDataModel> channel, Action<TDataModel> workAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
-            : base(channel, workAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
+        internal WorkTaskQueue(Channel<TDataModel> channel, Action<TDataModel> workAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
+            : base(channel, workAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
         {
 
 
 
         }
 
-        public WorkTaskQueue(Action<TDataModel> workAction, int workTaskTotalCount = 1, int taskSleepMilliseconds = 3 * 1000, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
-            : this(null, workAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
+        public WorkTaskQueue(Action<TDataModel> workAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount = 1, int taskSleepMilliseconds = 3 * 1000, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
+            : this(null, workAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
         {
 
 

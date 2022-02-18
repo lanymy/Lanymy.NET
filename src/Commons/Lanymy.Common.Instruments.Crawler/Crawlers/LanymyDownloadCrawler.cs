@@ -13,7 +13,7 @@ namespace Lanymy.Common.Instruments.Crawlers
     {
 
 
-        public LanymyDownloadCrawler(Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount = 3, int taskDelayMilliseconds = 3 * 1000, int channelCapacityCount = 0) : base(taskProgressAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
+        public LanymyDownloadCrawler(Action<TaskProgressModel> taskProgressAction, Action<List<BaseDownloadCrawlerDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount = 3, int taskDelayMilliseconds = 3 * 1000, int channelCapacityCount = 0) : base(taskProgressAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
 
         }

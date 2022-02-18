@@ -43,7 +43,7 @@ namespace Lanymy.Common.Instruments
 
 
         protected BaseWorkTaskTriggerQueue(Channel<TDataModel> channel, Action<List<TDataModel>> workTriggerAction, ushort actionTriggerCount, TimeSpan actionTriggerTimeSpan, int taskSleepMilliseconds = 3000, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
-            : base(channel, _ => { }, 1, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
+            : base(channel, _ => { }, null, 1, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
         {
 
             if (workTriggerAction.IfIsNull())

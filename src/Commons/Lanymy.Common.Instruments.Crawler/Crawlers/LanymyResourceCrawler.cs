@@ -16,7 +16,7 @@ namespace Lanymy.Common.Instruments.Crawlers
         public override bool IsEnabled { get; set; } = true;
 
 
-        public LanymyResourceCrawler(string hostUrl, Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount = 1, int taskDelayMilliseconds = 3 * 1000, int channelCapacityCount = 0) : base(hostUrl, taskProgressAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
+        public LanymyResourceCrawler(string hostUrl, Action<TaskProgressModel> taskProgressAction, Action<List<ResourceCrawlerDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount = 1, int taskDelayMilliseconds = 3 * 1000, int channelCapacityCount = 0) : base(hostUrl, taskProgressAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
 
         }

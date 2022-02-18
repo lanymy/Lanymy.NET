@@ -23,7 +23,7 @@ namespace Lanymy.Common.Instruments.Crawlers
         protected TimerWorkTask _CurrentAnalysisResourceListTimerWorkTask;
 
 
-        protected BaseResourceCrawler(string hostUrl, Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount) : base(taskProgressAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
+        protected BaseResourceCrawler(string hostUrl, Action<TaskProgressModel> taskProgressAction, Action<List<TCrawlerDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount) : base(taskProgressAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
             HostUrl = hostUrl;
         }
@@ -39,7 +39,7 @@ namespace Lanymy.Common.Instruments.Crawlers
             }
 
             _CurrentAnalysisResourceListTimerWorkTask = new TimerWorkTask(OnAnalysisResourceListTimerWorkTask, TaskDelayMilliseconds);
-            _CurrentWorkTaskQueue = new WorkTaskQueue<TCrawlerDataModel>(OnWorkTaskQueue, WorkTaskTotalCount, TaskDelayMilliseconds, ChannelCapacityCount);
+            _CurrentWorkTaskQueue = new WorkTaskQueue<TCrawlerDataModel>(OnWorkTaskQueue, _CurrentStopAndReadQueueAllDataAction, WorkTaskTotalCount, TaskDelayMilliseconds, ChannelCapacityCount);
 
             await _CurrentWorkTaskQueue.StartAsync();
 

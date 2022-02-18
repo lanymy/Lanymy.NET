@@ -37,10 +37,11 @@ namespace Lanymy.Common.Instruments.Crawlers
         /// </summary>
         protected int _CurrentTaskProgressCompleteCount = 0;
 
-        protected readonly Action<TaskProgressModel> _TaskProgressAction;
+        protected readonly Action<TaskProgressModel> _CurrentTaskProgressAction;
+        protected readonly Action<List<TCrawlerDataModel>> _CurrentStopAndReadQueueAllDataAction;
 
         //protected BaseCrawlerN(string workTaskDataRootDirectoryFullPath = null, int taskDelayMilliseconds = 5 * 1000)
-        protected BaseCrawler(Action<TaskProgressModel> taskProgressAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount)
+        protected BaseCrawler(Action<TaskProgressModel> taskProgressAction, Action<List<TCrawlerDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskDelayMilliseconds, int channelCapacityCount)
         {
 
             //if (workTaskDataRootDirectoryFullPath.IfIsNullOrEmpty())
@@ -50,7 +51,8 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             //_CurrentWorkTaskDataRootDirectoryFullPath = workTaskDataRootDirectoryFullPath;
 
-            _TaskProgressAction = taskProgressAction;
+            _CurrentTaskProgressAction = taskProgressAction;
+            _CurrentStopAndReadQueueAllDataAction = stopAndReadQueueAllDataAction;
             TaskDelayMilliseconds = taskDelayMilliseconds;
             WorkTaskTotalCount = workTaskTotalCount;
             ChannelCapacityCount = channelCapacityCount;
@@ -72,7 +74,7 @@ namespace Lanymy.Common.Instruments.Crawlers
             _CurrentTaskProgressModel.TotalCount = _CurrentTaskProgressTotalCount;
             _CurrentTaskProgressModel.CompleteCount = _CurrentTaskProgressCompleteCount;
 
-            _TaskProgressAction(_CurrentTaskProgressModel);
+            _CurrentTaskProgressAction(_CurrentTaskProgressModel);
 
             return null;
 
@@ -95,6 +97,9 @@ namespace Lanymy.Common.Instruments.Crawlers
             _CurrentProgressTimerWorkTask = null;
 
         }
+
+
+
 
 
 

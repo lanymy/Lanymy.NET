@@ -19,8 +19,8 @@ namespace Lanymy.Common.Instruments
         protected CancellationTokenSource _CurrentCancellationTokenSource;
 
 
-        protected BaseWorkTaskQueue(Channel<TDataModel> channel, Action<TDataModel> workAction, int workTaskTotalCount = 1, int taskSleepMilliseconds = 3 * 1000, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
-            : base(channel, workAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
+        protected BaseWorkTaskQueue(Channel<TDataModel> channel, Action<TDataModel> workAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction = null, int workTaskTotalCount = 1, int taskSleepMilliseconds = 3 * 1000, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
+            : base(channel, workAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
         {
 
         }
@@ -45,7 +45,7 @@ namespace Lanymy.Common.Instruments
                 while (await _CurrentChannel.Reader.WaitToReadAsync(token))
                 {
 
-                    while (_CurrentChannel.Reader.TryRead(out var dataModel))
+                    while (IsRunning && _CurrentChannel.Reader.TryRead(out var dataModel))
                     {
                         OnWorkAction(dataModel);
                     }
@@ -156,15 +156,31 @@ namespace Lanymy.Common.Instruments
 
 
 
-            if (_IsReadQueueAllData)
+            //if (_IsReadQueueAllData)
+            //{
+
+            //    _IsReadQueueAllData = false;
+
+            //    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
+            //    {
+            //        _CurrentReadQueueAllDataList.Add(item);
+            //    }
+
+            //}
+
+            if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
             {
 
-                _IsReadQueueAllData = false;
+                var list = new List<TDataModel>();
 
                 await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
                 {
-                    _CurrentReadQueueAllDataList.Add(item);
+                    list.Add(item);
                 }
+
+                _CurrentStopAndReadQueueAllDataAction(list);
+
+                list.Clear();
 
             }
 
@@ -180,26 +196,26 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()
-        {
+        //public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()
+        //{
 
-            _IsReadQueueAllData = true;
+        //    _IsReadQueueAllData = true;
 
-            await StopAsync();
+        //    await StopAsync();
 
-            return _CurrentReadQueueAllDataList;
+        //    return _CurrentReadQueueAllDataList;
 
-        }
+        //}
 
 
         protected override async Task OnDisposeAsync()
         {
 
-            if (!_CurrentReadQueueAllDataList.IfIsNullOrEmpty())
-            {
-                _CurrentReadQueueAllDataList.Clear();
-                _CurrentReadQueueAllDataList = null;
-            }
+            //if (!_CurrentReadQueueAllDataList.IfIsNullOrEmpty())
+            //{
+            //    _CurrentReadQueueAllDataList.Clear();
+            //    _CurrentReadQueueAllDataList = null;
+            //}
 
             await Task.CompletedTask;
 

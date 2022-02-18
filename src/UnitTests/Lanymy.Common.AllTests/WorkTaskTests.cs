@@ -20,60 +20,98 @@ namespace Lanymy.Common.AllTests
     {
 
 
+        class WorkTaskQueueDataModel : IWorkTaskQueueDataModel
+        {
 
-        //[TestMethod()]
-        //public async Task WorkTaskTest()
-        //{
+            public int Index { get; set; }
 
-        //    var channel = Channel.CreateUnbounded<int>();
-
-        //    for (var i = 0; i < 10; i++)
-        //    {
-        //        await channel.Writer.WriteAsync(i);
-        //    }
+        }
 
 
-        //    var reader = channel.Reader;
+        [TestMethod()]
+        public async Task WorkTaskTest()
+        {
 
-        //    if (reader.TryRead(out var number))
-        //    {
-        //        Debug.WriteLine(number);
-        //    }
+            //var channel = Channel.CreateUnbounded<int>();
 
-        //    var canCount = reader.CanCount;
-        //    var count = reader.Count;
-
-        //    var list = new List<int>();
-
-        //    await foreach (var item in reader.ReadAllAsync())
-        //    {
-        //        list.Add(item);
-        //        if (item == 8)
-        //        {
-        //            channel.Writer.Complete();
-        //        }
-        //    }
-
-        //    canCount = reader.CanCount;
-        //    count = reader.Count;
-
-        //    if (reader.TryRead(out number))
-        //    {
-        //        Debug.WriteLine(number);
-        //    }
+            //for (var i = 0; i < 10; i++)
+            //{
+            //    await channel.Writer.WriteAsync(i);
+            //}
 
 
-        //    //while (await reader.WaitToReadAsync())
-        //    //{
-        //    //    if (reader.TryRead(out var number))
-        //    //    {
-        //    //        Debug.WriteLine(number);
-        //    //    }
-        //    //}
+            //var reader = channel.Reader;
 
-        //    var strEnd = string.Empty;
+            //if (reader.TryRead(out var number))
+            //{
+            //    Debug.WriteLine(number);
+            //}
 
-        //}
+            //var canCount = reader.CanCount;
+            //var count = reader.Count;
+
+            //var list = new List<int>();
+
+            //await foreach (var item in reader.ReadAllAsync())
+            //{
+            //    list.Add(item);
+            //    if (item == 8)
+            //    {
+            //        channel.Writer.Complete();
+            //    }
+            //}
+
+            //canCount = reader.CanCount;
+            //count = reader.Count;
+
+            //if (reader.TryRead(out number))
+            //{
+            //    Debug.WriteLine(number);
+            //}
+
+
+            ////while (await reader.WaitToReadAsync())
+            ////{
+            ////    if (reader.TryRead(out var number))
+            ////    {
+            ////        Debug.WriteLine(number);
+            ////    }
+            ////}
+
+            var workTaskQueue = new WorkTaskQueue<WorkTaskQueueDataModel>
+            (
+                dataModel =>
+                {
+                    Task.Delay(10 * 1000).Wait();
+                    Debug.WriteLine(dataModel.Index);
+                },
+                dataList =>
+                {
+                    Assert.AreEqual(dataList[0].Index, 1);
+                    Assert.AreEqual(dataList.Count, 9);
+                }
+            );
+
+            await workTaskQueue.StartAsync();
+
+            for (var i = 0; i < 10; i++)
+            {
+                await workTaskQueue.AddToQueueAsync(new WorkTaskQueueDataModel
+                {
+                    Index = i,
+                });
+            }
+
+            await Task.Delay(5 * 1000);
+            //await Task.Delay(10000 * 1000);
+
+            await workTaskQueue.StopAsync();
+
+            var strEnd = string.Empty;
+
+
+
+        }
 
 
 
