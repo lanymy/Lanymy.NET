@@ -119,6 +119,37 @@ namespace Lanymy.Common.Instruments
         }
 
 
+        protected virtual async Task<List<TDataModel>> ReadQueueAllDataAsync()
+        {
+
+            var list = new List<TDataModel>();
+
+            await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
+            {
+                list.Add(item);
+            }
+
+            return list;
+
+        }
+
+
+        protected virtual async Task OnStopAndReadQueueAllDataActionAsync()
+        {
+
+            if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
+            {
+
+                var list = await ReadQueueAllDataAsync();
+                _CurrentStopAndReadQueueAllDataAction(list);
+
+                list.Clear();
+
+            }
+
+        }
+
+
         ///// <summary>
         ///// 停止执行任务,并返回当前消息队列中的全部数据
         ///// </summary>

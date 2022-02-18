@@ -168,21 +168,24 @@ namespace Lanymy.Common.Instruments
 
             //}
 
-            if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
-            {
 
-                var list = new List<TDataModel>();
+            //if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
+            //{
 
-                await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
-                {
-                    list.Add(item);
-                }
+            //    var list = new List<TDataModel>();
 
-                _CurrentStopAndReadQueueAllDataAction(list);
+            //    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
+            //    {
+            //        list.Add(item);
+            //    }
 
-                list.Clear();
+            //    _CurrentStopAndReadQueueAllDataAction(list);
 
-            }
+            //    list.Clear();
+
+            //}
+
+            await OnStopAndReadQueueAllDataActionAsync();
 
             if (!_IsInternalChannel)
             {
