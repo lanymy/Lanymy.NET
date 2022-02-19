@@ -39,7 +39,7 @@ namespace Lanymy.Common.Instruments.Crawlers
             }
 
             _CurrentAnalysisResourceListTimerWorkTask = new TimerWorkTask(OnAnalysisResourceListTimerWorkTask, TaskDelayMilliseconds);
-            _CurrentWorkTaskQueue = new WorkTaskQueue<TCrawlerDataModel>(OnWorkTaskQueue, _CurrentStopAndReadQueueAllDataAction, WorkTaskTotalCount, TaskDelayMilliseconds, ChannelCapacityCount);
+            _CurrentWorkTaskQueue = new WorkTaskQueue<TCrawlerDataModel>(OnWorkTaskQueue, OnStopAndReadQueueAllDataAction, WorkTaskTotalCount, TaskDelayMilliseconds, ChannelCapacityCount);
 
             await _CurrentWorkTaskQueue.StartAsync();
 

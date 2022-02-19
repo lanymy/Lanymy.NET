@@ -81,6 +81,18 @@ namespace Lanymy.Common.Instruments.Crawlers
         }
 
 
+        protected virtual void OnStopAndReadQueueAllDataAction(List<TCrawlerDataModel> queueAllDataList)
+        {
+
+            if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
+            {
+                _CurrentStopAndReadQueueAllDataAction(queueAllDataList);
+
+            }
+
+        }
+
+
         protected override async Task OnStartAsync()
         {
 
