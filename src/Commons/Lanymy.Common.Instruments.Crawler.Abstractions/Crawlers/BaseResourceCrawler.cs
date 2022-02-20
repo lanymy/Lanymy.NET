@@ -99,8 +99,9 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             foreach (var crawlerDataModel in analysisResourceListResult.AnalysisResourceList)
             {
-                Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
-                _CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel).Wait();
+                //Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
+                //_CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel).Wait();
+                AddToQueueAsync(crawlerDataModel).Wait();
             }
 
             analysisResourceListResult.AnalysisResourceList.Clear();
@@ -120,6 +121,16 @@ namespace Lanymy.Common.Instruments.Crawlers
             return null;
 
         }
+
+
+
+        protected virtual async Task AddToQueueAsync(TCrawlerDataModel crawlerDataModel)
+        {
+            Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
+            await _CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel);
+        }
+
+
 
 
         protected virtual void OnWorkTaskQueue(TCrawlerDataModel crawlerDataModel)

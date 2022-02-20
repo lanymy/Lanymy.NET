@@ -3,7 +3,7 @@
 
   <PropertyGroup>
 
-    <LanymyCommonFrameworkPackageReleaseNumbers>0.10.6</LanymyCommonFrameworkPackageReleaseNumbers>
+    <LanymyCommonFrameworkPackageReleaseNumbers>0.10.7</LanymyCommonFrameworkPackageReleaseNumbers>
 
     <CurrentReleaseNumbers>$(LanymyCommonFrameworkPackageReleaseNumbers)</CurrentReleaseNumbers>
 
