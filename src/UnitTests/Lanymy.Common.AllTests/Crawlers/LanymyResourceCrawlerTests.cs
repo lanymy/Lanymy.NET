@@ -29,8 +29,9 @@ namespace Lanymy.Common.AllTests.Crawlers
             lanymyResourceCrawler.StartAsync().Wait();
 
 
-            Task.Delay(24 * 60 * 60 * 1000).Wait();
+            //Task.Delay(24 * 60 * 60 * 1000).Wait();
             //Task.Delay(10 * 1000).Wait();
+            Task.Delay(25 * 1000).Wait();
 
 
             lanymyResourceCrawler.StopAsync().Wait();

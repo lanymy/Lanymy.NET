@@ -1,9 +1,12 @@
 ﻿using Lanymy.Common.Instruments.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Lanymy.Common.Helpers;
 
 namespace Lanymy.Common.Instruments.Crawlers
 {
@@ -36,37 +39,88 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             //例子
 
-            Task.Delay(TaskDelayMilliseconds).Wait();
+            //Task.Delay(TaskDelayMilliseconds).Wait();
+            Task.Delay(15 * 1000).Wait();
 
             var analysisResourceListResult = new AnalysisResourceListResult<string, ResourceCrawlerDataModel>();
 
-            ////不中断定时器,等待下一次事件触发
-            //analysisResourceListResult.IsBreak = false;
-            //analysisResourceListResult.AnalysisResourceList = new List<ResourceCrawlerDataModel>();
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    analysisResourceListResult.AnalysisResourceList.Add(new ResourceCrawlerDataModel
-            //    {
-            //        ID = i.ToString(),
-            //        CreateDateTime = DateTime.Now,
-            //    });
-            //}
+            //不中断定时器,等待下一次事件触发
+            analysisResourceListResult.IsBreak = false;
+            analysisResourceListResult.AnalysisResourceList = new List<ResourceCrawlerDataModel>();
+            for (int i = 0; i < 10; i++)
+            {
+                analysisResourceListResult.AnalysisResourceList.Add(new ResourceCrawlerDataModel
+                {
+                    //ID = i.ToString(),
+                    ID = Guid.NewGuid().ToString(),
+                    CreateDateTime = DateTime.Now,
+                });
+            }
+
+            return analysisResourceListResult;
+
+            ////如果要中断此循环定时器 则 返回 true
+            //analysisResourceListResult.IsBreak = true;
 
             //return analysisResourceListResult;
-
-            analysisResourceListResult.IsBreak = true;
-
-            //如果要中断此循环定时器 则 返回 true
-            return analysisResourceListResult;
 
         }
 
 
         protected override void OnAnalysisResourceDetail(ResourceCrawlerDataModel crawlerDataModel)
         {
+
             //处理明细页相关信息
             //crawlerDataModel.Url;
+            //Task.Delay(3 * 1000).Wait();
+
+            //Debug.WriteLine(string.Format("[ {0} ] - [ {1} ]", crawlerDataModel.ID, crawlerDataModel.CreateDateTime));
+
         }
+
+
+        protected override void OnStopAndReadQueueAllDataAction(List<ResourceCrawlerDataModel> queueAllDataList)
+        {
+
+            //var file = Path.Combine(PathHelper.GetCallDomainPath(), "1.txt");
+
+            ////队列未处理数据集合
+            //JsonSerializeHelper.SerializeToJsonFile(queueAllDataList, file);
+
+        }
+
+
+
+        protected override async Task OnStartAsync()
+        {
+
+
+            await base.OnStartAsync();
+
+            ////挂载之前的未处理数据集合
+            //var fileFullPath = Path.Combine(PathHelper.GetCallDomainPath(), "1.txt");
+            //if (File.Exists(fileFullPath))
+            //{
+
+            //    await Task.Run(async () =>
+            //    {
+
+            //        var list = JsonSerializeHelper.DeserializeFromJsonFile<List<ResourceCrawlerDataModel>>(fileFullPath);
+
+            //        foreach (var webPageTaskData in list)
+            //        {
+            //            //await _CurrentWorkTaskQueue.AddToQueueAsync(webPageTaskData);
+            //            await AddToQueueAsync(webPageTaskData);
+            //        }
+
+            //        list.Clear();
+
+            //    });
+
+            //}
+
+        }
+
 
 
         protected override async Task OnDisposeAsync()
