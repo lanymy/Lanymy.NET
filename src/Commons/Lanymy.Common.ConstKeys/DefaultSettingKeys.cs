@@ -24,7 +24,7 @@ namespace Lanymy.Common.ConstKeys
         /// <summary>
         /// 默认密钥长度
         /// </summary>
-        internal const int DEFAULT_CRYPTO_KEY_SIZE = 16;
+        internal const int DEFAULT_CRYPTO_KEY_SIZE = 24;
 
 
         /// <summary>

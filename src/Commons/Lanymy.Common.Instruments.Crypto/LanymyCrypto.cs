@@ -71,13 +71,75 @@ namespace Lanymy.Common.Instruments
 
         //}
 
-
-        private byte[] GetSecurityKey16Bytes(string securityKey, Encoding encoding)
+        private static readonly byte[] DEFAULT_SECURITY_KEY_BYTES = new byte[]
         {
+            209,
+            233,
+            202,
+            167,
+            122,
+            182,
+            60,
+            65,
+            211,
+            46,
+            145,
+            107,
+            60,
+            98,
+            71,
+            78,
+            53,
+            70,
+            50,
+            48,
+            55,
+            65,
+            48,
+            66,
+        };
+
+
+        //private byte[] GetSecurityKey16Bytes(string securityKey, Encoding encoding)
+        //{
+
+        //    byte[] bytes = encoding.GetBytes(securityKey);
+
+        //    return bytes.Length >= DEFAULT_CRYPTO_KEY_SIZE ? bytes.Take(DEFAULT_CRYPTO_KEY_SIZE).ToArray() : ArrayHelper.MergerArray(bytes, new byte[DEFAULT_CRYPTO_KEY_SIZE - bytes.Length]);
+
+        //}
+
+        //private byte[] GetSecurityKeyBytes(string securityKey, Encoding encoding, int cryptoKeySize)
+        //{
+
+        //    byte[] bytes = encoding.GetBytes(securityKey);
+
+        //    return bytes.Length >= DEFAULT_CRYPTO_KEY_SIZE ? bytes.Take(cryptoKeySize).ToArray() : ArrayHelper.MergerArray(bytes, new byte[cryptoKeySize - bytes.Length]);
+
+        //}
+
+
+        private byte[] GetSecurityKeyBytes(string securityKey, Encoding encoding)
+        {
+
+            byte[] keyBytes;
 
             byte[] bytes = encoding.GetBytes(securityKey);
 
-            return bytes.Length >= DEFAULT_CRYPTO_KEY_SIZE ? bytes.Take(DEFAULT_CRYPTO_KEY_SIZE).ToArray() : ArrayHelper.MergerArray(bytes, new byte[DEFAULT_CRYPTO_KEY_SIZE - bytes.Length]);
+            if (bytes.Length >= DEFAULT_CRYPTO_KEY_SIZE)
+            {
+                keyBytes = bytes.Take(DEFAULT_CRYPTO_KEY_SIZE).ToArray();
+            }
+            else
+            {
+
+                keyBytes = new byte[DEFAULT_CRYPTO_KEY_SIZE];
+                Array.Copy(DEFAULT_SECURITY_KEY_BYTES, keyBytes, DEFAULT_CRYPTO_KEY_SIZE);
+                Array.Copy(bytes, keyBytes, bytes.Length);
+
+            }
+
+            return keyBytes;
 
         }
 
@@ -97,15 +159,17 @@ namespace Lanymy.Common.Instruments
             if (secretKey.IfIsNullOrEmpty()) secretKey = DEFAULT_CRYPTO_KEY;
             if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
 
-            //密钥必须16位
-            byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
+
+            byte[] secretKeyBytes = GetSecurityKeyBytes(secretKey, encoding);
 
             long contentStartPosition = 0;
 
             var encryptDigestInfoModel = new TEncryptDigestInfoModel();
 
+
+
             using (var compressionStream = new GZipStream(encryptStream, CompressionMode.Compress, true))
-            using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateEncryptor(secretKeyBytes, secretKeyBytes))
+            using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateEncryptor(secretKeyBytes, secretKeyBytes.Take(8).ToArray()))
             using (CryptoStream cryptoStream = new CryptoStream(compressionStream, transform, CryptoStreamMode.Write))
             {
 
@@ -177,6 +241,7 @@ namespace Lanymy.Common.Instruments
                 //写入 正文 数据流
                 //sourceStream.CopyToAsync(cryptoStream).Wait();
                 sourceStream.CopyTo(cryptoStream);
+
                 cryptoStream.FlushFinalBlock();
 
             }
@@ -405,8 +470,7 @@ namespace Lanymy.Common.Instruments
                 return encryptResultModel;
             }
 
-            //密钥必须16位
-            byte[] secretKeyBytes = GetSecurityKey16Bytes(secretKey, encoding);
+            byte[] secretKeyBytes = GetSecurityKeyBytes(secretKey, encoding);
 
             using (var decompressionStream = new GZipStream(encryptedStream, CompressionMode.Decompress, true))
             using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateDecryptor(secretKeyBytes, secretKeyBytes))

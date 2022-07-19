@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Commons\Lanymy.Common.Helpers.IsolatedStorageHelper\Lanymy.Common.Helpers.IsolatedStorageHelper.csproj" />
     <ProjectReference Include="..\..\Commons\Lanymy.Common.Instruments.IsolatedStorages\Lanymy.Common.Instruments.IsolatedStorages.csproj" />
   </ItemGroup>
 
