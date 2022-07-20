@@ -23,7 +23,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
     <ProjectReference Include="..\Lanymy.Common.Abstractions\Lanymy.Common.Abstractions.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ObjectExtensions\Lanymy.Common.ExtensionFunctions.ObjectExtensions.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.Json\Lanymy.Common.Helpers.SerializeHelper.Json.csproj" />

@@ -5,6 +5,7 @@
 
   <PropertyGroup>
 
+    <CurrentTargetFrameworks>netstandard2.1;net5.0</CurrentTargetFrameworks>
     <!--<CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
 
     <Description>
@@ -24,8 +25,8 @@
 
 
   <ItemGroup>
-    <PackageReference Include="QRCoder" Version="1.4.1" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
+    <PackageReference Include="QRCoder" Version="1.4.3" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 
 
