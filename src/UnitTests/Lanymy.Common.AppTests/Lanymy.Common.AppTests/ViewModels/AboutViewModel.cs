@@ -21,7 +21,8 @@ namespace Lanymy.Common.AppTests.ViewModels
             Title = "About";
             OpenWebCommand = new Command(async () => await Browser.OpenAsync("https://aka.ms/xamarin-quickstart"));
 
-            IsolatedStorageTest();
+            //IsolatedStorageTest();
+            NetworkHelperTest();
 
         }
 
@@ -94,6 +95,14 @@ namespace Lanymy.Common.AppTests.ViewModels
 
             var isolatedStorageModel = IsolatedStorageHelper.GetModel<ScheduleFileInfoModel>();
 
+
+        }
+
+        private void NetworkHelperTest()
+        {
+
+            var list = NetworkHelper.GetLocalIpList();
+            var aaa = list[0].ToString();
 
         }
 
