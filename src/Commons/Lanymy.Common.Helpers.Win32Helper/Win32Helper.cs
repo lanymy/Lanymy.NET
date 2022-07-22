@@ -1,14 +1,11 @@
-﻿#if NET48
+﻿#if !NETSTANDARD
 
 
-
-
-using System.Runtime.InteropServices;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.InteropServices;
+using Lanymy.Common.ConstKeys;
 
-namespace Common
+namespace Lanymy.Common.Helpers
 {
 
     /// <summary>

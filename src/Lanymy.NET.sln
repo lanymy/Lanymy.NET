@@ -157,8 +157,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Helpers.Win32
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.All", "Commons\Lanymy.Common.All\Lanymy.Common.All.csproj", "{BD914871-C44A-422F-A14E-B06AA40ED11F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.IsolatedStoragesTests", "UnitTests\Lanymy.Common.Instruments.IsolatedStoragesTests\Lanymy.Common.Instruments.IsolatedStoragesTests.csproj", "{4D1161C6-5C25-48C5-BA70-0F68584A813E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.ExtensionFunctions.ExpressExtensions", "Commons\Lanymy.Common.ExtensionFunctions.ExpressExtensions\Lanymy.Common.ExtensionFunctions.ExpressExtensions.csproj", "{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.PipeLine.Abstractions", "Commons\Lanymy.Common.Instruments.PipeLine.Abstractions\Lanymy.Common.Instruments.PipeLine.Abstractions.csproj", "{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0}"
@@ -873,18 +871,6 @@ Global
 		{BD914871-C44A-422F-A14E-B06AA40ED11F}.Release|iPhone.Build.0 = Release|Any CPU
 		{BD914871-C44A-422F-A14E-B06AA40ED11F}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{BD914871-C44A-422F-A14E-B06AA40ED11F}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|iPhone.Build.0 = Release|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384}.Debug|iPhone.ActiveCfg = Debug|Any CPU
@@ -1139,7 +1125,6 @@ Global
 		{FDD6EAD7-AE2C-4E80-AEC4-D26A112BB30D} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 		{9E26FD62-E9BF-4126-9C48-7E6EB8A4129C} = {3B900869-179B-40F2-AA49-7C55517A46E4}
 		{BD914871-C44A-422F-A14E-B06AA40ED11F} = {3BD9ED90-63CE-4E9F-ADE5-1C66968405BC}
-		{4D1161C6-5C25-48C5-BA70-0F68584A813E} = {CE7155FA-CD6D-47BD-B832-A19AC8B419F1}
 		{9C26F3A6-429B-44E2-99BC-D4E1FF5A7384} = {C468937A-C820-496E-8F25-116117E529AB}
 		{2FDE3B11-1F81-4737-812D-F0A2C5C2D3B0} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 		{0DFE2343-EAE2-4F0D-B00E-3EAB619E38BA} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}

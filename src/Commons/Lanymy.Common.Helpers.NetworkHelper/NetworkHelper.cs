@@ -150,7 +150,7 @@ namespace Lanymy.Common.Helpers
         }
 
 
-#if NET48
+#if !NETSTANDARD
 
 
 
