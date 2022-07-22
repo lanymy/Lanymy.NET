@@ -11,6 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 Others", "01 Others", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 Build", "02 Build", "{D115FAEA-C7C4-46D5-AB8B-C2BF8496F243}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 Commons", "03 Commons", "{98F171C3-27CD-4339-80E5-37A4676A687C}"
 EndProject
@@ -184,7 +187,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.AppTests.Andr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.AppTests.iOS", "UnitTests\Lanymy.Common.AppTests\Lanymy.Common.AppTests.iOS\Lanymy.Common.AppTests.iOS.csproj", "{A289DAAF-46E4-4047-91B8-682CE9D2A867}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.AppTests", "UnitTests\Lanymy.Common.AppTests\Lanymy.Common.AppTests\Lanymy.Common.AppTests.csproj", "{08A8968E-2C41-4FD4-A5CF-B58D8057B733}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.AppTests", "UnitTests\Lanymy.Common.AppTests\Lanymy.Common.AppTests\Lanymy.Common.AppTests.csproj", "{08A8968E-2C41-4FD4-A5CF-B58D8057B733}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppTests", "AppTests", "{9B3C7B5E-50A2-46A3-B960-FCBCB9D8D8C5}"
 EndProject
