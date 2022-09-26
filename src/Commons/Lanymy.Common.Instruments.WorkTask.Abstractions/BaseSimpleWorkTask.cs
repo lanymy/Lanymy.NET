@@ -15,8 +15,9 @@ namespace Lanymy.Common.Instruments
         protected Task _CurrentTask;
         protected readonly ConcurrentQueue<TData> _CurrentCacheConcurrentQueue = new ConcurrentQueue<TData>();
         private readonly Action<TData> _WorkAction;
+        private bool _IsLimit;
 
-        protected BaseSimpleWorkTask(Action<TData> workAction)
+        protected BaseSimpleWorkTask(Action<TData> workAction, bool isLimit)
         {
 
             if (workAction.IfIsNull())
@@ -25,6 +26,7 @@ namespace Lanymy.Common.Instruments
             }
 
             _WorkAction = workAction;
+            _IsLimit = isLimit;
 
         }
 
@@ -51,7 +53,10 @@ namespace Lanymy.Common.Instruments
 
                 }
 
-                Task.Delay(10).Wait();
+                if (_IsLimit)
+                {
+                    Task.Delay(10).Wait();
+                }
 
             }
 

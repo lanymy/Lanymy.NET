@@ -9,7 +9,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        public SimpleWorkTask(Action<TData> workAction) : base(workAction)
+        public SimpleWorkTask(Action<TData> workAction, bool isLimit) : base(workAction, isLimit)
         {
 
 
