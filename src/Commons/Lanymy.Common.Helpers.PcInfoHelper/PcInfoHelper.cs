@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -12,7 +13,7 @@ namespace Lanymy.Common.Helpers
     /// <summary>
     /// 获取本地机器信息的类
     /// </summary>
-    public class PCInfoHelper
+    public class PcInfoHelper
     {
         /// <summary>
         /// 获取电脑主机名称
@@ -87,24 +88,73 @@ namespace Lanymy.Common.Helpers
         }
 
 
-
         /// <summary>
         /// 获取本地一个随机可以用的端口号
         /// </summary>
         /// <param name="minPort"></param>
         /// <param name="maxPort"></param>
         /// <returns></returns>
-        public static int GetRandomAvaliablePort(int minPort = 1024, int maxPort = 65535)
+        public static int GetRandomAvaliablePort(int minPort = 1024, int maxPort = 5000)
         {
-            Random rand = new Random();
-            while (true)
+            return GetRandomAvaliablePorts(minPort, maxPort)[0];
+        }
+
+
+        /// <summary>
+        /// 批量获取本地随机可以用的端口号
+        /// </summary>
+        /// <param name="minPort"></param>
+        /// <param name="maxPort"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static int[] GetRandomAvaliablePorts(int minPort = 1024, int maxPort = 5000, int count = 1)
+        {
+
+            if (count <= 0)
             {
-                int port = rand.Next(minPort, maxPort);
-                if (!IsPortInUsed(port))
+                count = 1;
+            }
+
+            var ports = new List<int>();
+
+            var rand = new Random((int)DateTime.Now.Ticks);
+            var index = 0;
+            int port = 0;
+
+            var localInUsedPorts = GetLocalInUsedPorts();
+
+            while (index < count)
+            {
+                port = rand.Next(minPort, maxPort);
+                if (!ports.Contains(port) && !localInUsedPorts.Contains(port))
                 {
-                    return port;
+                    index++;
+                    ports.Add(port);
                 }
             }
+
+            return ports.OrderBy(o => o).ToArray();
+
+        }
+
+
+
+        /// <summary>
+        /// 获取本地占用端口号列表
+        /// </summary>
+        /// <returns></returns>
+        public static int[] GetLocalInUsedPorts()
+        {
+
+            var localUsedPorts = new List<int>();
+
+            var ipGlobalProps = IPGlobalProperties.GetIPGlobalProperties();
+            localUsedPorts.AddRange(ipGlobalProps.GetActiveTcpListeners().Select(o => o.Port));
+            localUsedPorts.AddRange(ipGlobalProps.GetActiveUdpListeners().Select(o => o.Port));
+            localUsedPorts.AddRange(ipGlobalProps.GetActiveTcpConnections().Select(o => o.LocalEndPoint.Port));
+
+            return localUsedPorts.Distinct().OrderBy(o => o).ToArray();
+
         }
 
 

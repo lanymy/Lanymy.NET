@@ -15,7 +15,7 @@ namespace Lanymy.Common.Instruments
         private readonly Action<IEnumerable<TData>> _TriggerWorkAction;
 
         //public SimpleWorkTaskTriggerQueue(Action<TData> workAction, Action<IEnumerable<TData>> triggerWorkAction, int triggerCount = 3) : base(workAction)
-        public SimpleWorkTaskTriggerQueue(Action<IEnumerable<TData>> triggerWorkAction, int triggerCount = 3) : base(_ => { })
+        public SimpleWorkTaskTriggerQueue(Action<IEnumerable<TData>> triggerWorkAction, int triggerCount = 3, bool isLimit = true) : base(_ => { }, isLimit)
         {
 
             if (triggerWorkAction.IfIsNull())

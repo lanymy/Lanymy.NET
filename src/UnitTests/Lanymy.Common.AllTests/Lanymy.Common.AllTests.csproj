@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Commons\Lanymy.Common.All\Lanymy.Common.All.csproj" />
+    <ProjectReference Include="..\..\Commons\Lanymy.Common.Helpers.PcInfoHelper\Lanymy.Common.Helpers.PcInfoHelper.csproj" />
     <ProjectReference Include="..\..\Commons\Lanymy.Common.Instruments.Crawler\Lanymy.Common.Instruments.Crawler.csproj" />
   </ItemGroup>
 
