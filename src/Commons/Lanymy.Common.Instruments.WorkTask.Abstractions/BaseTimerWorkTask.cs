@@ -86,7 +86,7 @@ namespace Lanymy.Common.Instruments
 
             if (_CurrentTask.Status == TaskStatus.Running)
             {
-                _CurrentTask.Wait();
+                await _CurrentTask;
             }
 
             _CurrentTask.Dispose();

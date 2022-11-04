@@ -16,7 +16,8 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnDisposeAsync()
         {
-            await Task.CompletedTask;
+            await OnStopAsync();
+            //await Task.CompletedTask;
         }
 
     }
