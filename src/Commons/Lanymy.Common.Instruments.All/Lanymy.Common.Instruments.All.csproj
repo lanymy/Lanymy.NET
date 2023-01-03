@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Lanymy.Common.Instruments.Crypto\Lanymy.Common.Instruments.Crypto.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.EnumMapper\Lanymy.Common.Instruments.EnumMapper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.FileTextManipulater\Lanymy.Common.Instruments.FileTextManipulater.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Instruments.NavigationPage\Lanymy.Common.Instruments.NavigationPage.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer\Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.CMD\Lanymy.Common.Instruments.CMD.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Compresser\Lanymy.Common.Instruments.Compresser.csproj" />
