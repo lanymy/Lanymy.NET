@@ -6,7 +6,7 @@ namespace Lanymy.Common.Instruments
 {
     public class LanymyNavigationPage : BaseNavigationPage
     {
-        public LanymyNavigationPage(Action<INavigationPage> pageingAction) : base(pageingAction)
+        public LanymyNavigationPage(Action<BaseNavigationPage> pageingAction) : base(pageingAction)
         {
         }
     }
