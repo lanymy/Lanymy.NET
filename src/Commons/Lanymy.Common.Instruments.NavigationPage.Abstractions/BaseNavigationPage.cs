@@ -5,7 +5,7 @@ using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Instruments
 {
-    public abstract class BaseNavigationPage : INavigationPage
+    public abstract class BaseNavigationPage : INavigationPage, INavigationPageEvent
     {
 
         /// <summary>
@@ -52,10 +52,10 @@ namespace Lanymy.Common.Instruments
         public bool CanLastPage => CanNextPage;
 
 
-        protected readonly Action<INavigationPage> _CurrentPageingAction;
+        protected readonly Action<BaseNavigationPage> _CurrentPageingAction;
 
 
-        protected BaseNavigationPage(Action<INavigationPage> pageingAction)
+        protected BaseNavigationPage(Action<BaseNavigationPage> pageingAction)
         {
 
             if (pageingAction.IfIsNull())

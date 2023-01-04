@@ -52,32 +52,6 @@ namespace Lanymy.Common.Instruments
         bool CanLastPage { get; }
 
 
-        /// <summary>
-        /// 刷新翻页信息,并跳转到首页
-        /// </summary>
-        /// <param name="pageSize"></param>
-        /// <param name="totalCount"></param>
-        void RefreshPageInfo(uint pageSize, uint totalCount);
-
-
-        void GoToFirstPage();
-
-
-
-        void GoToLastPage();
-
-
-
-
-        void GoToPage(uint pageIndex);
-
-
-
-        void GoToPrevPage();
-
-
-        void GoToNextPage();
-
 
     }
 
