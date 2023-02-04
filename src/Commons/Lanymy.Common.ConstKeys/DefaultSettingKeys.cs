@@ -30,7 +30,7 @@ namespace Lanymy.Common.ConstKeys
         /// <summary>
         /// MD5 加密 默认掩码
         /// </summary>
-        internal const string DEFAULT_MD5_SALT = "5F207A0B";
+        internal const string DEFAULT_MD5_SALT = "84dd8a0089c596e8";
 
         /// <summary>
         /// 默认加密分隔符
