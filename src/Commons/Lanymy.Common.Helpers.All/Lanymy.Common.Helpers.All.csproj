@@ -25,6 +25,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\Lanymy.Common.Helpers.BytesHelper\Lanymy.Common.Helpers.BytesHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.EnumHelper\Lanymy.Common.Helpers.EnumHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.GenericityHelper\Lanymy.Common.Helpers.GenericityHelper.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Helpers.PathHelper\Lanymy.Common.Helpers.PathHelper.csproj" />

@@ -37,7 +37,7 @@
         /// <summary>
         /// 缓冲区大小 1024 * 128
         /// </summary>
-        public const int BUFFER_SIZE_128K = BUFFER_SIZE_1K * 125;
+        public const int BUFFER_SIZE_128K = BUFFER_SIZE_1K * 128;
 
         /// <summary>
         /// 缓冲区大小 1024 * 256
