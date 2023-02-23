@@ -1,4 +1,5 @@
 using System;
+using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {
@@ -6,7 +7,7 @@ namespace Lanymy.Common.Instruments
     public class LanymyTcpServer : BaseTcpServer<LanymyTcpServerClient, LanymySessionToken, LanymyFixedHeaderPackageFilter, LanymyUpPackageDataModel, LanymyDownPackageDataModel>
     {
 
-        public LanymyTcpServer(LanymyFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int receiveBufferSize = 512, int sendBufferSize = 512, int sendDataIntervalMilliseconds = 300, int intervalHeartTotalMilliseconds = 3 * 1000) : base(fixedHeaderPackageFilter, port, receiveBufferSize, sendBufferSize, sendDataIntervalMilliseconds, intervalHeartTotalMilliseconds)
+        public LanymyTcpServer(LanymyFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int receiveBufferSize = 512, int sendBufferSize = 512, int sendDataIntervalMilliseconds = 300, int intervalHeartTotalMilliseconds = 3 * 1000, int heartTimeOutCount = 3) : base(fixedHeaderPackageFilter, port, receiveBufferSize, sendBufferSize, sendDataIntervalMilliseconds, intervalHeartTotalMilliseconds, heartTimeOutCount)
         {
 
         }
@@ -14,6 +15,11 @@ namespace Lanymy.Common.Instruments
         protected override LanymyTcpServerClient CreateTcpServerClient(System.Net.Sockets.Socket client)
         {
             return new LanymyTcpServerClient(client, ReceiveBufferSize, SendBufferSize, _SendDataIntervalMilliseconds);
+        }
+
+        protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)

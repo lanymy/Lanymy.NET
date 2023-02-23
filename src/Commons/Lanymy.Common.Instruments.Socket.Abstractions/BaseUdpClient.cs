@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {

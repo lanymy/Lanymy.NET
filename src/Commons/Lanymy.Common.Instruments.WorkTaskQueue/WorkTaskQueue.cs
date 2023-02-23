@@ -7,7 +7,7 @@ namespace Lanymy.Common.Instruments
 
 
     public class WorkTaskQueue<TDataModel> : BaseWorkTaskQueue<TDataModel>
-        where TDataModel : IWorkTaskQueueDataModel
+    //where TDataModel : IWorkTaskQueueDataModel
     {
 
 

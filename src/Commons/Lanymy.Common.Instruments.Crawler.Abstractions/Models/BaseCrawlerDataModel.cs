@@ -12,7 +12,7 @@ namespace Lanymy.Common.Instruments.Models
     /// 爬虫数据基类
     /// </summary>
     /// <typeparam name="TKey">主键类型</typeparam>
-    public abstract class BaseCrawlerDataModel<TKey> : IWorkTaskQueueDataModel
+    public abstract class BaseCrawlerDataModel<TKey> //: IWorkTaskQueueDataModel
     {
         /// <summary>
         /// 主键ID

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {
@@ -70,6 +71,8 @@ namespace Lanymy.Common.Instruments
 
         public event TcpCloseEvent CloseEvent;
 
+        public event TcpHeartEvent HeartEvent;
+
 
         #endregion
 
@@ -87,18 +90,21 @@ namespace Lanymy.Common.Instruments
         protected readonly BufferModel _CurrentBuffer;
         protected readonly CacheModel _CurrentCache;
 
+        protected readonly TimerWorkTask _CurrentHeartTimerWorkTask;
+
         protected readonly object _Locker = new Object();
 
         protected Queue<byte[]> _SendQueue = new Queue<byte[]>(SEND_MAX_COUNT);
 
         private const int SEND_MAX_COUNT = 100;
 
+
         #endregion
 
 
 
 
-        protected BaseTcpServerClient(System.Net.Sockets.Socket socket, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500)
+        protected BaseTcpServerClient(System.Net.Sockets.Socket socket, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500, int heartIntervalMilliseconds = 3 * 1000)
         {
 
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
@@ -112,7 +118,10 @@ namespace Lanymy.Common.Instruments
             CurrentSocket.SendBufferSize = SendBufferSize;
             CurrentSocket.ReceiveBufferSize = ReceiveBufferSize;
 
+            _CurrentHeartTimerWorkTask = new TimerWorkTask(OnHeartTimerWorkTask, heartIntervalMilliseconds);
+
         }
+
 
         #region 通知事件
 
@@ -170,6 +179,20 @@ namespace Lanymy.Common.Instruments
 
         #endregion
 
+        private TimerWorkTaskDataResult OnHeartTimerWorkTask()
+        {
+
+            if (!HeartEvent.IfIsNull())
+            {
+                HeartEvent(this);
+            }
+
+            return null;
+        }
+
+
+
+
         internal void StartReceive()
         {
 
@@ -183,6 +206,8 @@ namespace Lanymy.Common.Instruments
             BeginReceive();
 
             OnStartReceive();
+
+            _CurrentHeartTimerWorkTask.StartAsync().Wait();
 
         }
 
@@ -310,6 +335,17 @@ namespace Lanymy.Common.Instruments
             if (IsConnected || !_CurrentNetworkStream.IfIsNull())
             {
 
+
+                try
+                {
+                    _CurrentHeartTimerWorkTask.StopAsync().Wait();
+                    _CurrentHeartTimerWorkTask.Dispose();
+                }
+                catch
+                {
+
+                }
+
                 try
                 {
                     _CurrentNetworkStream.Dispose();
@@ -363,6 +399,7 @@ namespace Lanymy.Common.Instruments
                     ReceiveDataEvent = null;
                     StartReceiveEvent = null;
                     CloseEvent = null;
+                    HeartEvent = null;
 
                     //CurrentSessionToken = null;
 

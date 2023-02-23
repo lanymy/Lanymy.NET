@@ -4,7 +4,7 @@ namespace Lanymy.Common.Instruments
 {
 
 
-    public class UdpSourceDataModel : IWorkTaskQueueDataModel
+    public class UdpSourceDataModel //: IWorkTaskQueueDataModel
     {
 
         public IPEndPoint RemoteIPEndPoint { get; set; }

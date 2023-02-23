@@ -10,7 +10,7 @@ namespace Lanymy.Common.Instruments
 
 
     public abstract class BaseWorkTaskQueue<TDataModel> : BaseChannelWorkTask<TDataModel>
-        where TDataModel : IWorkTaskQueueDataModel
+    //where TDataModel : IWorkTaskQueueDataModel
     {
 
 
@@ -34,10 +34,8 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        protected virtual async Task OnTaskAsync(object obj)
+        protected virtual async Task OnTaskAsync(CancellationToken token)
         {
-
-            var token = (CancellationToken)obj;
 
             while (!token.IsCancellationRequested)
             {
@@ -56,13 +54,15 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        private void OnTask(object obj)
+        private async void OnTask(object obj)
         {
 
             try
             {
-                //OnTaskAsync(token).Wait(token);
-                OnTaskAsync(obj).Wait();
+
+                var token = (CancellationToken)obj;
+                await OnTaskAsync(token);
+
             }
             catch (Exception e)
             {

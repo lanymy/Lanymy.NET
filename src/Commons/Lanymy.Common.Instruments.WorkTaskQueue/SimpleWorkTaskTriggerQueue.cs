@@ -5,7 +5,7 @@ using Lanymy.Common.ExtensionFunctions;
 namespace Lanymy.Common.Instruments
 {
 
-    public class SimpleWorkTaskTriggerQueue<TData> : SimpleWorkTask<TData>
+    public class SimpleWorkTaskTriggerQueue<TData> : SimpleWorkTaskQueue<TData>
     {
 
         private readonly List<TData> _CurrentList = new List<TData>();
@@ -15,7 +15,7 @@ namespace Lanymy.Common.Instruments
         private readonly Action<IEnumerable<TData>> _TriggerWorkAction;
 
         //public SimpleWorkTaskTriggerQueue(Action<TData> workAction, Action<IEnumerable<TData>> triggerWorkAction, int triggerCount = 3) : base(workAction)
-        public SimpleWorkTaskTriggerQueue(Action<IEnumerable<TData>> triggerWorkAction, int triggerCount = 3, bool isLimit = true) : base(_ => { }, isLimit)
+        public SimpleWorkTaskTriggerQueue(Action<IEnumerable<TData>> triggerWorkAction, int triggerCount = 3, int sleepIntervalMilliseconds = 10) : base(_ => { }, sleepIntervalMilliseconds)
         {
 
             if (triggerWorkAction.IfIsNull())

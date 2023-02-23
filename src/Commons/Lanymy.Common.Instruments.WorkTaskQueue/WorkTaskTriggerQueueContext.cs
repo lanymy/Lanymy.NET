@@ -10,7 +10,7 @@ namespace Lanymy.Common.Instruments
 
 
     public class WorkTaskTriggerQueueContext<TDataModel> : BaseChannelWorkTask<TDataModel>
-        where TDataModel : IWorkTaskQueueDataModel
+    //where TDataModel : IWorkTaskQueueDataModel
     {
 
 

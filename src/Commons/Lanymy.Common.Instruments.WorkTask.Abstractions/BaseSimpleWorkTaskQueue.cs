@@ -1,37 +1,36 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Instruments
 {
 
-    public abstract class BaseSimpleWorkTask : BaseWorkTask
+
+    public abstract class BaseSimpleWorkTaskQueue<TData> : BaseWorkTask
+    //where TAddToQueueData : class
+    //where TQueueData : class
     {
 
         protected Task _CurrentTask;
-        private readonly Action<CancellationToken> _WorkAction;
+        protected readonly ConcurrentQueue<TData> _CurrentCacheConcurrentQueue = new ConcurrentQueue<TData>();
+        private readonly Action<TData> _WorkAction;
         private readonly int _SleepIntervalMilliseconds;
-        protected CancellationTokenSource _CurrentCancellationTokenSource;
-
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="workAction"></param>
-        /// <param name="sleepIntervalMilliseconds">小于等于0为执行间隔不休眠,大于0每次执行间隔休眠时间</param>
+        /// <param name="sleepIntervalMilliseconds">执行完当前消息队列所有信息后,到下一次循环的空闲等待时间; 小于等于0 为不等待</param>
         /// <exception cref="ArgumentNullException"></exception>
-        protected BaseSimpleWorkTask(Action<CancellationToken> workAction, int sleepIntervalMilliseconds = 0)
+        protected BaseSimpleWorkTaskQueue(Action<TData> workAction, int sleepIntervalMilliseconds = 10)
         {
 
             if (workAction.IfIsNull())
             {
                 throw new ArgumentNullException(nameof(workAction));
             }
+
 
             if (sleepIntervalMilliseconds < 0)
             {
@@ -45,22 +44,26 @@ namespace Lanymy.Common.Instruments
 
 
 
-
-        protected virtual void OnWorkAction(CancellationToken token)
+        protected virtual void OnWorkAction(TData data)
         {
-
-            _WorkAction(token);
-
+            _WorkAction(data);
         }
 
 
-        private async Task OnTaskAsync(CancellationToken token)
+        private async Task OnTaskAsync()
         {
 
-            while (!token.IsCancellationRequested && IsRunning)
+            TData data;
+
+            while (IsRunning)
             {
 
-                OnWorkAction(token);
+                while (_CurrentCacheConcurrentQueue.TryDequeue(out data))
+                {
+
+                    OnWorkAction(data);
+
+                }
 
                 if (_SleepIntervalMilliseconds > 0)
                 {
@@ -71,47 +74,36 @@ namespace Lanymy.Common.Instruments
 
         }
 
-
-        protected virtual async void OnTask(object obj)
+        protected virtual async void OnTask()
         {
 
-            var token = (CancellationToken)obj;
-            await OnTaskAsync(token);
+            await OnTaskAsync();
 
         }
 
 
+        public virtual void AddToQueue(TData data)
+        {
+
+            if (IsRunning)
+            {
+                _CurrentCacheConcurrentQueue.Enqueue(data);
+            }
+
+        }
 
         protected override async Task OnStartAsync()
         {
 
-            if (_CurrentCancellationTokenSource.IfIsNull())
-            {
-                _CurrentCancellationTokenSource = new CancellationTokenSource();
-            }
-
-            var token = _CurrentCancellationTokenSource.Token;
-
-            _CurrentTask = new Task(OnTask, token, token, TaskCreationOptions.LongRunning);
+            _CurrentTask = new Task(OnTask, TaskCreationOptions.LongRunning);
             _CurrentTask.Start();
 
             await Task.CompletedTask;
 
         }
 
-
-
         protected override async Task OnStopAsync()
         {
-
-            if (_CurrentCancellationTokenSource.IfIsNull())
-            {
-                _CurrentCancellationTokenSource.Cancel();
-            }
-
-            _CurrentCancellationTokenSource.Dispose();
-            _CurrentCancellationTokenSource = null;
-
 
             if (!_CurrentTask.IfIsNullOrEmpty())
             {
@@ -125,6 +117,8 @@ namespace Lanymy.Common.Instruments
                 _CurrentTask = null;
 
             }
+
+            _CurrentCacheConcurrentQueue.Clear();
 
         }
 

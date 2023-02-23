@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lanymy.Common.Instruments
+namespace Lanymy.Common.Instruments.Common
 {
 
     public interface ISessionToken

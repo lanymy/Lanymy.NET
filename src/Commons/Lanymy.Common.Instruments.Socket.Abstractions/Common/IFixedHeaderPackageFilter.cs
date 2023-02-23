@@ -1,4 +1,4 @@
-namespace Lanymy.Common.Instruments
+namespace Lanymy.Common.Instruments.Common
 {
 
 

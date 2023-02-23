@@ -34,15 +34,23 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        protected virtual void OnTask(object obj)
+        private async void OnTask(object obj)
         {
 
             var token = (CancellationToken)obj;
 
+            await OnTaskAsync(token);
+
+        }
+
+
+        protected virtual async Task OnTaskAsync(CancellationToken token)
+        {
+
             while (!token.IsCancellationRequested)
             {
 
-                Task.Delay(TaskSleepMilliseconds).Wait();
+                await Task.Delay(TaskSleepMilliseconds);
 
                 var timerWorkTaskDataResult = OnWorkFunc();
 
@@ -54,6 +62,7 @@ namespace Lanymy.Common.Instruments
             }
 
         }
+
 
 
         protected override async Task OnStartAsync()

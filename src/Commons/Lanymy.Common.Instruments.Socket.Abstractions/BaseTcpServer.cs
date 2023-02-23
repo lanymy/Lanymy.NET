@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {
@@ -59,12 +60,12 @@ namespace Lanymy.Common.Instruments
         protected readonly int _CurrentIntervalHeartTotalMilliseconds;
         protected readonly int _CurrentHeartTimeOutMilliseconds;
 
-        private Task _HeartTask;
+        //private Task _HeartTask;
 
         #endregion
 
 
-        protected BaseTcpServer(TFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500, int intervalHeartTotalMilliseconds = 3 * 1000)
+        protected BaseTcpServer(TFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500, int intervalHeartTotalMilliseconds = 3 * 1000, int heartTimeOutCount = 3)
         {
 
             _CurrentFixedHeaderPackageFilter = fixedHeaderPackageFilter;
@@ -73,7 +74,7 @@ namespace Lanymy.Common.Instruments
             SendBufferSize = sendBufferSize;
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
             _CurrentIntervalHeartTotalMilliseconds = intervalHeartTotalMilliseconds;
-            _CurrentHeartTimeOutMilliseconds = _CurrentIntervalHeartTotalMilliseconds * 3;
+            _CurrentHeartTimeOutMilliseconds = _CurrentIntervalHeartTotalMilliseconds * heartTimeOutCount;
 
         }
 
@@ -149,11 +150,11 @@ namespace Lanymy.Common.Instruments
 
             ThreadPool.QueueUserWorkItem(BeginAccept);
 
-            if (_HeartTask.IfIsNull())
-            {
-                _HeartTask = new Task(OnHeartTask, TaskCreationOptions.LongRunning);
-                _HeartTask.Start();
-            }
+            //if (_HeartTask.IfIsNull())
+            //{
+            //    _HeartTask = new Task(OnHeartTask, TaskCreationOptions.LongRunning);
+            //    _HeartTask.Start();
+            //}
 
 
         }
@@ -170,6 +171,7 @@ namespace Lanymy.Common.Instruments
                     tcpServerClient.ServerClientErrorEvent += OnServerClientErrorEvent;
                     tcpServerClient.ReceiveDataEvent += OnServerClientReceiveDataEvent;
                     tcpServerClient.CloseEvent += OnServerClientCloseEvent;
+                    tcpServerClient.HeartEvent += OnServerClientHeartEvent;
                     tcpServerClient.StartReceive();
                     OnAccept(tcpServerClient);
                 }
@@ -179,6 +181,38 @@ namespace Lanymy.Common.Instruments
                 OnServerError(exception);
             }
         }
+
+
+        protected abstract void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient);
+
+        protected virtual void OnServerClientHeartEvent(ITcpServerClient tcpServerClient)
+        {
+
+            var sessionToken = tcpServerClient.CurrentSessionToken;
+
+            tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - tcpServerClient.CurrentSessionToken.LastReceiveDateTime).TotalMilliseconds);
+
+            if (tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//关闭心跳超时链接
+            {
+                OnServerClientErrorEvent(tcpServerClient, new Exception("心跳超时断开链接"));
+            }
+            //else if (tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
+            else
+            {
+
+                //if (CanSendData(sessionToken))
+                //{
+                //    SendDataBytes(tcpServerClient, _CurrentFixedHeaderPackageFilter.GetHeartBytes(sessionToken));
+                //}
+
+                SendDataBytes(tcpServerClient, _CurrentFixedHeaderPackageFilter.GetHeartBytes(sessionToken));
+
+            }
+
+            OnServerClientHeartCallBackEvent(tcpServerClient);
+
+        }
+
 
         protected abstract void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient);
         protected virtual void OnServerClientCloseEvent(ITcpServerClient tcpServerClient)
@@ -236,40 +270,40 @@ namespace Lanymy.Common.Instruments
         protected abstract TSessionToken CreateSessionToken(string ip, int port);
         protected abstract bool CanSendData(ISessionToken sessionToken);
 
-        private async void OnHeartTask()
-        {
+        //private async void OnHeartTask()
+        //{
 
-            while (true)
-            {
+        //    while (true)
+        //    {
 
-                await Task.Delay(_CurrentIntervalHeartTotalMilliseconds);
+        //        await Task.Delay(_CurrentIntervalHeartTotalMilliseconds);
 
-                Parallel.ForEach(_TcpServerClientDic, item =>
-                {
+        //        Parallel.ForEach(_TcpServerClientDic, item =>
+        //        {
 
-                    var client = item.Value;
-                    var sessionToken = client.CurrentSessionToken;
+        //            var client = item.Value;
+        //            var sessionToken = client.CurrentSessionToken;
 
-                    client.CurrentSessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - client.CurrentSessionToken.LastReceiveDateTime).TotalMilliseconds);
+        //            client.CurrentSessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - client.CurrentSessionToken.LastReceiveDateTime).TotalMilliseconds);
 
-                    if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentHeartTimeOutMilliseconds)//关闭心跳超时链接
-                    {
-                        OnServerClientErrorEvent(client, new Exception("心跳超时断开链接"));
-                    }
-                    else if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
-                    {
+        //            if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentHeartTimeOutMilliseconds)//关闭心跳超时链接
+        //            {
+        //                OnServerClientErrorEvent(client, new Exception("心跳超时断开链接"));
+        //            }
+        //            else if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
+        //            {
 
-                        if (CanSendData(sessionToken))
-                        {
-                            SendDataBytes(client, _CurrentFixedHeaderPackageFilter.GetHeartBytes(sessionToken));
-                        }
+        //                if (CanSendData(sessionToken))
+        //                {
+        //                    SendDataBytes(client, _CurrentFixedHeaderPackageFilter.GetHeartBytes(sessionToken));
+        //                }
 
-                    }
+        //            }
 
-                });
+        //        });
 
-            }
-        }
+        //    }
+        //}
 
 
 

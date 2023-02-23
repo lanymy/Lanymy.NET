@@ -1,17 +1,13 @@
+using Lanymy.Common.Instruments.Common;
+
 namespace Lanymy.Common.Instruments
 {
 
 
-    public interface ITcpServer : ITcp
+    public interface ITcpServer : IBaseTcpServer, ITcp
     {
 
-        bool IsAccept { get; }
-
-        int Port { get; }
-
         void Start();
-
-
 
     }
 

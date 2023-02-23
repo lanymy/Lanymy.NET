@@ -10,7 +10,7 @@ namespace Lanymy.Common.Instruments
 
 
     public abstract class BaseChannelWorkTask<TDataModel> : BaseWorkTask//, IChannelWorkTask<TDataModel>
-        where TDataModel : IWorkTaskQueueDataModel
+                                                                        //where TDataModel : IWorkTaskQueueDataModel
     {
 
         protected Channel<TDataModel> _CurrentChannel;

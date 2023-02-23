@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {
@@ -40,6 +42,9 @@ namespace Lanymy.Common.Instruments
 
     public delegate void TcpStartReceiveEvent(ITcpServerClient tcpServerClient);
     public delegate void TcpCloseEvent(ITcpServerClient tcpServerClient);
+
+    public delegate void TcpHeartEvent(ITcpServerClient tcpServerClient);
+
 
 
     //public delegate void TcpAcceptEvent(ITcpServerClient client);
