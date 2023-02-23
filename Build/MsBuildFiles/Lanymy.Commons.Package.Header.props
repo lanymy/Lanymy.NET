@@ -3,7 +3,11 @@
 
   <PropertyGroup>
 
-    <LanymyCommonFrameworkPackageReleaseNumbers>0.11.6.1</LanymyCommonFrameworkPackageReleaseNumbers>
+    <!--SocketAsync-->
+    <!--<LanymyCommonFrameworkPackageReleaseNumbers>0.11.7.1</LanymyCommonFrameworkPackageReleaseNumbers>-->
+
+    <!--main-->
+    <LanymyCommonFrameworkPackageReleaseNumbers>0.11.8</LanymyCommonFrameworkPackageReleaseNumbers>
 
     <CurrentReleaseNumbers>$(LanymyCommonFrameworkPackageReleaseNumbers)</CurrentReleaseNumbers>
 
