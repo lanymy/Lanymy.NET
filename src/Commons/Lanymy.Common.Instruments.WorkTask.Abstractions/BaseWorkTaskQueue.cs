@@ -37,18 +37,25 @@ namespace Lanymy.Common.Instruments
         protected virtual async Task OnTaskAsync(CancellationToken token)
         {
 
-            while (!token.IsCancellationRequested)
+            try
             {
-
-                while (await _CurrentChannel.Reader.WaitToReadAsync(token))
+                while (!token.IsCancellationRequested)
                 {
 
-                    while (IsRunning && _CurrentChannel.Reader.TryRead(out var dataModel))
+                    while (await _CurrentChannel.Reader.WaitToReadAsync(token))
                     {
-                        OnWorkAction(dataModel);
+
+                        while (IsRunning && _CurrentChannel.Reader.TryRead(out var dataModel))
+                        {
+                            OnWorkAction(dataModel);
+                        }
+
                     }
 
                 }
+            }
+            catch (TaskCanceledException tce)
+            {
 
             }
 
@@ -64,13 +71,8 @@ namespace Lanymy.Common.Instruments
                 await OnTaskAsync(token);
 
             }
-            catch (Exception e)
+            catch (TaskCanceledException tce)
             {
-
-                if (!e.Message.ToLower().Contains("task was canceled"))
-                {
-                    throw;
-                }
 
             }
 
