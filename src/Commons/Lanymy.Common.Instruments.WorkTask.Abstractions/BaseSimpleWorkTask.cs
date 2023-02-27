@@ -57,15 +57,22 @@ namespace Lanymy.Common.Instruments
         private async Task OnTaskAsync(CancellationToken token)
         {
 
-            while (!token.IsCancellationRequested && IsRunning)
+            try
             {
-
-                OnWorkAction(token);
-
-                if (_SleepIntervalMilliseconds > 0)
+                while (!token.IsCancellationRequested && IsRunning)
                 {
-                    await Task.Delay(_SleepIntervalMilliseconds);
+
+                    OnWorkAction(token);
+
+                    if (_SleepIntervalMilliseconds > 0)
+                    {
+                        await Task.Delay(_SleepIntervalMilliseconds);
+                    }
+
                 }
+            }
+            catch
+            {
 
             }
 
@@ -75,8 +82,15 @@ namespace Lanymy.Common.Instruments
         protected virtual async void OnTask(object obj)
         {
 
-            var token = (CancellationToken)obj;
-            await OnTaskAsync(token);
+            try
+            {
+                var token = (CancellationToken)obj;
+                await OnTaskAsync(token);
+            }
+            catch
+            {
+
+            }
 
         }
 

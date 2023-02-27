@@ -54,7 +54,8 @@ namespace Lanymy.Common.Instruments
 
                 }
             }
-            catch (TaskCanceledException tce)
+            //catch (TaskCanceledException tce)
+            catch
             {
 
             }
@@ -71,7 +72,8 @@ namespace Lanymy.Common.Instruments
                 await OnTaskAsync(token);
 
             }
-            catch (TaskCanceledException tce)
+            //catch (TaskCanceledException tce)
+            catch
             {
 
             }
