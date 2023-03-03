@@ -17,7 +17,7 @@ namespace Lanymy.Common.Instruments
     {
 
         public int Port { get; }
-        public bool IsAccept => _IsAccept;
+        public bool IsAccept => _IsRunning;
         public bool IsDisposed => _IsDisposed;
 
         #region 内部变量
@@ -28,16 +28,13 @@ namespace Lanymy.Common.Instruments
 
         protected readonly int _SendDataIntervalMilliseconds;
 
-        protected volatile bool _IsClose = false;
-        protected volatile bool _IsSend = false;
-        protected volatile bool _IsAccept = false;
+        protected volatile bool _IsRunning = false;
         protected volatile bool _IsDisposed = false;
 
-        protected readonly object _Locker = new Object();
+        protected readonly object _CloseLocker = new Object();
 
-        protected readonly WorkTaskQueue<UdpSourceDataModel> _ReceiveWorkTaskQueue;
-
-        protected Queue<SendUdpDataModel> _SendQueue = new Queue<SendUdpDataModel>(50);
+        protected WorkTaskQueue<UdpSourceDataModel> _ReceiveWorkTaskQueue;
+        protected WorkTaskQueue<SendUdpDataModel> _SendWorkTaskQueue;
 
 
         #endregion
@@ -45,10 +42,14 @@ namespace Lanymy.Common.Instruments
 
         protected BaseUdpClient(TFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int sendDataIntervalMilliseconds = 500)
         {
+
             Port = port;
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
             _CurrentFixedHeaderPackageFilter = fixedHeaderPackageFilter;
+
             _ReceiveWorkTaskQueue = new WorkTaskQueue<UdpSourceDataModel>(OnReceiveWorkTaskQueue, null);
+            _SendWorkTaskQueue = new WorkTaskQueue<SendUdpDataModel>(OnSendWorkTaskQueue, null);
+
         }
 
 
@@ -59,7 +60,16 @@ namespace Lanymy.Common.Instruments
 
         private void OnReceiveWorkTaskQueue(UdpSourceDataModel udpSourceDataModel)
         {
-            OnReceiveDataEvent(udpSourceDataModel.RemoteIPEndPoint, udpSourceDataModel.SourceDataBytes);
+
+            try
+            {
+                OnReceiveDataEvent(udpSourceDataModel.RemoteIPEndPoint, udpSourceDataModel.SourceDataBytes);
+            }
+            catch (Exception ex)
+            {
+                OnErrorEvent(udpSourceDataModel.RemoteIPEndPoint, ex);
+            }
+
         }
 
 
@@ -90,18 +100,56 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        protected virtual void OnSendWorkTaskQueue(SendUdpDataModel sendUdpDataModel)
+        {
+
+            try
+            {
+                OnSendWorkTaskQueueAsync(sendUdpDataModel).Wait();
+            }
+            catch (Exception ex)
+            {
+                OnErrorEvent(sendUdpDataModel.RemoteIpEndPoint, ex);
+            }
+
+        }
+
+        protected async Task OnSendWorkTaskQueueAsync(SendUdpDataModel sendUdpDataModel)
+        {
+
+            try
+            {
+
+                if (_IsRunning && !sendUdpDataModel.PackageBytes.IfIsNullOrEmpty())
+                {
+
+                    await _CurrentUdpClient.SendAsync(sendUdpDataModel.PackageBytes, sendUdpDataModel.PackageBytes.Length, sendUdpDataModel.RemoteIpEndPoint);
+
+                    await Task.Delay(_SendDataIntervalMilliseconds);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                OnErrorEvent(sendUdpDataModel.RemoteIpEndPoint, ex);
+            }
+
+        }
+
+
         #endregion
 
 
         public void Start()
         {
 
-            if (_IsAccept)
+            if (_IsRunning)
             {
                 return;
             }
 
-            _IsAccept = true;
+            _IsRunning = true;
 
             _ReceiveWorkTaskQueue.StartAsync().Wait();
 
@@ -109,28 +157,47 @@ namespace Lanymy.Common.Instruments
             _CurrentUdpClient.EnableBroadcast = true;
             _CurrentUdpClient.BeginReceive(ReciveCallBack, null);
 
+            _SendWorkTaskQueue.StartAsync().Wait();
+
             OnStart();
 
         }
 
 
-        public abstract void OnStart();
+        protected abstract void OnStartEvent();
+
+        public virtual void OnStart()
+        {
+
+            try
+            {
+                OnStartEvent();
+            }
+            catch
+            {
+
+            }
+
+        }
 
         private void ReciveCallBack(IAsyncResult asyncResult)
         {
 
-
-
-            IPEndPoint remoteIPEndPoint = null;
-            byte[] bytes = _CurrentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
-
-            _ReceiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
+            if (_IsRunning)
             {
-                RemoteIPEndPoint = remoteIPEndPoint,
-                SourceDataBytes = bytes,
-            }).Wait();
 
-            _CurrentUdpClient.BeginReceive(ReciveCallBack, null);//*异步接收数据
+                IPEndPoint remoteIPEndPoint = null;
+                byte[] bytes = _CurrentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
+
+                _ReceiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
+                {
+                    RemoteIPEndPoint = remoteIPEndPoint,
+                    SourceDataBytes = bytes,
+                }).Wait();
+
+                _CurrentUdpClient.BeginReceive(ReciveCallBack, null);
+
+            }
 
         }
 
@@ -165,101 +232,121 @@ namespace Lanymy.Common.Instruments
 
         public bool Send(SendUdpDataModel sendUdpDataModel)
         {
-            var flag = false;
 
-            if (!sendUdpDataModel.PackageBytes.IfIsNullOrEmpty() && _IsAccept)
-            {
-                lock (_Locker)
-                {
-
-                    if (_SendQueue.Count >= 100)
-                    {
-                        flag = false;
-                    }
-                    else
-                    {
-                        _SendQueue.Enqueue(sendUdpDataModel);
-                        BeginSend();
-                        flag = true;
-                    }
-                }
-            }
-
-            return flag;
-        }
-
-
-        protected void BeginSend()
-        {
-
-            if (!_IsSend && _IsAccept && _SendQueue.Count > 0)
-            {
-
-                _IsSend = true;
-
-                Task.Delay(_SendDataIntervalMilliseconds).Wait();
-
-
-                var sendDataModel = _SendQueue.Dequeue();
-
-                var ipEndPoint = sendDataModel.RemoteIpEndPoint;
-
-                try
-                {
-
-                    _CurrentUdpClient.BeginSend(sendDataModel.PackageBytes, sendDataModel.PackageBytes.Length, ipEndPoint, OnSend, ipEndPoint);
-
-                }
-                catch (Exception exception)
-                {
-                    OnErrorEvent(ipEndPoint, exception);
-                }
-
-            }
-        }
-
-        private void OnSend(IAsyncResult ar)
-        {
             try
             {
-                _CurrentUdpClient.EndSend(ar);
-                _IsSend = false;
-                BeginSend();
+                SendAsync(sendUdpDataModel).Wait();
             }
-            catch (Exception exception)
+            catch
             {
-                OnErrorEvent(ar.AsyncState as IPEndPoint, exception);
+
             }
+
+            return true;
+
         }
+
+        protected async Task SendAsync(SendUdpDataModel sendUdpDataModel)
+        {
+
+            try
+            {
+
+                if (_IsRunning)
+                {
+                    await _SendWorkTaskQueue.AddToQueueAsync(sendUdpDataModel);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                OnErrorEvent(sendUdpDataModel.RemoteIpEndPoint, ex);
+
+            }
+
+        }
+
+
+
 
 
         public void Close()
         {
 
-            _IsClose = true;
-
-            if (_IsAccept)
+            if (!_IsRunning)
             {
-                _IsAccept = false;
-
-
-                try
-                {
-                    _CurrentUdpClient.Close();
-                    _ReceiveWorkTaskQueue.StopAsync().Wait();
-                }
-                catch
-                {
-
-                }
-
-                OnClose();
-
+                return;
             }
 
+
+            lock (_CloseLocker)
+            {
+
+                if (_IsRunning)
+                {
+
+                    _IsRunning = false;
+
+                    try
+                    {
+                        if (_ReceiveWorkTaskQueue.IfIsNull())
+                        {
+                            _ReceiveWorkTaskQueue.StopAsync().Wait();
+                            _ReceiveWorkTaskQueue.Dispose();
+                            _ReceiveWorkTaskQueue = null; ;
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+
+                    try
+                    {
+                        if (_SendWorkTaskQueue.IfIsNull())
+                        {
+                            _SendWorkTaskQueue.StopAsync().Wait();
+                            _SendWorkTaskQueue.Dispose();
+                            _SendWorkTaskQueue = null; ;
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+
+
+                    try
+                    {
+
+                        _CurrentUdpClient.Close();
+                        _CurrentUdpClient.Dispose();
+
+                    }
+                    catch
+                    {
+
+                    }
+
+
+                    try
+                    {
+                        OnCloseEvent();
+                    }
+                    catch
+                    {
+
+                    }
+
+
+                }
+
+            }
         }
 
-        public abstract void OnClose();
+
+        protected abstract void OnCloseEvent();
 
         public void Dispose()
         {

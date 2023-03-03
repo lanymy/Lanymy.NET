@@ -46,7 +46,6 @@ namespace Lanymy.Common.Instruments
         protected readonly int _SendDataIntervalMilliseconds;
 
         private volatile bool _IsFirstStart = true;
-        protected volatile bool _IsSend = false;
         protected volatile bool _IsRunning = false;
 
         protected volatile int _CurrentReadCount = 0;
@@ -55,11 +54,11 @@ namespace Lanymy.Common.Instruments
         protected readonly BufferModel _CurrentBuffer;
         protected readonly CacheModel _CurrentCache;
 
-        protected readonly object _Locker = new Object();
+        protected readonly object _CloseLocker = new Object();
+        protected readonly object _ErrorLocker = new Object();
 
-        protected Queue<byte[]> _SendQueue = new Queue<byte[]>(SEND_MAX_COUNT);
+        protected WorkTaskQueue<byte[]> _CurrentSendWorkTaskQueue;
 
-        private const int SEND_MAX_COUNT = 100;
 
         #endregion
 
@@ -82,6 +81,9 @@ namespace Lanymy.Common.Instruments
                 NoDelay = true,
             };
 
+            _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueue, null);
+
+
         }
 
 
@@ -89,6 +91,18 @@ namespace Lanymy.Common.Instruments
 
 
         protected abstract void OnConnectionEvent();
+
+        protected virtual void OnConnection()
+        {
+            try
+            {
+                OnConnectionEvent();
+            }
+            catch (Exception ex)
+            {
+                OnError(ex);
+            }
+        }
 
         protected abstract void OnCloseEvent();
 
@@ -126,14 +140,42 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        protected abstract void OnReceivePackage(TPackage package);
+        protected abstract void OnReceivePackageEvent(TPackage package);
+
+        protected virtual void OnReceivePackage(TPackage package)
+        {
+
+            try
+            {
+                OnReceivePackageEvent(package);
+            }
+            catch (Exception e)
+            {
+
+                OnError(e);
+
+            }
+
+        }
 
         protected abstract void OnErrorEvent(Exception ex);
 
         protected virtual void OnError(Exception ex)
         {
 
-            OnErrorEvent(ex);
+            try
+            {
+                lock (_ErrorLocker)
+                {
+                    OnErrorEvent(ex);
+                }
+            }
+            catch
+            {
+
+            }
+
+
             Close();
         }
 
@@ -149,7 +191,7 @@ namespace Lanymy.Common.Instruments
 
             if (!_IsFirstStart)
             {
-                OnError(new NotSupportedException("Not Supported ReStart!"));
+                OnError(new NotSupportedException("Not Supported ReStart! ReNew One!"));
                 return;
             }
 
@@ -161,12 +203,13 @@ namespace Lanymy.Common.Instruments
 
                 _CurrentBuffer.Clear();
                 _CurrentCache.Clear();
-                _IsSend = false;
 
                 CurrentSocket.Connect(new IPEndPoint(IPAddress.Parse(ServerIP), Port));
                 _CurrentNetworkStream = new NetworkStream(CurrentSocket);
 
-                OnConnectionEvent();
+                OnConnection();
+
+                _CurrentSendWorkTaskQueue.StartAsync().Wait();
 
                 _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
 
@@ -210,23 +253,77 @@ namespace Lanymy.Common.Instruments
         }
 
 
-
-        public void Send(byte[] data)
+        private async void OnSendWorkTaskQueue(byte[] sendDataBytes)
         {
-
-            if (!data.IfIsNullOrEmpty() && IsConnected)
+            try
+            {
+                await OnSendWorkTaskQueueAsync(sendDataBytes);
+            }
+            catch
             {
 
-                lock (_Locker)
+            }
+        }
+
+        protected virtual async Task OnSendWorkTaskQueueAsync(byte[] sendDataBytes)
+        {
+
+            try
+            {
+
+                //if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && IsConnected && !_CurrentNetworkStream.IfIsNull())
+                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty())
                 {
-                    if (_SendQueue.Count < SEND_MAX_COUNT)
-                    {
-                        _SendQueue.Enqueue(data);
-                        BeginSend();
-                    }
+
+                    await _CurrentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
+                    //CurrentSessionToken.LastSendDateTime = DateTime.Now;
+
+                    await Task.Delay(_SendDataIntervalMilliseconds);
+
                 }
 
             }
+            catch (Exception exception)
+            {
+                OnError(exception);
+            }
+
+        }
+
+
+        protected virtual async Task SendAsync(byte[] sendDataBytes)
+        {
+
+            try
+            {
+
+                //if (!sendDataBytes.IfIsNullOrEmpty() && IsConnected)
+                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty())
+                {
+                    await _CurrentSendWorkTaskQueue.AddToQueueAsync(sendDataBytes);
+                }
+
+            }
+            catch
+            {
+
+            }
+
+        }
+
+
+        public void Send(byte[] sendDataBytes)
+        {
+
+            try
+            {
+                SendAsync(sendDataBytes).Wait();
+            }
+            catch
+            {
+
+            }
+
         }
 
         public void Send(TSendPackage sendPackage)
@@ -234,46 +331,6 @@ namespace Lanymy.Common.Instruments
             Send(_CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage));
         }
 
-
-        private void BeginSend()
-        {
-
-            if (!_IsSend && IsConnected && _SendQueue.Count > 0)
-            {
-
-                _IsSend = true;
-
-                Task.Delay(_SendDataIntervalMilliseconds).Wait();
-
-
-                var sendDataBytes = _SendQueue.Dequeue();
-
-                try
-                {
-
-                    _CurrentNetworkStream.BeginWrite(sendDataBytes, 0, sendDataBytes.Length, OnSend, null);
-
-                }
-                catch (Exception exception)
-                {
-                    OnError(exception);
-                }
-            }
-        }
-
-        private void OnSend(IAsyncResult ar)
-        {
-            try
-            {
-                _CurrentNetworkStream.EndWrite(ar);
-                _IsSend = false;
-                BeginSend();
-            }
-            catch (Exception exception)
-            {
-                OnError(exception);
-            }
-        }
 
 
         protected virtual void OnClose()
@@ -284,64 +341,82 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
-            _IsFirstStart = false;
-            _IsRunning = false;
-
-            if (IsConnected || !_CurrentNetworkStream.IfIsNull())
+            lock (_CloseLocker)
             {
 
-                try
-                {
-                    _CurrentNetworkStream.Dispose();
-                    _CurrentNetworkStream = null;
-                }
-                catch
+                if (IsRunning)
                 {
 
-                }
+                    _IsFirstStart = false;
+                    _IsRunning = false;
 
-                try
-                {
-                    CurrentSocket.Shutdown(SocketShutdown.Both);
-                }
-                catch
-                {
-
-                }
-
-                try
-                {
-                    CurrentSocket.Dispose();
-                }
-                catch
-                {
-
-                }
-
-                try
-                {
-
-                    _CurrentBuffer.Clear();
-                    _CurrentCache.Clear();
-
-                    _IsSend = false;
-
-                    if (!_SendQueue.IfIsNull())
+                    try
                     {
-                        _SendQueue.Clear();
+
+                        if (!_CurrentSendWorkTaskQueue.IfIsNull())
+                        {
+                            _CurrentSendWorkTaskQueue.StopAsync().Wait();
+                            _CurrentSendWorkTaskQueue.Dispose();
+                            _CurrentSendWorkTaskQueue = null;
+                        }
+
+                    }
+                    catch
+                    {
+
                     }
 
-                    _SendQueue = null;
 
-                    OnCloseEvent();
+                    try
+                    {
+                        if (!_CurrentNetworkStream.IfIsNull())
+                        {
+                            _CurrentNetworkStream.Dispose();
+                            _CurrentNetworkStream = null;
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+
+                    try
+                    {
+                        CurrentSocket.Shutdown(SocketShutdown.Both);
+                    }
+                    catch
+                    {
+
+                    }
+
+                    try
+                    {
+                        CurrentSocket.Dispose();
+                    }
+                    catch
+                    {
+
+                    }
+
+
+                    try
+                    {
+
+                        _CurrentBuffer.Clear();
+                        _CurrentCache.Clear();
+
+                        OnCloseEvent();
+
+                    }
+                    catch
+                    {
+
+                    }
 
                 }
-                catch
-                {
-
-                }
-
             }
+
+
         }
 
         public void Close()

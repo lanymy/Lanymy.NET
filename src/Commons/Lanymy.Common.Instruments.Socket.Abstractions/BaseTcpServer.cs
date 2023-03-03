@@ -48,6 +48,7 @@ namespace Lanymy.Common.Instruments
 
         #region 内部变量
 
+        protected readonly object _CloseLocker = new Object();
 
         protected volatile bool _IsRunning = false;
 
@@ -80,21 +81,30 @@ namespace Lanymy.Common.Instruments
 
         #region 通知事件
 
+
         protected abstract void OnAcceptEvent(ITcpServerClient client);
 
         protected virtual void OnAccept(ITcpServerClient client)
         {
 
-            var ep = client.RemoteEndPoint as IPEndPoint;
-            var session = CreateSessionToken(ep?.Address.ToString(), ep?.Port ?? 0);
-            client.CurrentSessionToken = session;
+            try
+            {
+                var ep = client.RemoteEndPoint as IPEndPoint;
+                var session = CreateSessionToken(ep?.Address.ToString(), ep?.Port ?? 0);
+                client.CurrentSessionToken = session;
 
-            //_TcpServerClientDic.AddOrUpdate(session.SessionID, client, (k, c) => client);
-            _TcpServerClientDic[session.SessionID] = client;
+                //_TcpServerClientDic.AddOrUpdate(session.SessionID, client, (k, c) => client);
+                _TcpServerClientDic[session.SessionID] = client;
 
-            OnAcceptEvent(client);
+                OnAcceptEvent(client);
+            }
+            catch
+            {
+
+            }
 
         }
+
 
         protected abstract void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex);
 
@@ -107,9 +117,20 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnServerError(Exception ex)
         {
-            OnServerErrorEvent(ex);
+
+            try
+            {
+                OnServerErrorEvent(ex);
+            }
+            catch
+            {
+
+            }
+
             Close();
+
         }
+
 
         protected void CloseTcpServerClient(ITcpServerClient client)
         {
@@ -310,9 +331,16 @@ namespace Lanymy.Common.Instruments
         public void SendDataBytes(ITcpServerClient client, byte[] dataBytes)
         {
 
-            if (CanSendData(client.CurrentSessionToken) && !dataBytes.IfIsNullOrEmpty())
+            try
             {
-                client.Send(dataBytes);
+                if (CanSendData(client.CurrentSessionToken))
+                {
+                    client.Send(dataBytes);
+                }
+            }
+            catch
+            {
+
             }
 
         }
@@ -321,11 +349,18 @@ namespace Lanymy.Common.Instruments
         public void SendDataBytes(Guid sessionID, byte[] dataBytes)
         {
 
-            var client = GetTcpServerClient(sessionID);
-
-            if (!client.IfIsNull())
+            try
             {
-                SendDataBytes(client, dataBytes);
+                var client = GetTcpServerClient(sessionID);
+
+                if (!client.IfIsNull())
+                {
+                    SendDataBytes(client, dataBytes);
+                }
+            }
+            catch
+            {
+
             }
 
         }
@@ -334,17 +369,26 @@ namespace Lanymy.Common.Instruments
         public void SendPackage(Guid sessionID, TSendPackage sendPackage)
         {
 
-            var client = GetTcpServerClient(sessionID);
-            if (client.IfIsNull())
+            try
             {
-                return;
+
+                var client = GetTcpServerClient(sessionID);
+                if (client.IfIsNull())
+                {
+                    return;
+                }
+                var session = client.CurrentSessionToken;
+                sendPackage.SendNum = session.SendNum;
+
+                var sendPackageDataBytes = _CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage);
+
+                SendDataBytes(client, sendPackageDataBytes);
+
             }
-            var session = client.CurrentSessionToken;
-            sendPackage.SendNum = session.SendNum;
+            catch
+            {
 
-            var sendPackageDataBytes = _CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage);
-
-            SendDataBytes(client, sendPackageDataBytes);
+            }
 
         }
 
@@ -367,50 +411,69 @@ namespace Lanymy.Common.Instruments
             if (!_IsRunning)
             {
                 return;
-                ;
             }
 
-            _IsRunning = false;
-
-            if (!CurrentSocket.IfIsNull())
+            lock (_CloseLocker)
             {
 
-                try
+                if (_IsRunning)
                 {
-                    CurrentSocket.Dispose();
-                    CurrentSocket = null;
-                }
-                catch
-                {
-
-                }
+                    _IsRunning = false;
 
 
-                try
-                {
 
-                    var list = _TcpServerClientDic.Values.ToList();
-
-                    Parallel.ForEach(list, client =>
+                    try
                     {
 
-                        client.Close();
+                        if (!CurrentSocket.IfIsNull())
+                        {
+                            CurrentSocket.Dispose();
+                            CurrentSocket = null;
+                        }
 
-                    });
+                    }
+                    catch
+                    {
 
-                    list.Clear();
+                    }
 
-                    OnServerCloseEvent();
 
-                }
-                catch
-                {
+                    try
+                    {
+
+                        var enumerator = _TcpServerClientDic.GetEnumerator();
+
+                        while (enumerator.MoveNext())
+                        {
+
+                            try
+                            {
+                                enumerator.Current.Value.Close();
+                            }
+                            catch
+                            {
+
+                            }
+
+                        }
+
+                        OnServerCloseEvent();
+
+                        _TcpServerClientDic.Clear();
+
+                    }
+                    catch
+                    {
+
+                    }
 
                 }
 
             }
 
         }
+
+
 
         public void Close()
         {

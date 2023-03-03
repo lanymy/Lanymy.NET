@@ -16,15 +16,17 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        public override void OnStart()
+        protected override void OnStartEvent()
         {
             throw new NotImplementedException();
         }
 
-        public override void OnClose()
+        protected override void OnCloseEvent()
         {
             throw new NotImplementedException();
         }
+
+
     }
 
 }
