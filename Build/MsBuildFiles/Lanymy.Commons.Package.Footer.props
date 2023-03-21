@@ -5,7 +5,7 @@
 
 
     <!--<TargetFramework>$(CurrentTargetFrameworks)</TargetFramework>-->
-    <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
+    <!--<TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>-->
 
 
     <AssemblyName>$(CurrentBuildProjectName)</AssemblyName>

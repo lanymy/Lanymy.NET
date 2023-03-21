@@ -22,7 +22,6 @@
   <Import Project="../../../Build/MsBuildFiles/Lanymy.Commons.Footer.props" />
 
 
-
   <ItemGroup>
     <ProjectReference Include="..\Lanymy.Common.Abstractions\Lanymy.Common.Abstractions.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ConstKeys\Lanymy.Common.ConstKeys.csproj" />

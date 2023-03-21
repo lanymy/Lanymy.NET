@@ -3,6 +3,8 @@
 
   <PropertyGroup>
 
+    <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
+
     <LanymyCommonFrameworkPackageReleaseNumbers>0.11.8.2</LanymyCommonFrameworkPackageReleaseNumbers>
 
     <CurrentReleaseNumbers>$(LanymyCommonFrameworkPackageReleaseNumbers)</CurrentReleaseNumbers>
