@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using QRCoder;
 
 namespace Lanymy.Common.Helpers
@@ -25,6 +26,12 @@ namespace Lanymy.Common.Helpers
         public static Bitmap CreateQrCodeBitmap(string message, QRCodeGenerator.ECCLevel eccLevel = QRCodeGenerator.ECCLevel.L, int pixelsPerModule = 20, string darkColorHtmlHex = "#000000", string lightColorHtmlHex = "#FFFFFF", string iconFileFullPath = null, int iconSizePercent = 15, int iconBorderWidth = 6, bool drawQuietZones = true)
         {
 
+
+#if NET7_0_OR_GREATER
+
+            throw new NotSupportedException("QRCoder-1.4.3 不支持.net7.");
+#else
+
             Bitmap qrCodeBitmap;
 
             var darkColor = ColorTranslator.FromHtml(darkColorHtmlHex);
@@ -43,6 +50,8 @@ namespace Lanymy.Common.Helpers
             }
 
             return qrCodeBitmap;
+
+#endif
 
         }
 
