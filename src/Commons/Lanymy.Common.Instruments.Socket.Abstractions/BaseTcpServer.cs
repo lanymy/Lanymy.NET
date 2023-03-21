@@ -254,26 +254,56 @@ namespace Lanymy.Common.Instruments
 
             OnServerClientReceiveDataCallBackEvent(tcpServerClient, buffer, cache);
 
-            while (true)
+            //while (true)
+            //{
+
+            //    var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
+
+            //    if (packageBytes.IfIsNull())
+            //    {
+            //        break;
+            //    }
+
+            //    if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
+            //    {
+            //        OnServerClientErrorEvent(tcpServerClient, new Exception("data bytes error"));
+            //        break;
+            //    }
+
+
+            //    OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
+
+            //}
+
+            OnServerClientReceiveDataLoopEvent(tcpServerClient, buffer, cache);
+
+        }
+
+        /// <summary>
+        /// 数据包循环解析
+        /// </summary>
+        /// <param name="tcpServerClient"></param>
+        /// <param name="buffer"></param>
+        /// <param name="cache"></param>
+        protected virtual void OnServerClientReceiveDataLoopEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+        {
+
+            var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
+
+            if (packageBytes.IfIsNull())
             {
-
-                var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
-
-                if (packageBytes.IfIsNull())
-                {
-                    break;
-                }
-
-                if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
-                {
-                    OnServerClientErrorEvent(tcpServerClient, new Exception("data bytes error"));
-                    break;
-                }
-
-
-                OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
-
+                return;
             }
+
+            if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
+            {
+                OnServerClientErrorEvent(tcpServerClient, new Exception("data bytes error"));
+                return;
+            }
+
+            OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
+
+            OnServerClientReceiveDataLoopEvent(tcpServerClient, buffer, cache);
 
         }
 
