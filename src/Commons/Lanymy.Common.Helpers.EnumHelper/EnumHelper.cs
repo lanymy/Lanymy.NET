@@ -73,9 +73,21 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         /// <returns></returns>
         public static IReadOnlyDictionary<Enum, EnumItem> GetEnumItemDictionary<TEnum>()
-            where TEnum : IComparable, IFormattable, IConvertible
+            //    where TEnum : IComparable, IFormattable, IConvertible
+            where TEnum : Enum
         {
-            return GetMapper(typeof(TEnum)).DicEnumMap;
+            //return GetMapper(typeof(TEnum)).DicEnumMap;
+            return GetEnumItemDictionary(typeof(TEnum));
+        }
+
+        /// <summary>
+        /// 获取Enum的子项 主键是 枚举子项 的字典类型集合
+        /// </summary>
+        /// <param name="enumType"></param>
+        /// <returns></returns>
+        public static IReadOnlyDictionary<Enum, EnumItem> GetEnumItemDictionary(Type enumType)
+        {
+            return GetMapper(enumType).DicEnumMap;
         }
 
 
@@ -84,10 +96,24 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         /// <returns></returns>
         public static List<EnumItem> GetEnumItemList<TEnum>()
-            where TEnum : IComparable, IFormattable, IConvertible
+            //where TEnum : IComparable, IFormattable, IConvertible
+            where TEnum : Enum
         {
-            return GetMapper(typeof(TEnum)).DicEnumMap.Select(o => o.Value).ToList();
+            //return GetMapper(typeof(TEnum)).DicEnumMap.Select(o => o.Value).ToList();
+            return GetEnumItemList(typeof(TEnum));
         }
+
+
+        /// <summary>
+        /// 获取Enum的子项集合
+        /// </summary>
+        /// <param name="enumType"></param>
+        /// <returns></returns>
+        public static List<EnumItem> GetEnumItemList(Type enumType)
+        {
+            return GetMapper(enumType).DicEnumMap.Select(o => o.Value).ToList();
+        }
+
 
         /// <summary>
         /// 
@@ -95,7 +121,8 @@ namespace Lanymy.Common.Helpers
         /// <typeparam name="TEnum"></typeparam>
         /// <returns></returns>
         public static List<EnumItem> GetEnumItemListRemoveEnumItems<TEnum>(params TEnum[] removeEnumItems)
-            where TEnum : IComparable, IFormattable, IConvertible
+            //where TEnum : IComparable, IFormattable, IConvertible
+            where TEnum : Enum
         {
 
             var enumItemList = GetEnumItemList<TEnum>();
