@@ -262,10 +262,17 @@ namespace Lanymy.Common.Instruments
         {
             try
             {
-                _CurrentBuffer.Clear();
-                _CurrentCache.Clear();
-                _CurrentNetworkStream = new NetworkStream(CurrentSocket);
-                _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
+
+                if (_IsRunning)
+                {
+
+                    _CurrentBuffer.Clear();
+                    _CurrentCache.Clear();
+                    _CurrentNetworkStream = new NetworkStream(CurrentSocket);
+                    _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
+
+                }
+
             }
             catch (Exception exception)
             {
@@ -280,12 +287,19 @@ namespace Lanymy.Common.Instruments
             try
             {
 
+                if (!_IsRunning)
+                    return;
+
                 _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
+
 
                 if (_CurrentReadCount > 0)
                 {
 
-                    CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
+                    if (CurrentSessionToken != null)
+                    {
+                        CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
+                    }
 
                     _CurrentBuffer.Position = _CurrentReadCount;
 
@@ -330,7 +344,11 @@ namespace Lanymy.Common.Instruments
                 {
 
                     await _CurrentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
-                    CurrentSessionToken.LastSendDateTime = DateTime.Now;
+
+                    if (CurrentSessionToken != null)
+                    {
+                        CurrentSessionToken.LastSendDateTime = DateTime.Now;
+                    }
 
                     await Task.Delay(_SendDataIntervalMilliseconds);
 
