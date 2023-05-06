@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers;
 using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
@@ -59,7 +60,8 @@ namespace Lanymy.Common.Instruments
         protected ConcurrentDictionary<Guid, ITcpServerClient> _TcpServerClientDic = new ConcurrentDictionary<Guid, ITcpServerClient>();
 
         protected readonly int _CurrentIntervalHeartTotalMilliseconds;
-        protected readonly int _CurrentHeartTimeOutMilliseconds;
+        //protected readonly int _CurrentHeartTimeOutMilliseconds;
+        protected readonly uint _CurrentHeartTimeOutMilliseconds;
 
         //private Task _HeartTask;
 
@@ -75,7 +77,7 @@ namespace Lanymy.Common.Instruments
             SendBufferSize = sendBufferSize;
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
             _CurrentIntervalHeartTotalMilliseconds = intervalHeartTotalMilliseconds;
-            _CurrentHeartTimeOutMilliseconds = _CurrentIntervalHeartTotalMilliseconds * heartTimeOutCount;
+            _CurrentHeartTimeOutMilliseconds = (uint)(_CurrentIntervalHeartTotalMilliseconds * heartTimeOutCount);
 
         }
 
@@ -211,9 +213,12 @@ namespace Lanymy.Common.Instruments
 
             var sessionToken = tcpServerClient.CurrentSessionToken;
 
-            tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - tcpServerClient.CurrentSessionToken.LastReceiveDateTime).TotalMilliseconds);
+            //sessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - sessionToken.LastReceiveDateTime).TotalMilliseconds);
+            //sessionToken.IntervalHeartTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation;
 
-            if (tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//关闭心跳超时链接
+
+            //if (sessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//关闭心跳超时链接
+            if ((DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation) > _CurrentHeartTimeOutMilliseconds)//关闭心跳超时链接
             {
                 OnServerClientErrorEvent(tcpServerClient, new Exception("心跳超时断开链接"));
             }

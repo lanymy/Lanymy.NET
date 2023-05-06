@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers;
 using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
@@ -292,17 +293,20 @@ namespace Lanymy.Common.Instruments
 
                 _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
 
+                CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
+                CurrentSessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
 
                 if (_CurrentReadCount > 0)
                 {
 
-                    if (CurrentSessionToken != null)
-                    {
-                        CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
-                    }
+                    //if (CurrentSessionToken != null)
+                    //{
+                    //    CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
+                    //}
+                    //CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
+                    //CurrentSessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
 
                     _CurrentBuffer.Position = _CurrentReadCount;
-
                     OnReceiveData(_CurrentBuffer, _CurrentCache);
 
                 }
@@ -345,10 +349,13 @@ namespace Lanymy.Common.Instruments
 
                     await _CurrentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
 
-                    if (CurrentSessionToken != null)
-                    {
-                        CurrentSessionToken.LastSendDateTime = DateTime.Now;
-                    }
+                    //if (CurrentSessionToken != null)
+                    //{
+                    //    CurrentSessionToken.LastSendDateTime = DateTime.Now;
+                    //}
+
+                    CurrentSessionToken.LastSendDateTime = DateTime.Now;
+
 
                     await Task.Delay(_SendDataIntervalMilliseconds);
 

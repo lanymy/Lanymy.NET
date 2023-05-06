@@ -17,18 +17,33 @@ namespace Lanymy.Common.Instruments
 
         public abstract byte[] CacheHeartBytes { get; }
 
-        private volatile int _IntervalHeartTotalMilliseconds;
-        public int IntervalHeartTotalMilliseconds
+        //private volatile uint _IntervalHeartTotalMillisecondsFromInstantiation;
+        //public uint IntervalHeartTotalMillisecondsFromInstantiation
+        //{
+        //    get
+        //    {
+        //        return _IntervalHeartTotalMillisecondsFromInstantiation;
+        //    }
+        //    set
+        //    {
+        //        _IntervalHeartTotalMillisecondsFromInstantiation = value;
+        //    }
+        //}
+
+
+        private volatile uint _LastReceiveDateTimeTotalMillisecondsFromInstantiation;
+        public uint LastReceiveDateTimeTotalMillisecondsFromInstantiation
         {
             get
             {
-                return _IntervalHeartTotalMilliseconds;
+                return _LastReceiveDateTimeTotalMillisecondsFromInstantiation;
             }
             set
             {
-                _IntervalHeartTotalMilliseconds = value;
+                _LastReceiveDateTimeTotalMillisecondsFromInstantiation = value;
             }
         }
+
 
 
         public DateTime ConnectionDateTime { get; }

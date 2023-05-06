@@ -1,16 +1,48 @@
 ﻿using System;
+using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Helpers
 {
+
     /// <summary>
     /// DateTime辅助类
     /// </summary>
     public class DateTimeHelper
     {
 
-        private static readonly DateTime START_DATE_TIME = new DateTime(1970, 1, 1);
+        private static readonly DateTime START_DATE_TIME_1970 = DateTimeFormatKeys.START_DATE_TIME_1970;
+        private static readonly DateTime START_DATE_TIME_2000 = DateTimeFormatKeys.START_DATE_TIME_2000;
+        private static readonly DateTime START_DATE_TIME_INSTANTIATION = DateTimeFormatKeys.START_DATE_TIME_INSTANTIATION;
+
+
+        /// <summary>
+        /// 获取两个时间差 总 间隔 毫秒数
+        /// </summary>
+        /// <param name="dt">被减数时间</param>
+        /// <param name="subtractDT">减数时间</param>
+        /// <returns></returns>
+        public static ulong GetTotalMilliseconds(DateTime dt, DateTime subtractDT)
+        {
+            return (ulong)(dt.Subtract(subtractDT).TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// 获取两个时间差 总 间隔 秒数
+        /// </summary>
+        /// <param name="dt">被减数时间</param>
+        /// <param name="subtractDT">减数时间</param>
+        /// <returns></returns>
+        public static ulong GetTotalSeconds(DateTime dt, DateTime subtractDT)
+        {
+            return (ulong)(dt.Subtract(subtractDT).TotalSeconds);
+        }
+
+
+
+
+
 
         /// <summary>
         /// 获取从1970开始到参数的总秒数
@@ -19,18 +51,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static ulong GetTotalSecondsFrom1970(DateTime dt)
         {
-            return dt.Subtract(START_DATE_TIME).TotalSeconds.ConvertToType<ulong>();
-        }
-
-
-        /// <summary>
-        /// 从1970开始的总秒数 计算出 时间
-        /// </summary>
-        /// <param name="totalSeconds1970"></param>
-        /// <returns></returns>
-        public static DateTime GetDateTimeFrom1970TotalSeconds(ulong totalSeconds1970)
-        {
-            return START_DATE_TIME.AddSeconds(totalSeconds1970);
+            return GetTotalSeconds(dt, START_DATE_TIME_1970);
         }
 
 
@@ -41,7 +62,18 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static ulong GetTotalMillisecondsFrom1970(DateTime dt)
         {
-            return dt.Subtract(START_DATE_TIME).TotalMilliseconds.ConvertToType<ulong>();
+            return GetTotalMilliseconds(dt, START_DATE_TIME_1970);
+        }
+
+
+        /// <summary>
+        /// 从1970开始的总秒数 计算出 时间
+        /// </summary>
+        /// <param name="totalSeconds1970"></param>
+        /// <returns></returns>
+        public static DateTime GetDateTimeFrom1970TotalSeconds(ulong totalSeconds1970)
+        {
+            return START_DATE_TIME_1970.AddSeconds(totalSeconds1970);
         }
 
 
@@ -52,8 +84,109 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static DateTime GetDateTimeFrom1970TotalMilliseconds(ulong totalMilliseconds1970)
         {
-            return START_DATE_TIME.AddMilliseconds(totalMilliseconds1970);
+            return START_DATE_TIME_1970.AddMilliseconds(totalMilliseconds1970);
         }
+
+
+
+
+
+
+        /// <summary>
+        /// 获取从2000开始到参数的总秒数
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static ulong GetTotalSecondsFrom2000(DateTime dt)
+        {
+            return GetTotalSeconds(dt, START_DATE_TIME_2000);
+        }
+
+
+        /// <summary>
+        /// 获取从2000开始到参数的总毫秒数
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static ulong GetTotalMillisecondsFrom2000(DateTime dt)
+        {
+            return GetTotalMilliseconds(dt, START_DATE_TIME_2000);
+        }
+
+        /// <summary>
+        /// 从2000开始的总秒数 计算出 时间
+        /// </summary>
+        /// <param name="totalSeconds2000"></param>
+        /// <returns></returns>
+        public static DateTime GetDateTimeFrom2000TotalSeconds(ulong totalSeconds2000)
+        {
+            return START_DATE_TIME_2000.AddSeconds(totalSeconds2000);
+        }
+
+
+        /// <summary>
+        /// 从2000开始的总毫秒数 计算出 时间
+        /// </summary>
+        /// <param name="totalMilliseconds2000"></param>
+        /// <returns></returns>
+        public static DateTime GetDateTimeFrom2000TotalMilliseconds(ulong totalMilliseconds2000)
+        {
+            return START_DATE_TIME_2000.AddMilliseconds(totalMilliseconds2000);
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// 获取从实例化时间开始到参数的总秒数; 无最大值溢出风险;
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static uint GetTotalSecondsFromInstantiation(DateTime dt)
+        {
+            return (uint)(dt.Subtract(START_DATE_TIME_INSTANTIATION).TotalSeconds);
+        }
+
+
+        /// <summary>
+        /// 获取从实例化时间开始到参数的总毫秒数; 有最大值溢出风险 => 最大时间 为 当前实例时间戳 加上 2个月
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static uint GetTotalMillisecondsFromInstantiation(DateTime dt)
+        {
+            return (uint)(dt.Subtract(START_DATE_TIME_INSTANTIATION).TotalMilliseconds);
+        }
+
+        /// <summary>
+        /// 从实例化时间开始的总秒数 计算出 时间
+        /// </summary>
+        /// <param name="totalSecondsInstantiation"></param>
+        /// <returns></returns>
+        public static DateTime GetDateTimeFromInstantiationTotalSeconds(ulong totalSecondsInstantiation)
+        {
+            return START_DATE_TIME_INSTANTIATION.AddSeconds(totalSecondsInstantiation);
+        }
+
+
+        /// <summary>
+        /// 从实例化时间开始的总毫秒数 计算出 时间
+        /// </summary>
+        /// <param name="totalMillisecondsInstantiation"></param>
+        /// <returns></returns>
+        public static DateTime GetDateTimeFromInstantiationTotalMilliseconds(ulong totalMillisecondsInstantiation)
+        {
+            return START_DATE_TIME_INSTANTIATION.AddMilliseconds(totalMillisecondsInstantiation);
+        }
+
+
+
+
+
 
 
         /// <summary>
@@ -165,7 +298,7 @@ namespace Lanymy.Common.Helpers
         public static DateTime GetDateTimeFromJavaLongDateTime(long javaLongDateTime, int timeZone = 8)
         {
 
-            long ticks1970 = START_DATE_TIME.Ticks;
+            long ticks1970 = START_DATE_TIME_1970.Ticks;
             long timeTotalTicks = ticks1970 + javaLongDateTime * 10000;
             return new DateTime(timeTotalTicks).AddHours(timeZone);
 

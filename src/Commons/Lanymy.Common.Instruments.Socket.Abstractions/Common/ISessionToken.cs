@@ -16,7 +16,10 @@ namespace Lanymy.Common.Instruments.Common
 
         byte[] CacheHeartBytes { get; }
 
-        int IntervalHeartTotalMilliseconds { get; set; }
+
+        //uint IntervalHeartTotalMillisecondsFromInstantiation { get; set; }
+
+        uint LastReceiveDateTimeTotalMillisecondsFromInstantiation { get; set; }
 
 
         DateTime ConnectionDateTime { get; }
