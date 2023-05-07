@@ -293,8 +293,6 @@ namespace Lanymy.Common.Instruments
 
                 _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
 
-                CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
-                CurrentSessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
 
                 if (_CurrentReadCount > 0)
                 {
@@ -303,10 +301,12 @@ namespace Lanymy.Common.Instruments
                     //{
                     //    CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
                     //}
-                    //CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
-                    //CurrentSessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
+
+                    CurrentSessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
+                    CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
 
                     _CurrentBuffer.Position = _CurrentReadCount;
+
                     OnReceiveData(_CurrentBuffer, _CurrentCache);
 
                 }
