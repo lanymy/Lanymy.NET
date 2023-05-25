@@ -9,7 +9,7 @@ namespace Lanymy.Common.Instruments
     {
 
 
-        private const int MAX_BUFFER_SIZE = BufferSizeKeys.BUFFER_SIZE_8K;
+        private const int DEFAULT_BUFFER_SIZE = BufferSizeKeys.BUFFER_SIZE_8K;
 
         /// <summary>
         /// 缓存
@@ -32,7 +32,7 @@ namespace Lanymy.Common.Instruments
         /// 初始化
         /// </summary>
         /// <param name="bufferSize">缓存大小</param>
-        public BufferModel(int bufferSize = MAX_BUFFER_SIZE)
+        public BufferModel(int bufferSize = DEFAULT_BUFFER_SIZE)
         {
 
             if (bufferSize <= 0)
@@ -46,7 +46,7 @@ namespace Lanymy.Common.Instruments
             }
             else
             {
-                bufferSize = bufferSize > MAX_BUFFER_SIZE ? MAX_BUFFER_SIZE : bufferSize;
+                bufferSize = bufferSize > DEFAULT_BUFFER_SIZE ? bufferSize : DEFAULT_BUFFER_SIZE;
             }
 
             BufferSize = bufferSize;

@@ -348,6 +348,7 @@ namespace Lanymy.Common.Instruments
                 {
 
                     await _CurrentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
+                    await _CurrentNetworkStream.FlushAsync();
 
                     //if (CurrentSessionToken != null)
                     //{
