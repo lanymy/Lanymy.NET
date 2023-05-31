@@ -63,12 +63,15 @@ namespace Lanymy.Common.Instruments
         //protected readonly int _CurrentHeartTimeOutMilliseconds;
         protected readonly uint _CurrentHeartTimeOutMilliseconds;
 
+        protected readonly int _CurrentBacklog;
+
         //private Task _HeartTask;
 
         #endregion
 
 
-        protected BaseTcpServer(TFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500, int intervalHeartTotalMilliseconds = 3 * 1000, int heartTimeOutCount = 3)
+
+        protected BaseTcpServer(TFixedHeaderPackageFilter fixedHeaderPackageFilter, int port, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500, int intervalHeartTotalMilliseconds = 3 * 1000, int heartTimeOutCount = 3, int backlog = 100)
         {
 
             _CurrentFixedHeaderPackageFilter = fixedHeaderPackageFilter;
@@ -78,8 +81,10 @@ namespace Lanymy.Common.Instruments
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
             _CurrentIntervalHeartTotalMilliseconds = intervalHeartTotalMilliseconds;
             _CurrentHeartTimeOutMilliseconds = (uint)(_CurrentIntervalHeartTotalMilliseconds * heartTimeOutCount);
+            _CurrentBacklog = backlog;
 
         }
+
 
         #region 通知事件
 
@@ -168,7 +173,7 @@ namespace Lanymy.Common.Instruments
 
             var ipEndPoint = new IPEndPoint(IPAddress.Any, Port);
             CurrentSocket.Bind(ipEndPoint);
-            CurrentSocket.Listen(1000);
+            CurrentSocket.Listen(_CurrentBacklog);
             _IsRunning = true;
 
             ThreadPool.QueueUserWorkItem(BeginAccept);
