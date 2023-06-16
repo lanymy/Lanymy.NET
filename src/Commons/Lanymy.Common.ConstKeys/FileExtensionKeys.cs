@@ -20,6 +20,11 @@
         public const string DLL_FILE_EXTENSION = EXTENSION_SYMBOL + "dll";
 
         /// <summary>
+        /// DLL 文件 扩展名 .dll
+        /// </summary>
+        public const string EXE_FILE_EXTENSION = EXTENSION_SYMBOL + "exe";
+
+        /// <summary>
         /// 配置表 文件 扩展名 .config
         /// </summary>
         public const string CONFIG_FILE_EXTENSION = EXTENSION_SYMBOL + "config";

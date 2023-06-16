@@ -25,7 +25,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lanymy.Common.Abstractions\Lanymy.Common.Abstractions.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.ConstKeys\Lanymy.Common.ConstKeys.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ObjectExtensions\Lanymy.Common.ExtensionFunctions.ObjectExtensions.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.StringExtensions\Lanymy.Common.ExtensionFunctions.StringExtensions.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Helpers.PathHelper\Lanymy.Common.Helpers.PathHelper.csproj" />
   </ItemGroup>
 
 
