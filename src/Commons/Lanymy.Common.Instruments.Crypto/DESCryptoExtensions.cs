@@ -14,7 +14,7 @@ namespace Lanymy.Common.Instruments
         public static ICryptoTransform CreateWeakEncryptor(this TripleDESCryptoServiceProvider cryptoProvider, byte[] key, byte[] iv)
         {
 
-            var aa = cryptoProvider.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+            //var aa = cryptoProvider.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
 
             // reflective way of doing what CreateEncryptor() does, bypassing the check for weak keys
             MethodInfo mi = cryptoProvider.GetType().GetMethod("_NewEncryptor", BindingFlags.NonPublic | BindingFlags.Instance);
