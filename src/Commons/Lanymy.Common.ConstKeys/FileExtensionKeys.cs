@@ -20,7 +20,7 @@
         public const string DLL_FILE_EXTENSION = EXTENSION_SYMBOL + "dll";
 
         /// <summary>
-        /// DLL 文件 扩展名 .dll
+        /// DLL 文件 扩展名 .exe
         /// </summary>
         public const string EXE_FILE_EXTENSION = EXTENSION_SYMBOL + "exe";
 
