@@ -12,6 +12,7 @@ namespace Lanymy.Common.Instruments
 
         public TimerWorkTask(Func<TimerWorkTaskDataResult> workFunc, int taskSleepMilliseconds = 3000) : base(workFunc, taskSleepMilliseconds)
         {
+
         }
 
         protected override async Task OnDisposeAsync()

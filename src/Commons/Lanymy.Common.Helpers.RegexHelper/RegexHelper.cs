@@ -166,7 +166,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool IsPhoneNumber(string strPhoneNumber)
         {
-            return Regex.IsMatch(strPhoneNumber, "^[1]+\\d{10}$");
+            return Regex.IsMatch(strPhoneNumber, @"^[1]+\d{10}$");
         }
         #endregion
 
@@ -178,7 +178,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool IsAllNumeric(string str)
         {
-            return Regex.IsMatch(str, "^[0-9]*$");
+            return Regex.IsMatch(str, @"^[0-9]*$");
         }
         #endregion
 
@@ -214,7 +214,7 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         public static bool IsChineseName(string cnName)
         {
-            return Regex.IsMatch(cnName, "^[\u4e00-\u9fa5]{2,4}$");
+            return Regex.IsMatch(cnName, @"^[\u4e00-\u9fa5]{2,4}$");
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool IsChineseOrEnglishName(string name)
         {
-            return Regex.IsMatch(name, "^([\u4e00-\u9fa5]{2,15}|([a-zA-Z]+\\s?)+)$");
+            return Regex.IsMatch(name, @"^([\u4e00-\u9fa5]{2,15}|([a-zA-Z]+\s?)+)$");
         }
 
         #endregion
@@ -237,7 +237,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool IsChineseChar(string str)
         {
-            return Regex.IsMatch(str, "^[\u4e00-\u9fa5]+$");
+            return Regex.IsMatch(str, @"^[\u4e00-\u9fa5]+$");
         }
 
 
@@ -274,7 +274,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool IsTime(string time)
         {
-            return Regex.IsMatch(time, "^((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9])(:[0-5]?[0-9])?)$");
+            return Regex.IsMatch(time, @"^((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9])(:[0-5]?[0-9])?)$");
         }
         #endregion
 
@@ -286,7 +286,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool IsHexString(string hexString)
         {
-            return Regex.IsMatch(hexString, "^[0-9A-F]+$");
+            return Regex.IsMatch(hexString, @"^[0-9A-F]+$");
         }
 
 
