@@ -1,5 +1,5 @@
 # Lanymy.NET
-Lanymy.NET 是 netstandard2.1 ; .NET 7 的通用扩展辅助库.
+Lanymy.NET 是 netstandard2.1 ; .NET 8 的通用扩展辅助库.
 <br/>
 封装了常用方法,如:
 <br/>
