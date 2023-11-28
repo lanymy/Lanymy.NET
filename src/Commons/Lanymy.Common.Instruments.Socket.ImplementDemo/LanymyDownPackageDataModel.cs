@@ -46,7 +46,7 @@ namespace Lanymy.Common.Instruments
         /// <param name="cmo">编号</param>
         /// <param name="selectModeType">模式 </param>
         /// <param name="isPowerOff">关机</param>
-        /// <param name="soundPositionIndex">听诊点</param>
+        /// <param name="soundPositionIndex">音源点</param>
         /// <param name="soundIndex">音频</param>
         /// <param name="soundPower">音量级别 0无效;1静音;8最大</param>
         public LanymyDownPackageDataModel

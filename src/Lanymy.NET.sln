@@ -195,11 +195,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.NavigationPage", "Commons\Lanymy.Common.Instruments.NavigationPage\Lanymy.Common.Instruments.NavigationPage.csproj", "{1CD842E0-139D-4E5F-8DCD-5BA742B08ACE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.Toolkits", "Commons\Lanymy.Common.Instruments.Toolkits\Lanymy.Common.Instruments.Toolkits.csproj", "{A59343CA-CBAA-4642-ACF2-37AE7A7A7DC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.Toolkits", "Commons\Lanymy.Common.Instruments.Toolkits\Lanymy.Common.Instruments.Toolkits.csproj", "{A59343CA-CBAA-4642-ACF2-37AE7A7A7DC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.Socket.Abstractions", "Commons\Lanymy.Common.Instruments.Socket.Abstractions\Lanymy.Common.Instruments.Socket.Abstractions.csproj", "{B0985DA6-D64D-4B7F-8C0C-B3AE445B41F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.Socket.Abstractions", "Commons\Lanymy.Common.Instruments.Socket.Abstractions\Lanymy.Common.Instruments.Socket.Abstractions.csproj", "{B0985DA6-D64D-4B7F-8C0C-B3AE445B41F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.Socket.ImplementDemo", "Commons\Lanymy.Common.Instruments.Socket.ImplementDemo\Lanymy.Common.Instruments.Socket.ImplementDemo.csproj", "{E1102820-5026-4332-85CE-5D915EDAB576}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lanymy.Common.Instruments.Socket.ImplementDemo", "Commons\Lanymy.Common.Instruments.Socket.ImplementDemo\Lanymy.Common.Instruments.Socket.ImplementDemo.csproj", "{E1102820-5026-4332-85CE-5D915EDAB576}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lanymy.Common.Instruments.Socket.Netty.Abstractions", "Commons\Lanymy.Common.Instruments.Socket.Netty.Abstractions\Lanymy.Common.Instruments.Socket.Netty.Abstractions.csproj", "{17757C24-3139-4F05-8055-B1AFE4E84068}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1141,6 +1143,18 @@ Global
 		{E1102820-5026-4332-85CE-5D915EDAB576}.Release|iPhone.Build.0 = Release|Any CPU
 		{E1102820-5026-4332-85CE-5D915EDAB576}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{E1102820-5026-4332-85CE-5D915EDAB576}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Release|iPhone.Build.0 = Release|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{17757C24-3139-4F05-8055-B1AFE4E84068}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1231,6 +1245,7 @@ Global
 		{A59343CA-CBAA-4642-ACF2-37AE7A7A7DC2} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 		{B0985DA6-D64D-4B7F-8C0C-B3AE445B41F1} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 		{E1102820-5026-4332-85CE-5D915EDAB576} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
+		{17757C24-3139-4F05-8055-B1AFE4E84068} = {6BB2B9C1-5725-44F4-90A4-04D41C94F370}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A243EC36-342D-4E8F-B0D3-5D20B7B8FE81}

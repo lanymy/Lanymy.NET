@@ -22,6 +22,8 @@
     <!--<NoWarn>$(NoWarn);CS1591;CS0436</NoWarn>-->
     <NoWarn>CS1591;CS0436</NoWarn>
 
+    <LangVersion>latest</LangVersion>
+
   </PropertyGroup>
 
 

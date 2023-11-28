@@ -37,7 +37,8 @@
     <ProjectReference Include="..\Lanymy.Common.Instruments.Ffmpeg\Lanymy.Common.Instruments.Ffmpeg.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.IsolatedStorages\Lanymy.Common.Instruments.IsolatedStorages.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Socket.Abstractions\Lanymy.Common.Instruments.Socket.Abstractions.csproj" />
-    <ProjectReference Include="..\Lanymy.Common.Instruments.Socket.ImplementDemo\Lanymy.Common.Instruments.Socket.ImplementDemo.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Instruments.Socket.Netty.Abstractions\Lanymy.Common.Instruments.Socket.Netty.Abstractions.csproj" />
+    <!--<ProjectReference Include="..\Lanymy.Common.Instruments.Socket.ImplementDemo\Lanymy.Common.Instruments.Socket.ImplementDemo.csproj" />-->
     <ProjectReference Include="..\Lanymy.Common.Instruments.Toolkits\Lanymy.Common.Instruments.Toolkits.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.WorkTaskQueue\Lanymy.Common.Instruments.WorkTaskQueue.csproj" />
   </ItemGroup>
