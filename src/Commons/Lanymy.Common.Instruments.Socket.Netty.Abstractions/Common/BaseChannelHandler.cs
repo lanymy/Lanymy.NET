@@ -204,36 +204,32 @@ namespace Lanymy.Common.Instruments.Common
         protected virtual void OnChannelRead(IChannelHandlerContext context, object message)
         {
 
-            var buffer = message as IByteBuffer;
+            if (message is not IByteBuffer buffer) return;
 
-            if (buffer != null)
+            var packageDataBytesLength = buffer.ReadableBytes;
+
+            if (packageDataBytesLength > 0)
             {
 
-                var packageDataBytesLength = buffer.ReadableBytes;
+                var packageDataBytes = _CurrenChannelContext.CurrentDataBytesArrayPool.Rent(packageDataBytesLength);
 
+                buffer.GetBytes(buffer.ReaderIndex, packageDataBytes, 0, packageDataBytesLength);
 
-                if (packageDataBytesLength > 0)
-                {
+                //OnChannelReadBytes(context, packageDataBytesLength, packageDataBytes);
+                OnChannelReadBytes(context, packageDataBytes.AsSpan(0, packageDataBytesLength));
 
-                    var packageDataBytes = _CurrenChannelContext.CurrentDataBytesArrayPool.Rent(packageDataBytesLength);
-
-                    buffer.GetBytes(buffer.ReaderIndex, packageDataBytes, 0, packageDataBytesLength);
-
-                    OnChannelReadBytes(context, packageDataBytesLength, packageDataBytes);
-
-                    _CurrenChannelContext.CurrentDataBytesArrayPool.Return(packageDataBytes);
-
-                }
-
-
-                ReferenceCountUtil.Release(message);
+                _CurrenChannelContext.CurrentDataBytesArrayPool.Return(packageDataBytes);
 
             }
+
+
+            ReferenceCountUtil.Release(message);
 
         }
 
 
-        protected abstract void OnChannelReadBytes(IChannelHandlerContext context, int packageDataBytesLength, byte[] packageDataBytes);
+        //protected abstract void OnChannelReadBytes(IChannelHandlerContext context, int packageDataBytesLength, byte[] packageDataBytes);
+        protected abstract void OnChannelReadBytes(IChannelHandlerContext context, Span<byte> packageDataBytes);
 
 
         /// <summary>
