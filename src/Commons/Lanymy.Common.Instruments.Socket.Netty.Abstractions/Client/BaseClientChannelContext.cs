@@ -7,9 +7,10 @@ namespace Lanymy.Common.Instruments.Client
 {
 
 
-    public abstract class BaseClientChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter> : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseClientChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter> : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
         where TReceivePackage : class
         where TSendPackage : class
+        where TChannelOptions : ClientChannelOptions
         where TChannelSession : BaseChannelSession
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
@@ -18,7 +19,7 @@ namespace Lanymy.Common.Instruments.Client
         public WeakReference<Action> CurrentConnectToServerAction;
 
 
-        protected BaseClientChannelContext(ChannelOptions channelOptions) : base(channelOptions)
+        protected BaseClientChannelContext(TChannelOptions channelOptions) : base(channelOptions)
         {
 
         }

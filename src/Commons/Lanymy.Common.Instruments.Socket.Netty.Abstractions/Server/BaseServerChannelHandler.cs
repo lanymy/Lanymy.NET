@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Net;
-using DotNetty.Buffers;
-using DotNetty.Common.Utilities;
-using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
-using Lanymy.Common.ExtensionFunctions;
 using Lanymy.Common.Instruments.Common;
+
 
 namespace Lanymy.Common.Instruments.Server
 {
 
-    public abstract class BaseServerChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext> : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext>
-        where TServerChannelContext : BaseServerChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseServerChannelHandler<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext> : BaseChannelHandler<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext>
+        where TServerChannelContext : BaseServerChannelContext<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelSession : BaseChannelSession, new()
+        where TServerChannelOptions : ServerChannelOptions
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 

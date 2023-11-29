@@ -4,24 +4,24 @@ using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
-using Lanymy.Common.Instruments.Server;
 
 namespace Lanymy.Common.Instruments.Common
 {
 
 
-    public abstract class BaseChannelInitializer<TChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelHandler> : ChannelInitializer<ISocketChannel>
-        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext, TChannelHandler> : ChannelInitializer<ISocketChannel>
         where TReceivePackage : class
         where TSendPackage : class
+        where TChannelOptions : BaseChannelOptions
         where TChannelSession : BaseChannelSession, new()
-        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
+        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
+        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 
 
         protected readonly TChannelContext _CurrentServerChannelContext;
-        protected readonly ChannelOptions _CurrentChannelOptions;
+        protected readonly BaseChannelOptions _CurrentChannelOptions;
 
         protected readonly TimeSpan _CurrentReaderIdleTime;
         protected readonly TimeSpan _CurrentWriterIdleTime;
@@ -82,7 +82,13 @@ namespace Lanymy.Common.Instruments.Common
         }
 
 
-        protected abstract TChannelHandler GetChannelHandler();
+        //protected abstract TChannelHandler GetChannelHandler();
+
+        protected virtual TChannelHandler GetChannelHandler()
+        {
+            //return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext, _OnConnectToServerAction) as TClientChannelHandler;
+            return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext) as TChannelHandler;
+        }
 
 
     }

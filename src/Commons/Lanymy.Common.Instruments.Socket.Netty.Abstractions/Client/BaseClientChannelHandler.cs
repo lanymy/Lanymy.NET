@@ -11,18 +11,19 @@ using Lanymy.Common.Instruments.Common;
 namespace Lanymy.Common.Instruments.Client
 {
 
-    public abstract class BaseClientChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext> : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
-        where TChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseClientChannelHandler<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext> : BaseChannelHandler<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelSession : BaseChannelSession, new()
+        where TClientChannelOptions : ClientChannelOptions
+        where TClientChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 
         protected readonly Action _OnConnectToServerAction;
 
         //protected BaseClientChannelHandler(TChannelContext channelContext, Action connectToServerAction) : base(channelContext)
-        protected BaseClientChannelHandler(TChannelContext channelContext) : base(channelContext)
+        protected BaseClientChannelHandler(TClientChannelContext channelContext) : base(channelContext)
         {
             //_OnConnectToServerAction = connectToServerAction;
             channelContext.CurrentConnectToServerAction.TryGetTarget(out _OnConnectToServerAction);

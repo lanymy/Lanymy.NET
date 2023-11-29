@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Net;
 using DotNetty.Buffers;
 using DotNetty.Common.Utilities;
@@ -10,11 +9,12 @@ using Lanymy.Common.ExtensionFunctions;
 namespace Lanymy.Common.Instruments.Common
 {
 
-    public abstract class BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext> : ChannelHandlerAdapter, IChannelClientHandler<TChannelSession>
-        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseChannelHandler<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext> : ChannelHandlerAdapter, IChannelClientHandler<TChannelSession>
         where TReceivePackage : class
         where TSendPackage : class
+        where TChannelOptions : BaseChannelOptions
         where TChannelSession : BaseChannelSession, new()
+        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 

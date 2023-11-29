@@ -6,9 +6,10 @@ namespace Lanymy.Common.Instruments.Common
 {
 
 
-    public abstract class BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
         where TReceivePackage : class
         where TSendPackage : class
+        where TChannelOptions : BaseChannelOptions
         where TChannelSession : BaseChannelSession
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
@@ -16,7 +17,7 @@ namespace Lanymy.Common.Instruments.Common
 
         public readonly TChannelFixedHeaderPackageFilter CurrentFixedHeaderPackageFilter = new();
 
-        public readonly ChannelOptions CurrentChannelOptions;
+        public readonly TChannelOptions CurrentChannelOptions;
 
         /// <summary>
         /// 字节数组对象池
@@ -24,7 +25,7 @@ namespace Lanymy.Common.Instruments.Common
         public readonly ArrayPool<byte> CurrentDataBytesArrayPool = ArrayPool<byte>.Create();
 
 
-        protected BaseChannelContext(ChannelOptions channelOptions)
+        protected BaseChannelContext(TChannelOptions channelOptions)
         {
             CurrentChannelOptions = channelOptions;
         }

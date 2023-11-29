@@ -12,14 +12,15 @@ namespace Lanymy.Common.Instruments.Server
 
 
 
-    public abstract class BaseNettySocketServer<TServerChannelInitializer, TServerChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelHandler> : BaseSocketHost<TServerChannelInitializer, TServerChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelHandler>
+    public abstract class BaseNettySocketServer<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext, TServerChannelHandler, TServerChannelInitializer> : BaseSocketHost<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext, TServerChannelHandler, TServerChannelInitializer>
         where TReceivePackage : class
         where TSendPackage : class
-        where TServerChannelInitializer : BaseServerChannelInitializer<TServerChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelHandler>
-        where TServerChannelContext : BaseServerChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
-        where TServerChannelHandler : BaseServerChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext>
         where TChannelSession : BaseChannelSession, new()
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
+        where TServerChannelOptions : ServerChannelOptions
+        where TServerChannelInitializer : BaseServerChannelInitializer<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext, TServerChannelHandler>
+        where TServerChannelContext : BaseServerChannelContext<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
+        where TServerChannelHandler : BaseServerChannelHandler<TReceivePackage, TSendPackage, TServerChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelContext>
     {
 
         protected IEventLoopGroup _CurrentWorkerGroup;

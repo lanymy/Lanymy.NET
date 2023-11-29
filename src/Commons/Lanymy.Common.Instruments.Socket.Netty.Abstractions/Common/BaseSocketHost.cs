@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DotNetty.Handlers.Logging;
-using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
-using DotNetty.Transport.Channels.Sockets;
-using Lanymy.Common.ExtensionFunctions;
-using Lanymy.Common.Instruments.Server;
+
 
 namespace Lanymy.Common.Instruments.Common
 {
 
 
 
-    public abstract class BaseSocketHost<TChannelInitializer, TChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelHandler> : IAsyncDisposable
-        where TChannelInitializer : BaseChannelInitializer<TChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelHandler>
-        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
-        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
+    public abstract class BaseSocketHost<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext, TChannelHandler, TChannelInitializer> : IAsyncDisposable
+        where TChannelInitializer : BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext, TChannelHandler>
+        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
+        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
         where TReceivePackage : class
         where TSendPackage : class
+        where TChannelOptions : BaseChannelOptions
         where TChannelSession : BaseChannelSession, new()
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
@@ -52,7 +49,7 @@ namespace Lanymy.Common.Instruments.Common
         protected IEventLoopGroup _CurrentBossGroup;
 
         protected readonly TChannelContext _CurrentChannelContext;
-        protected readonly ChannelOptions _CurrentChannelOptions;
+        protected readonly TChannelOptions _CurrentChannelOptions;
 
 
         protected BaseSocketHost(TChannelContext serverChannelContext)

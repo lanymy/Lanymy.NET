@@ -1,17 +1,16 @@
 ﻿using Lanymy.Common.Instruments.Common;
-using Lanymy.Common.Instruments.Server;
-using System;
 
 namespace Lanymy.Common.Instruments.Client
 {
 
 
-    public abstract class BaseClientChannelInitializer<TClientChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelHandler> : BaseChannelInitializer<TClientChannelContext, TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelHandler>
-        where TClientChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseClientChannelInitializer<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext, TClientChannelHandler> : BaseChannelInitializer<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext, TClientChannelHandler>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelSession : BaseChannelSession, new()
-        where TClientChannelHandler : BaseClientChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext>
+        where TClientChannelOptions : ClientChannelOptions
+        where TClientChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
+        where TClientChannelHandler : BaseClientChannelHandler<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 
@@ -23,11 +22,11 @@ namespace Lanymy.Common.Instruments.Client
             //_OnConnectToServerAction = connectToServerAction;
         }
 
-        protected override TClientChannelHandler GetChannelHandler()
-        {
-            //return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext, _OnConnectToServerAction) as TClientChannelHandler;
-            return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext) as TClientChannelHandler;
-        }
+        //protected override TClientChannelHandler GetChannelHandler()
+        //{
+        //    //return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext, _OnConnectToServerAction) as TClientChannelHandler;
+        //    return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext) as TClientChannelHandler;
+        //}
 
     }
 
