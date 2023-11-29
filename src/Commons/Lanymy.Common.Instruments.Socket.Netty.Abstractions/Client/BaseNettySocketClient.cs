@@ -13,15 +13,15 @@ namespace Lanymy.Common.Instruments.Client
 
 
 
-    public abstract class BaseNettySocketClient<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext, TClientChannelHandler, TClientChannelInitializer> : BaseSocketHost<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext, TClientChannelHandler, TClientChannelInitializer>
+    public abstract class BaseNettySocketClient<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext, TClientChannelHandler, TClientChannelInitializer> : BaseSocketHost<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext, TClientChannelHandler, TClientChannelInitializer>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelSession : BaseChannelSession, new()
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
         where TClientChannelOptions : ClientChannelOptions
-        where TClientChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
-        where TClientChannelHandler : BaseClientChannelHandler<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext>
-        where TClientChannelInitializer : BaseClientChannelInitializer<TReceivePackage, TSendPackage, TClientChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelContext, TClientChannelHandler>
+        where TClientChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions>
+        where TClientChannelHandler : BaseClientChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext>
+        where TClientChannelInitializer : BaseClientChannelInitializer<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext, TClientChannelHandler>
     {
 
 

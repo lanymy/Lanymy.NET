@@ -6,7 +6,7 @@ namespace Lanymy.Common.Instruments.Common
 {
 
 
-    public abstract class BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
+    public abstract class BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelOptions : BaseChannelOptions

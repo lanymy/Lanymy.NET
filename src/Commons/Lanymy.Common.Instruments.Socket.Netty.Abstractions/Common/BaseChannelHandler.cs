@@ -9,12 +9,12 @@ using Lanymy.Common.ExtensionFunctions;
 namespace Lanymy.Common.Instruments.Common
 {
 
-    public abstract class BaseChannelHandler<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext> : ChannelHandlerAdapter, IChannelClientHandler<TChannelSession>
+    public abstract class BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext> : ChannelHandlerAdapter, IChannelClientHandler<TChannelSession>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelOptions : BaseChannelOptions
         where TChannelSession : BaseChannelSession, new()
-        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
+        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 

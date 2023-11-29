@@ -9,13 +9,13 @@ namespace Lanymy.Common.Instruments.Common
 {
 
 
-    public abstract class BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext, TChannelHandler> : ChannelInitializer<ISocketChannel>
+    public abstract class BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext, TChannelHandler> : ChannelInitializer<ISocketChannel>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelOptions : BaseChannelOptions
         where TChannelSession : BaseChannelSession, new()
-        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
-        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
+        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext>
+        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 

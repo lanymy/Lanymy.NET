@@ -8,10 +8,10 @@ namespace Lanymy.Common.Instruments.Common
 
 
 
-    public abstract class BaseSocketHost<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext, TChannelHandler, TChannelInitializer> : IAsyncDisposable
-        where TChannelInitializer : BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext, TChannelHandler>
-        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter>
-        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelOptions, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelContext>
+    public abstract class BaseSocketHost<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext, TChannelHandler, TChannelInitializer> : IAsyncDisposable
+        where TChannelInitializer : BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext, TChannelHandler>
+        where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions>
+        where TChannelHandler : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext>
         where TReceivePackage : class
         where TSendPackage : class
         where TChannelOptions : BaseChannelOptions
