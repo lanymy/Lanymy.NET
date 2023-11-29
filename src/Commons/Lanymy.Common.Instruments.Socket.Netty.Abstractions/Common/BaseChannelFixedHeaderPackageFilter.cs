@@ -1,4 +1,6 @@
-﻿namespace Lanymy.Common.Instruments.Common
+﻿using System;
+
+namespace Lanymy.Common.Instruments.Common
 {
 
 
@@ -30,7 +32,9 @@
         //}
 
 
-        public abstract bool CheckPackage(int packageDataBytesLength, byte[] packageBytes);
+        //public abstract bool CheckPackage(int packageDataBytesLength, byte[] packageBytes);
+        //public abstract bool CheckPackage(Span<byte> packageBytes);
+        public abstract bool CheckPackage(ReadOnlySpan<byte> packageBytes);
 
 
         public abstract byte[] EncodePackage(TSendPackage sendPackage);

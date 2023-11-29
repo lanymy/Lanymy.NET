@@ -216,7 +216,8 @@ namespace Lanymy.Common.Instruments.Common
                 buffer.GetBytes(buffer.ReaderIndex, packageDataBytes, 0, packageDataBytesLength);
 
                 //OnChannelReadBytes(context, packageDataBytesLength, packageDataBytes);
-                OnChannelReadBytes(context, packageDataBytes.AsSpan(0, packageDataBytesLength));
+                //OnChannelReadBytes(context, packageDataBytes.AsSpan(0, packageDataBytesLength));
+                OnChannelReadBytes(context, new ReadOnlySpan<byte>(packageDataBytes, 0, packageDataBytesLength));
 
                 _CurrenChannelContext.CurrentDataBytesArrayPool.Return(packageDataBytes);
 
@@ -229,7 +230,8 @@ namespace Lanymy.Common.Instruments.Common
 
 
         //protected abstract void OnChannelReadBytes(IChannelHandlerContext context, int packageDataBytesLength, byte[] packageDataBytes);
-        protected abstract void OnChannelReadBytes(IChannelHandlerContext context, Span<byte> packageDataBytes);
+        //protected abstract void OnChannelReadBytes(IChannelHandlerContext context, Span<byte> packageDataBytes);
+        protected abstract void OnChannelReadBytes(IChannelHandlerContext context, ReadOnlySpan<byte> packageDataBytes);
 
 
         /// <summary>

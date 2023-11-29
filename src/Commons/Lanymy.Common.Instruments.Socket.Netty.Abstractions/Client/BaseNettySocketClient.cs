@@ -73,6 +73,7 @@ namespace Lanymy.Common.Instruments.Client
                 //需要 处理 断线重连 逻辑
 
                 //await _CurrentServerChannel.CloseAsync();
+                await ConnectToServerAsync();
 
             }
             catch
@@ -102,7 +103,9 @@ namespace Lanymy.Common.Instruments.Client
             }
             catch (Exception e)
             {
-
+                //连不上服务器 继续 重连
+                await Task.Delay(_CurrentChannelOptions.IntervalHeartTotalMilliseconds);
+                await ConnectToServerAsync();
             }
 
         }
