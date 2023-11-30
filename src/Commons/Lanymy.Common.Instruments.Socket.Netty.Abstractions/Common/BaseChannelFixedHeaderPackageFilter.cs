@@ -40,7 +40,8 @@ namespace Lanymy.Common.Instruments.Common
         public abstract byte[] EncodePackage(TSendPackage sendPackage);
 
 
-        public abstract TReceivePackage DecodePackage(int packageDataBytesLength, byte[] packageBytes);
+        //public abstract TReceivePackage DecodePackage(int packageDataBytesLength, byte[] packageBytes);
+        public abstract TReceivePackage DecodePackage(ReadOnlySpan<byte> packageBytes);
 
 
 
