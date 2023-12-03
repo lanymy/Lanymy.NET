@@ -70,10 +70,9 @@ namespace Lanymy.Common.Instruments.Client
                     .Handler(Activator.CreateInstance(typeof(TClientChannelInitializer), _CurrentChannelContext) as IChannelHandler);
 
 
-                //需要 处理 断线重连 逻辑
 
-                //await _CurrentServerChannel.CloseAsync();
-                await ConnectToServerAsync();
+                Task.Run(ConnectToServerAsync);
+
 
             }
             catch
