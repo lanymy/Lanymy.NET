@@ -73,6 +73,7 @@ namespace Lanymy.Common.Instruments.Client
 
                 Task.Run(ConnectToServerAsync);
 
+                await Task.CompletedTask;
 
             }
             catch
