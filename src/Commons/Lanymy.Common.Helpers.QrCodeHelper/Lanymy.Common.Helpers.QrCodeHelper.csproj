@@ -26,9 +26,13 @@
 
 
   <ItemGroup>
-    <PackageReference Include="QRCoder" Version="1.4.3" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-    <!--<PackageReference Include="System.Drawing.Common" Version="7.0.0" />-->
+
+    <!--QRCoder 不支持 .net 5 以上 跨平台版本-->
+    <!--<PackageReference Include="QRCoder" Version="1.4.3" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />-->
+
+    <PackageReference Include="SkiaSharp.QrCode" Version="0.7.0" />
+
   </ItemGroup>
 
 
