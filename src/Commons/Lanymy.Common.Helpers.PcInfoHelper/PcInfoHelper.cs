@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
 
@@ -202,6 +204,99 @@ namespace Lanymy.Common.Helpers
             return Environment.Is64BitOperatingSystem ? BitOperatingTypeEnum.x64 : BitOperatingTypeEnum.x86;
 
         }
+
+
+#if NET8_0_OR_GREATER
+
+
+        /// <summary>
+        /// 创建程序开机自启动
+        /// </summary>
+        /// <param name="sourceExeFileFullPath"></param>
+        /// <param name="targetShortcutFileName"></param>
+        /// <param name="isOverride">覆盖文件</param>
+        /// <param name="arguments">参数</param>
+        /// <param name="description">描述</param>
+        /// <returns></returns>
+        public static bool CreateBootAutoRun(string sourceExeFileFullPath, string targetShortcutFileName, string description = null, bool isOverride = true, string arguments = null)
+        {
+            var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), targetShortcutFileName);
+
+            return CreateShortcut(sourceExeFileFullPath, targetShortcutFileName, description, isOverride, arguments);
+        }
+
+
+
+
+
+        /// <summary>
+        /// 创建桌面快捷方式
+        /// </summary>
+        /// <param name="sourceExeFileFullPath">源exe程序全路径</param>
+        /// <param name="targetShortcutFileName">只需要快捷方式名称,自动补充.lnk文件后缀</param>
+        /// <param name="isOverride">覆盖文件</param>
+        /// <param name="arguments">参数</param>
+        /// <param name="description">描述</param>
+        /// <returns></returns>
+        public static bool CreateDesktopShortcut(string sourceExeFileFullPath, string targetShortcutFileName, string description = null, bool isOverride = true, string arguments = null)
+        {
+
+            var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), targetShortcutFileName);
+
+            return CreateShortcut(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments);
+
+        }
+
+
+        /// <summary>
+        /// 创建一个快捷方式(用户级别)
+        /// </summary>
+        /// <param name="sourceExeFileFullPath">源exe程序全路径</param>
+        /// <param name="targetShortcutFileFullPath">目标快件方式文件全路径,自动补充.lnk文件后缀</param>
+        /// <param name="isOverride">覆盖文件</param>
+        /// <param name="arguments">参数</param>
+        /// <param name="description">描述</param>
+        /// <returns></returns>
+        public static bool CreateShortcut(string sourceExeFileFullPath, string targetShortcutFileFullPath, string description = null, bool isOverride = true, string arguments = null)
+        {
+
+            try
+            {
+
+                if (!targetShortcutFileFullPath.ToLower().EndsWith(FileExtensionKeys.SHORTCUT_FILE_EXTENSION))
+                {
+                    targetShortcutFileFullPath += FileExtensionKeys.SHORTCUT_FILE_EXTENSION;
+                }
+
+                if (isOverride && File.Exists(targetShortcutFileFullPath))
+                {
+                    File.Delete(targetShortcutFileFullPath);
+                }
+
+                var shellType = Type.GetTypeFromProgID("WScript.Shell");
+                dynamic shell = Activator.CreateInstance(shellType);
+                var shortcut = shell.CreateShortcut(targetShortcutFileFullPath);
+                shortcut.TargetPath = sourceExeFileFullPath;
+                shortcut.WorkingDirectory = Path.GetDirectoryName(sourceExeFileFullPath);
+                shortcut.Arguments = arguments;
+                shortcut.Description = description;
+                //shortcut.IconLocation = "图标路径";
+                //shortcut.WindowStyle = FormWindowState.Normal;
+
+                shortcut.Save();
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
+
+#endif
 
 
 

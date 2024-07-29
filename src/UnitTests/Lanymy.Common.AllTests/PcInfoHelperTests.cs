@@ -27,7 +27,14 @@ namespace Lanymy.Common.AllTests
         public void PcInfoHelperTest()
         {
 
+
             //var port = PcInfoHelper.GetRandomAvaliablePort();
+
+            var sourceFileFullPath = @"";
+            var targetFileName = "ShortcutDemo";
+
+            var result = PcInfoHelper.CreateDesktopShortcut(sourceFileFullPath, targetFileName);
+
 
         }
 

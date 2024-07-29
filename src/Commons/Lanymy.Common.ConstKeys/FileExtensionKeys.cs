@@ -39,6 +39,11 @@
         /// </summary>
         public const string TORRENT_FILE_EXTENSION = EXTENSION_SYMBOL + "torrent";
 
+        /// <summary>
+        /// 快捷方式 文件 扩展名 .lnk
+        /// </summary>
+        public const string SHORTCUT_FILE_EXTENSION = EXTENSION_SYMBOL + "lnk";
+
     }
 
 
