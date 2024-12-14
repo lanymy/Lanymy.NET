@@ -1268,6 +1268,10 @@
         /// </summary>
         public const string DRAWING_X_TOP = "drawing/x-top";
 
+        /// <summary>
+        /// image/*
+        /// </summary>
+        public const string IMAGE_ALL = "image/*";
 
         /// <summary>
         /// image/fax
@@ -1459,6 +1463,11 @@
         /// video/mpeg4
         /// </summary>
         public const string VIDEO_MPEG4 = "video/mpeg4";
+
+        /// <summary>
+        /// video/mp4
+        /// </summary>
+        public const string VIDEO_MP4 = "video/mp4";
 
 
         /// <summary>
