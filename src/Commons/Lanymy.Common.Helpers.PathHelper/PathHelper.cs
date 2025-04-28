@@ -405,6 +405,7 @@ namespace Lanymy.Common.Helpers
 
         /// <summary>
         /// 展开带有环境变量的路径;  如:%USERPROFILE%\\Documents 展开后 路径为 C:\Users\username\Documents; 如果系统变量值不存在,则返回原始传入的路径值
+        /// 系统新增加的环境变量, 需要重启一次系统, 才能正确识别到
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
