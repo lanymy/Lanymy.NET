@@ -411,6 +411,10 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static string ExpandEnvironmentVariables(string path)
         {
+            if (path.IfIsNullOrEmpty())
+            {
+                return string.Empty;
+            }
             return Environment.ExpandEnvironmentVariables(path);
         }
 
