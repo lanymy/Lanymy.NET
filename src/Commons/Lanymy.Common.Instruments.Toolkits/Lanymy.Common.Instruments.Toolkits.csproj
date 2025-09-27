@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.ObjectExtensions\Lanymy.Common.ExtensionFunctions.ObjectExtensions.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Helpers.Win32Helper\Lanymy.Common.Helpers.Win32Helper.csproj" />
   </ItemGroup>
 
 

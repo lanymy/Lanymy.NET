@@ -17,6 +17,10 @@
         /// </summary>
         public const string IPHLPAPI = "iphlpapi" + FileExtensionKeys.DLL_FILE_EXTENSION;
 
+        /// <summary>
+        /// user32.dll
+        /// </summary>
+        public const string USER32 = "user32" + FileExtensionKeys.DLL_FILE_EXTENSION;
 
     }
 }

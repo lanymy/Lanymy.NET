@@ -1,6 +1,5 @@
 ﻿#if !NETSTANDARD
 
-
 using System;
 using System.Runtime.InteropServices;
 using Lanymy.Common.ConstKeys;
@@ -38,6 +37,30 @@ namespace Lanymy.Common.Helpers
 
         [DllImport(Win32FileKeys.IPHLPAPI, ExactSpelling = true)]
         public static extern int SendARP(uint DestIP, uint SrcIP, byte[] pMacAddr, ref int PhyAddrLen);
+
+
+
+
+
+
+        [DllImport(Win32FileKeys.KERNEL32)]
+        public static extern IntPtr GetConsoleWindow();
+
+        [DllImport(Win32FileKeys.USER32)]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT rc);
+
+        [DllImport(Win32FileKeys.USER32)]
+        public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int w, int h, bool repaint);
+        public struct RECT { public int left, top, right, bottom; }
+
+
+        [DllImport(Win32FileKeys.USER32)]
+        public static extern int GetSystemMetrics(int nIndex);
+        public const int SM_CXSCREEN = 0;
+        public const int SM_CYSCREEN = 1;
+
+
+
 
 
 
