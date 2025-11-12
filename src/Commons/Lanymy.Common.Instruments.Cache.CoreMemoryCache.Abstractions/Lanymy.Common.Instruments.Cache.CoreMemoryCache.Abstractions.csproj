@@ -5,6 +5,7 @@
 
   <PropertyGroup>
 
+    <TargetFrameworks>$(CurrentTargetFrameworks);net48</TargetFrameworks>
     <!--<CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
 
     <Description>

@@ -151,7 +151,12 @@ namespace Lanymy.Common.Helpers
             if (Path.HasExtension(path))
                 path = Path.GetDirectoryName(path);
 
+#if NET48
+            if (path.Last() != Path.DirectorySeparatorChar)
+#else
             if (path[^1] != Path.DirectorySeparatorChar)
+#endif
+
                 path += Path.DirectorySeparatorChar;
 
             return path;

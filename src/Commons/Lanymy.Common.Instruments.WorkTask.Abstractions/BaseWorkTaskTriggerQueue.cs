@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Lanymy.Common.ExtensionFunctions;
+using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Instruments
 {
@@ -112,8 +113,15 @@ namespace Lanymy.Common.Instruments
                     {
                         _CurrentWorkTaskTriggerQueueAction(_CurrentCacheConcurrentQueue.ToList());
                     }
-
+#if NET48
+                    TDataModel item;
+                    while (_CurrentCacheConcurrentQueue.TryDequeue(out item))
+                    {
+                        // 持续出队直到队列为空
+                    }
+#else
                     _CurrentCacheConcurrentQueue.Clear();
+#endif
                     Interlocked.Exchange(ref _OnActionTriggerCountIndex, 0);
                     OnActionTriggerLastDateTime = DateTime.Now;
 

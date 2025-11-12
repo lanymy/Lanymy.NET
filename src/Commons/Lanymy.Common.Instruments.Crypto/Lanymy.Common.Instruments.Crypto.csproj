@@ -5,6 +5,7 @@
 
   <PropertyGroup>
 
+    <TargetFrameworks>$(CurrentTargetFrameworks);net48</TargetFrameworks>
     <!--<CurrentReleaseNumbers>0.5.0</CurrentReleaseNumbers>
 
     <Description>
@@ -31,6 +32,10 @@
 
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.StringExtensions\Lanymy.Common.ExtensionFunctions.StringExtensions.csproj" />
@@ -40,6 +45,8 @@
     <ProjectReference Include="..\Lanymy.Common.Helpers.SerializeHelper.Json\Lanymy.Common.Helpers.SerializeHelper.Json.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.Crypto.Abstractions\Lanymy.Common.Instruments.Crypto.Abstractions.csproj" />
   </ItemGroup>
+
+
 
 
 

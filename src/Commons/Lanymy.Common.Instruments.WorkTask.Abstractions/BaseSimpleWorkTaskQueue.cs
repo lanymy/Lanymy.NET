@@ -118,7 +118,16 @@ namespace Lanymy.Common.Instruments
 
             }
 
-            _CurrentCacheConcurrentQueue.Clear();
+
+#if NET48
+            TData item;
+            while (_CurrentCacheConcurrentQueue.TryDequeue(out item))
+            {
+                // 持续出队直到队列为空
+            }
+#else
+                    _CurrentCacheConcurrentQueue.Clear();
+#endif
 
         }
 
