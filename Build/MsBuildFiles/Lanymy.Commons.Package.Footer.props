@@ -42,6 +42,10 @@
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
+
+    <!--<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>-->
+    <RestoreUseLegacyDependencyResolver>true</RestoreUseLegacyDependencyResolver>
+
   </PropertyGroup>
 
 
