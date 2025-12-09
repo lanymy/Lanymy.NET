@@ -54,6 +54,25 @@ namespace Lanymy.Common.Helpers
 
 
 
+        public static string EncryptModelToString<T>(T t, string key = null, string iv = null, Encoding encoding = null, IAesCrypto crypto = null) where T : class
+        {
+            return GenericityHelper.GetInterface(crypto, DefaultLanymyCrypto).EncryptModelToString(t, key, iv, encoding);
+        }
+
+        public static T DecryptModelFromString<T>(string encryptString, string key = null, string iv = null, Encoding encoding = null, IAesCrypto crypto = null) where T : class
+        {
+            return GenericityHelper.GetInterface(crypto, DefaultLanymyCrypto).DecryptModelFromString<T>(encryptString, key, iv, encoding);
+        }
+        public static void EncryptModelToFile<T>(T t, string fileFullPath, string key = null, string iv = null, Encoding encoding = null, IAesCrypto crypto = null) where T : class
+        {
+            GenericityHelper.GetInterface(crypto, DefaultLanymyCrypto).EncryptModelToFile(t, fileFullPath, key, iv, encoding);
+        }
+        public static T DecryptModelFromFile<T>(string fileFullPath, string key = null, string iv = null, Encoding encoding = null, IAesCrypto crypto = null) where T : class
+        {
+            return GenericityHelper.GetInterface(crypto, DefaultLanymyCrypto).DecryptModelFromFile<T>(fileFullPath, key, iv, encoding);
+        }
+
+
 
 
     }
