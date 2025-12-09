@@ -241,6 +241,51 @@ namespace Lanymy.Common.Instruments
 
         }
 
+
+
+
+
+
+
+
+
+        public string EncryptModelToString<T>(T t, string key = null, string iv = null, Encoding encoding = null) where T : class
+        {
+
+            var json = JsonSerializeHelper.SerializeToJson(t);
+            return EncryptStringToString(json, key, iv, encoding);
+
+        }
+
+        public T DecryptModelFromString<T>(string encryptString, string key = null, string iv = null, Encoding encoding = null) where T : class
+        {
+
+            var json = DecryptStringFromString(encryptString, key, iv, encoding);
+            return JsonSerializeHelper.DeserializeFromJson<T>(json);
+
+        }
+
+        public void EncryptModelToFile<T>(T t, string fileFullPath, string key = null, string iv = null, Encoding encoding = null) where T : class
+        {
+
+            var json = JsonSerializeHelper.SerializeToJson(t);
+            var bytes = EncryptStringToBteys(json, key, iv, encoding);
+            File.WriteAllBytes(fileFullPath, bytes);
+
+        }
+
+        public T DecryptModelFromFile<T>(string fileFullPath, string key = null, string iv = null, Encoding encoding = null) where T : class
+        {
+
+            var bytes = File.ReadAllBytes(fileFullPath);
+            var json = DecryptStringFromBteys(bytes, key, iv, encoding);
+            return JsonSerializeHelper.DeserializeFromJson<T>(json);
+
+        }
+
+
+
+
     }
 
 }

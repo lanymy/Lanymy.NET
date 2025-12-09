@@ -41,6 +41,17 @@ namespace Lanymy.Common.Instruments.Interfaces
 
 
 
+
+
+        string EncryptModelToString<T>(T t, string key = null, string iv = null, Encoding encoding = null) where T : class;
+
+        T DecryptModelFromString<T>(string encryptString, string key = null, string iv = null, Encoding encoding = null) where T : class;
+
+        void EncryptModelToFile<T>(T t, string fileFullPath, string key = null, string iv = null, Encoding encoding = null) where T : class;
+
+        T DecryptModelFromFile<T>(string fileFullPath, string key = null, string iv = null, Encoding encoding = null) where T : class;
+
+
     }
 
 
