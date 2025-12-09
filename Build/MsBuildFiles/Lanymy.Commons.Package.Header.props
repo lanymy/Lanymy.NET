@@ -5,7 +5,7 @@
 
     <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
 
-    <LanymyCommonFrameworkPackageReleaseNumbers>0.16.0</LanymyCommonFrameworkPackageReleaseNumbers>
+    <LanymyCommonFrameworkPackageReleaseNumbers>0.17.0</LanymyCommonFrameworkPackageReleaseNumbers>
 
     <CurrentReleaseNumbers>$(LanymyCommonFrameworkPackageReleaseNumbers)</CurrentReleaseNumbers>
 

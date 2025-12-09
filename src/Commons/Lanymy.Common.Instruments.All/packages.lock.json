@@ -1,0 +1,1620 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.8": {
+      "DotNetty.Buffers": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "ri4udTfNS856dAZ09VkQ9k6gxmYwFuZh930TAMa71smowEAvhGQEDpRY4mLgA5ADhbKhLYpmO/1vfDXEchDugQ==",
+        "dependencies": {
+          "DotNetty.Common": "0.7.5",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "DotNetty.Codecs": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "6FqSnZ2gmc5RalbxVNWeEm6FqZHORdskyDUKGdgm4gDr86D8w8TLv4L1MIS7Mshsq3figHl0TP9yFyOXe6SHdQ==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Common": "0.7.5",
+          "DotNetty.Transport": "0.7.5",
+          "System.Collections.Immutable": "1.5.0"
+        }
+      },
+      "DotNetty.Common": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "U9dLNbZhtWhSsWIwLVhIwKC9Ku3+Q/CrY/U5Lahb8DxoEt6uo3GIPPGY3NT1COllfhT422bLALdGlesFOcwXEg==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "5.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "DotNetty.Handlers": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "1iXurgUEaEqRW33CvPCEndrHoTB6Ql4PBNpMkVixJ6MxSS9kMLPi+nVpcnEQCPyRBkf/9znk+YO02R0bDWA03g==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Codecs": "0.7.5",
+          "DotNetty.Common": "0.7.5",
+          "DotNetty.Transport": "0.7.5"
+        }
+      },
+      "DotNetty.Transport": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "Ha1ZDqUOEPgk5/IWpAcP220cUtcekLankgkq/KhkrmvVANNbTxwTvjBS50m2/nAK623HjT+1wcLZBfFzBg3TyQ==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Common": "0.7.5"
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "vFuwSLj9QJBbNR0NeNO4YVASUbokxs+i/xbuu8B+Fs4FAZg5QaFa6eGrMaRqTzzNI5tAb97T7BhSxtLckFyiRA==",
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.6.3"
+        }
+      },
+      "Microsoft.CSharp": {
+        "type": "Transitive",
+        "resolved": "4.7.0",
+        "contentHash": "pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA=="
+      },
+      "Microsoft.Extensions.Caching.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "IeimUd0TNbhB4ded3AbgBLQv2SnsiVugDyGV1MvspQFVlA07nDC7Zul7kcwH5jWN3JiTcp/ySE83AIJo8yfKjg==",
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.Caching.Memory": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "xpidBs2KCE2gw1JrD0quHE72kvCaI3xFql5/Peb2GRtUuZX+dYPoK/NTdVMiM67Svym0M0Df9A3xyU0FbMQhHw==",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "7.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Options": "7.0.0",
+          "Microsoft.Extensions.Primitives": "7.0.0",
+          "System.ValueTuple": "4.5.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "Rc2kb/p3Ze6cP6rhFC3PJRdWGbLvSHZc0ev7YlyeU6FmHciDMLrhoVoTUEzKPhN5ZjFgKF1Cf5fOz8mCMIkvpA==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "7.0.0",
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        }
+      },
+      "Microsoft.Extensions.Logging": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "MgOwK6tPzB6YNH21wssJcw/2MKwee8b2gI7SllYfn6rvTpIrVvVS5HAjSU2vqSku1fwqRvWP0MdIi14qjd93Aw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Options": "5.0.0",
+          "System.Diagnostics.DiagnosticSource": "5.0.0",
+          "System.ValueTuple": "4.5.0"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw==",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5"
+        }
+      },
+      "Microsoft.Extensions.Options": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "lP1yBnTTU42cKpMozuafbvNtQ7QcBjr/CcK3bYOGEMH55Fjt+iecXjT6chR7vbgCMqy3PG3aNQSZgo/EuY/9qQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.Primitives": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "um1KU5kxcRp3CNuI8o/GrZtD4AIOXDk+RLsytjZ9QPok3ttLUelLKpilVPuaFT3TFjOhSibUAso0odbOaCDj3Q==",
+        "dependencies": {
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "System.Buffers": {
+        "type": "Transitive",
+        "resolved": "4.5.1",
+        "contentHash": "Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg=="
+      },
+      "System.Collections.Immutable": {
+        "type": "Transitive",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
+      },
+      "System.Diagnostics.DiagnosticSource": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "tCQTzPsGZh/A9LhhA6zrqCRV4hOHsK90/G7q3Khxmn6tnB1PuNU0cRaKANP2AWcF9bn0zsuOoZOSrHuJk6oNBA==",
+        "dependencies": {
+          "System.Memory": "4.5.4",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "System.Drawing.Common": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "KIX+oBU38pxkKPxvLcLfIkOV5Ien8ReN78wro7OF5/erwcmortzeFx+iBswlh2Vz6gVne0khocQudGwaO1Ey6A=="
+      },
+      "System.IO": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "3qjaHvxQPDpSOYICjUoTsmoq5u6QJAFRUITgeT/4gqkF1bajbSmb1kwSxEA8AHlofqgcKJcM8udgieRNhaJ5Cg=="
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.5.5",
+        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Numerics.Vectors": "4.5.0",
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
+      "System.Net.Http": {
+        "type": "Transitive",
+        "resolved": "4.3.4",
+        "contentHash": "aOa2d51SEbmM+H+Csw7yJOuNZoHkrP2XnAurye5HWYgGVVU54YZDvsLUYRv6h18X3sPnjNCANmN7ZhIPiqMcjA==",
+        "dependencies": {
+          "System.Security.Cryptography.X509Certificates": "4.3.0"
+        }
+      },
+      "System.Numerics.Vectors": {
+        "type": "Transitive",
+        "resolved": "4.5.0",
+        "contentHash": "QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ=="
+      },
+      "System.Runtime": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "JufQi0vPQ0xGnAczR13AUFglDyVYt4Kqnz1AZaiKZ5+GICq0/1MH/mO/eAJHt/mHW1zjKBJd7kV26SrxddAhiw=="
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.1.2",
+        "contentHash": "2hBr6zdbIBTDE3EhK7NSVNdX58uTK6iHW/P/Axmm9sl1xoGSLqDvMtpecn226TNwHByFokYwJmt/aQQNlO5CRw=="
+      },
+      "System.Security.Cryptography.Algorithms": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "W1kd2Y8mYSCgc3ULTAZ0hOP2dSdG5YauTb1089T0/kRcN2MpSAW1izOFROrJgxSlMn3ArsgHXagigyi+ibhevg==",
+        "dependencies": {
+          "System.IO": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Security.Cryptography.Encoding": "4.3.0",
+          "System.Security.Cryptography.Primitives": "4.3.0"
+        }
+      },
+      "System.Security.Cryptography.Encoding": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "1DEWjZZly9ae9C79vFwqaO5kaOlI5q+3/55ohmq/7dpDyDfc8lYe7YVxJUZ5MF/NtbkRjwFRo14yM4OEo9EmDw=="
+      },
+      "System.Security.Cryptography.Primitives": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "7bDIyVFNL/xKeFHjhobUAQqSpJq9YTOpbEs6mR233Et01STBMXNAc/V+BM6dwYGc95gVh/Zf+iVXWzj3mE8DWg=="
+      },
+      "System.Security.Cryptography.X509Certificates": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "t2Tmu6Y2NtJ2um0RtcuhP7ZdNNxXEgUm2JeoA/0NvlMjAhKCnM1NX07TDl3244mVp3QU6LPEhT3HTtH1uF7IYw==",
+        "dependencies": {
+          "System.Security.Cryptography.Algorithms": "4.3.0",
+          "System.Security.Cryptography.Encoding": "4.3.0"
+        }
+      },
+      "System.Threading.Channels": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "fwRdkJpKisUEVNaEdsL5w5EwidzuVw0BOTfzDvYB1Yg8sq1pqNfUZxBOVFgSj6i6tNhpT3HP8BEDXf1+kFkTDA==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.0",
+          "System.Threading.Tasks.Extensions": "4.6.3"
+        }
+      },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.6.3",
+        "contentHash": "7sCiwilJLYbTZELaKnc7RecBBXWXA+xMLQWZKWawBxYjp6DBlSE3v9/UcvKBvr1vv2tTOhipiogM8rRmxlhrVA==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+        }
+      },
+      "System.ValueTuple": {
+        "type": "Transitive",
+        "resolved": "4.5.0",
+        "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
+      },
+      "lanymy.common.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "System.Net.Http": "[4.3.4, )"
+        }
+      },
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.deepcloneextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.enumextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.EnumHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.stringextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.arrayhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.ArrayManipulater": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.compressionhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.datetimehelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.EnumExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.enumhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CustomMemoryCache": "[0.16.0, )",
+          "Lanymy.Common.Instruments.EnumMapper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.filehelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.genericityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.imagehelper": {
+        "type": "Project",
+        "dependencies": {
+          "System.Drawing.Common": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.helpers.pathhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.RegexHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.processhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.regexhelper": {
+        "type": "Project"
+      },
+      "lanymy.common.helpers.securityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ArrayHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.CompressionHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.FileHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ImageHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Crypto": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )",
+          "System.Drawing.Common": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.helpers.serializehelper.json": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.win32helper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.arraymanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.ArrayManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.arraymanipulater.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.cache.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.corememorycache": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.corememorycache.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "[0.16.0, )",
+          "Microsoft.Extensions.Caching.Memory": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.custommemorycache": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cmd": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.CMD.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cmd.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ProcessHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.compresser": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.compresser.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.crawler": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Crawler.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Ffmpeg": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crawler.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.WorkTaskQueue": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crypto": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ArrayHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.CompressionHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.FileHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Crypto.Abstractions": "[0.16.0, )",
+          "Microsoft.CSharp": "[4.7.0, )"
+        }
+      },
+      "lanymy.common.instruments.crypto.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ImageHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.enummapper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.EnumMapper.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.enummapper.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.ffmpeg": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Ffmpeg.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.ffmpeg.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.CMD": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.isolatedstorages": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.SecurityHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )",
+          "Lanymy.Common.Instruments.IsolatedStorages.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.isolatedstorages.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.navigationpage": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.NavigationPage.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.navigationpage.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.jsonnetjsonserializer": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.FileTextManipulater": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "[0.16.0, )",
+          "Newtonsoft.Json": "[13.0.3, )"
+        }
+      },
+      "lanymy.common.instruments.socket.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.DateTimeHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTask.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTaskQueue": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.socket.netty.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetty.Buffers": "[0.7.5, )",
+          "DotNetty.Handlers": "[0.7.5, )",
+          "DotNetty.Transport": "[0.7.5, )",
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.toolkits": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.Win32Helper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.worktask.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.IsolatedStorages": "[0.16.0, )",
+          "System.Threading.Channels": "[10.0.0, )"
+        }
+      },
+      "lanymy.common.instruments.worktaskqueue": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTask.Abstractions": "[0.16.0, )"
+        }
+      }
+    },
+    ".NETStandard,Version=v2.1": {
+      "DotNetty.Buffers": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "ri4udTfNS856dAZ09VkQ9k6gxmYwFuZh930TAMa71smowEAvhGQEDpRY4mLgA5ADhbKhLYpmO/1vfDXEchDugQ==",
+        "dependencies": {
+          "DotNetty.Common": "0.7.5",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "DotNetty.Codecs": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "6FqSnZ2gmc5RalbxVNWeEm6FqZHORdskyDUKGdgm4gDr86D8w8TLv4L1MIS7Mshsq3figHl0TP9yFyOXe6SHdQ==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Common": "0.7.5",
+          "DotNetty.Transport": "0.7.5",
+          "System.Collections.Immutable": "1.5.0"
+        }
+      },
+      "DotNetty.Common": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "U9dLNbZhtWhSsWIwLVhIwKC9Ku3+Q/CrY/U5Lahb8DxoEt6uo3GIPPGY3NT1COllfhT422bLALdGlesFOcwXEg==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "5.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "DotNetty.Handlers": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "1iXurgUEaEqRW33CvPCEndrHoTB6Ql4PBNpMkVixJ6MxSS9kMLPi+nVpcnEQCPyRBkf/9znk+YO02R0bDWA03g==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Codecs": "0.7.5",
+          "DotNetty.Common": "0.7.5",
+          "DotNetty.Transport": "0.7.5"
+        }
+      },
+      "DotNetty.Transport": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "Ha1ZDqUOEPgk5/IWpAcP220cUtcekLankgkq/KhkrmvVANNbTxwTvjBS50m2/nAK623HjT+1wcLZBfFzBg3TyQ==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Common": "0.7.5"
+        }
+      },
+      "Microsoft.CSharp": {
+        "type": "Transitive",
+        "resolved": "4.7.0",
+        "contentHash": "pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA=="
+      },
+      "Microsoft.Extensions.Caching.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "IeimUd0TNbhB4ded3AbgBLQv2SnsiVugDyGV1MvspQFVlA07nDC7Zul7kcwH5jWN3JiTcp/ySE83AIJo8yfKjg==",
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.Caching.Memory": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "xpidBs2KCE2gw1JrD0quHE72kvCaI3xFql5/Peb2GRtUuZX+dYPoK/NTdVMiM67Svym0M0Df9A3xyU0FbMQhHw==",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "7.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Options": "7.0.0",
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "Rc2kb/p3Ze6cP6rhFC3PJRdWGbLvSHZc0ev7YlyeU6FmHciDMLrhoVoTUEzKPhN5ZjFgKF1Cf5fOz8mCMIkvpA==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw=="
+      },
+      "Microsoft.Extensions.Logging": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "MgOwK6tPzB6YNH21wssJcw/2MKwee8b2gI7SllYfn6rvTpIrVvVS5HAjSU2vqSku1fwqRvWP0MdIi14qjd93Aw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Options": "5.0.0",
+          "System.Diagnostics.DiagnosticSource": "5.0.0"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw==",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5"
+        }
+      },
+      "Microsoft.Extensions.Options": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "lP1yBnTTU42cKpMozuafbvNtQ7QcBjr/CcK3bYOGEMH55Fjt+iecXjT6chR7vbgCMqy3PG3aNQSZgo/EuY/9qQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.Primitives": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "um1KU5kxcRp3CNuI8o/GrZtD4AIOXDk+RLsytjZ9QPok3ttLUelLKpilVPuaFT3TFjOhSibUAso0odbOaCDj3Q==",
+        "dependencies": {
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "System.Buffers": {
+        "type": "Transitive",
+        "resolved": "4.5.1",
+        "contentHash": "Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg=="
+      },
+      "System.Collections.Immutable": {
+        "type": "Transitive",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
+      },
+      "System.Diagnostics.DiagnosticSource": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "tCQTzPsGZh/A9LhhA6zrqCRV4hOHsK90/G7q3Khxmn6tnB1PuNU0cRaKANP2AWcF9bn0zsuOoZOSrHuJk6oNBA==",
+        "dependencies": {
+          "System.Memory": "4.5.4",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "System.Drawing.Common": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "KIX+oBU38pxkKPxvLcLfIkOV5Ien8ReN78wro7OF5/erwcmortzeFx+iBswlh2Vz6gVne0khocQudGwaO1Ey6A=="
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.5.5",
+        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Numerics.Vectors": "4.4.0",
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
+      "System.Numerics.Vectors": {
+        "type": "Transitive",
+        "resolved": "4.4.0",
+        "contentHash": "UiLzLW+Lw6HLed1Hcg+8jSRttrbuXv7DANVj0DkL9g6EnnzbL75EB7EWsw5uRbhxd/4YdG8li5XizGWepmG3PQ=="
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
+      },
+      "System.Threading.Channels": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "fwRdkJpKisUEVNaEdsL5w5EwidzuVw0BOTfzDvYB1Yg8sq1pqNfUZxBOVFgSj6i6tNhpT3HP8BEDXf1+kFkTDA=="
+      },
+      "lanymy.common.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.deepcloneextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.enumextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.EnumHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.stringextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.arrayhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.ArrayManipulater": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.compressionhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.datetimehelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.EnumExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.enumhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CustomMemoryCache": "[0.16.0, )",
+          "Lanymy.Common.Instruments.EnumMapper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.filehelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.genericityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.imagehelper": {
+        "type": "Project",
+        "dependencies": {
+          "System.Drawing.Common": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.helpers.pathhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.RegexHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.processhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.regexhelper": {
+        "type": "Project"
+      },
+      "lanymy.common.helpers.securityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ArrayHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.CompressionHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.FileHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ImageHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Crypto": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )",
+          "System.Drawing.Common": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.helpers.serializehelper.json": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.win32helper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.arraymanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.ArrayManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.arraymanipulater.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.cache.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.corememorycache": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.corememorycache.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "[0.16.0, )",
+          "Microsoft.Extensions.Caching.Memory": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.custommemorycache": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cmd": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.CMD.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cmd.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ProcessHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.compresser": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.compresser.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.crawler": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Crawler.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Ffmpeg": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crawler.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.WorkTaskQueue": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crypto": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ArrayHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.CompressionHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.FileHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Crypto.Abstractions": "[0.16.0, )",
+          "Microsoft.CSharp": "[4.7.0, )"
+        }
+      },
+      "lanymy.common.instruments.crypto.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ImageHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.enummapper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.EnumMapper.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.enummapper.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.ffmpeg": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Ffmpeg.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.ffmpeg.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.CMD": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.isolatedstorages": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.SecurityHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )",
+          "Lanymy.Common.Instruments.IsolatedStorages.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.isolatedstorages.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.navigationpage": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.NavigationPage.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.navigationpage.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.jsonnetjsonserializer": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.FileTextManipulater": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "[0.16.0, )",
+          "Newtonsoft.Json": "[13.0.3, )"
+        }
+      },
+      "lanymy.common.instruments.socket.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.DateTimeHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTask.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTaskQueue": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.socket.netty.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetty.Buffers": "[0.7.5, )",
+          "DotNetty.Handlers": "[0.7.5, )",
+          "DotNetty.Transport": "[0.7.5, )",
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.toolkits": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.Win32Helper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.worktask.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.IsolatedStorages": "[0.16.0, )",
+          "System.Threading.Channels": "[10.0.0, )"
+        }
+      },
+      "lanymy.common.instruments.worktaskqueue": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTask.Abstractions": "[0.16.0, )"
+        }
+      }
+    },
+    "net8.0": {
+      "DotNetty.Buffers": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "ri4udTfNS856dAZ09VkQ9k6gxmYwFuZh930TAMa71smowEAvhGQEDpRY4mLgA5ADhbKhLYpmO/1vfDXEchDugQ==",
+        "dependencies": {
+          "DotNetty.Common": "0.7.5",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "DotNetty.Codecs": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "6FqSnZ2gmc5RalbxVNWeEm6FqZHORdskyDUKGdgm4gDr86D8w8TLv4L1MIS7Mshsq3figHl0TP9yFyOXe6SHdQ==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Common": "0.7.5",
+          "DotNetty.Transport": "0.7.5",
+          "System.Collections.Immutable": "1.5.0"
+        }
+      },
+      "DotNetty.Common": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "U9dLNbZhtWhSsWIwLVhIwKC9Ku3+Q/CrY/U5Lahb8DxoEt6uo3GIPPGY3NT1COllfhT422bLALdGlesFOcwXEg==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "5.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+        }
+      },
+      "DotNetty.Handlers": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "1iXurgUEaEqRW33CvPCEndrHoTB6Ql4PBNpMkVixJ6MxSS9kMLPi+nVpcnEQCPyRBkf/9znk+YO02R0bDWA03g==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Codecs": "0.7.5",
+          "DotNetty.Common": "0.7.5",
+          "DotNetty.Transport": "0.7.5"
+        }
+      },
+      "DotNetty.Transport": {
+        "type": "Transitive",
+        "resolved": "0.7.5",
+        "contentHash": "Ha1ZDqUOEPgk5/IWpAcP220cUtcekLankgkq/KhkrmvVANNbTxwTvjBS50m2/nAK623HjT+1wcLZBfFzBg3TyQ==",
+        "dependencies": {
+          "DotNetty.Buffers": "0.7.5",
+          "DotNetty.Common": "0.7.5"
+        }
+      },
+      "Microsoft.Extensions.Caching.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "IeimUd0TNbhB4ded3AbgBLQv2SnsiVugDyGV1MvspQFVlA07nDC7Zul7kcwH5jWN3JiTcp/ySE83AIJo8yfKjg==",
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.Caching.Memory": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "xpidBs2KCE2gw1JrD0quHE72kvCaI3xFql5/Peb2GRtUuZX+dYPoK/NTdVMiM67Svym0M0Df9A3xyU0FbMQhHw==",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "7.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Options": "7.0.0",
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "Rc2kb/p3Ze6cP6rhFC3PJRdWGbLvSHZc0ev7YlyeU6FmHciDMLrhoVoTUEzKPhN5ZjFgKF1Cf5fOz8mCMIkvpA==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw=="
+      },
+      "Microsoft.Extensions.Logging": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "MgOwK6tPzB6YNH21wssJcw/2MKwee8b2gI7SllYfn6rvTpIrVvVS5HAjSU2vqSku1fwqRvWP0MdIi14qjd93Aw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
+          "Microsoft.Extensions.Options": "5.0.0"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "kmn78+LPVMOWeITUjIlfxUPDsI0R6G0RkeAMBmQxAJ7vBJn4q2dTva7pWi65ceN5vPGjJ9q/Uae2WKgvfktJAw=="
+      },
+      "Microsoft.Extensions.Options": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "lP1yBnTTU42cKpMozuafbvNtQ7QcBjr/CcK3bYOGEMH55Fjt+iecXjT6chR7vbgCMqy3PG3aNQSZgo/EuY/9qQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0",
+          "Microsoft.Extensions.Primitives": "7.0.0"
+        }
+      },
+      "Microsoft.Extensions.Primitives": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "um1KU5kxcRp3CNuI8o/GrZtD4AIOXDk+RLsytjZ9QPok3ttLUelLKpilVPuaFT3TFjOhSibUAso0odbOaCDj3Q=="
+      },
+      "Microsoft.Win32.SystemEvents": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "2nXPrhdAyAzir0gLl8Yy8S5Mnm/uBSQQA7jEsILOS1MTyS7DbmV1NgViMtvV1sfCD1ebITpNwb1NIinKeJgUVQ=="
+      },
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "System.Collections.Immutable": {
+        "type": "Transitive",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
+      },
+      "System.Drawing.Common": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "KIX+oBU38pxkKPxvLcLfIkOV5Ien8ReN78wro7OF5/erwcmortzeFx+iBswlh2Vz6gVne0khocQudGwaO1Ey6A==",
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "7.0.0"
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA=="
+      },
+      "lanymy.common.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.deepcloneextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.enumextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.EnumHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.extensionfunctions.stringextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.arrayhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.ArrayManipulater": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.compressionhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.datetimehelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.EnumExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.enumhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CustomMemoryCache": "[0.16.0, )",
+          "Lanymy.Common.Instruments.EnumMapper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.filehelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.genericityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.imagehelper": {
+        "type": "Project",
+        "dependencies": {
+          "System.Drawing.Common": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.helpers.pathhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.RegexHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.processhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.regexhelper": {
+        "type": "Project"
+      },
+      "lanymy.common.helpers.securityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.DeepCloneExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ArrayHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.CompressionHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.FileHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ImageHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Crypto": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )",
+          "System.Drawing.Common": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.helpers.serializehelper.json": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.win32helper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.arraymanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.ArrayManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.arraymanipulater.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.cache.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.corememorycache": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.CoreMemoryCache.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.corememorycache.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "[0.16.0, )",
+          "Microsoft.Extensions.Caching.Memory": "[7.0.0, )"
+        }
+      },
+      "lanymy.common.instruments.cache.custommemorycache": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Cache.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cmd": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.CMD.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.cmd.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ProcessHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.compresser": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Compresser.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.compresser.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.crawler": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Crawler.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Ffmpeg": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crawler.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.WorkTaskQueue": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crypto": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ArrayHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.CompressionHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.FileHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Crypto.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.crypto.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Enums": "[0.16.0, )",
+          "Lanymy.Common.Helpers.ImageHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.enummapper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.EnumMapper.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.enummapper.abstractions": {
+        "type": "Project"
+      },
+      "lanymy.common.instruments.ffmpeg": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Ffmpeg.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.ffmpeg.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.StringExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.CMD": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.isolatedstorages": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.SecurityHelper": "[0.16.0, )",
+          "Lanymy.Common.Helpers.SerializeHelper.Json": "[0.16.0, )",
+          "Lanymy.Common.Instruments.IsolatedStorages.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.isolatedstorages.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.navigationpage": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.NavigationPage.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.navigationpage.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.jsonnetjsonserializer": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.FileTextManipulater": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "[0.16.0, )",
+          "Newtonsoft.Json": "[13.0.3, )"
+        }
+      },
+      "lanymy.common.instruments.socket.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.DateTimeHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTask.Abstractions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTaskQueue": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.socket.netty.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "DotNetty.Buffers": "[0.7.5, )",
+          "DotNetty.Handlers": "[0.7.5, )",
+          "DotNetty.Transport": "[0.7.5, )",
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.toolkits": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.Win32Helper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.worktask.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.IsolatedStorages": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.worktaskqueue": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Instruments.WorkTask.Abstractions": "[0.16.0, )"
+        }
+      }
+    }
+  }
+}

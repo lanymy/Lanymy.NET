@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.8": {},
+    ".NETStandard,Version=v2.1": {},
+    "net8.0": {}
+  }
+}

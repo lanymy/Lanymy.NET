@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.8": {
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.pipeline.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      }
+    },
+    ".NETStandard,Version=v2.1": {
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.pipeline.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      }
+    },
+    "net8.0": {
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.pipeline.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.8": {
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.genericityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.pathhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.RegexHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.regexhelper": {
+        "type": "Project"
+      },
+      "lanymy.common.helpers.serializehelper.json": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.jsonnetjsonserializer": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.FileTextManipulater": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "[0.16.0, )",
+          "Newtonsoft.Json": "[13.0.3, )"
+        }
+      }
+    },
+    ".NETStandard,Version=v2.1": {
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.genericityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.pathhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.RegexHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.regexhelper": {
+        "type": "Project"
+      },
+      "lanymy.common.helpers.serializehelper.json": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.jsonnetjsonserializer": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.FileTextManipulater": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "[0.16.0, )",
+          "Newtonsoft.Json": "[13.0.3, )"
+        }
+      }
+    },
+    "net8.0": {
+      "Newtonsoft.Json": {
+        "type": "Transitive",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "lanymy.common.constkeys": {
+        "type": "Project"
+      },
+      "lanymy.common.enums": {
+        "type": "Project"
+      },
+      "lanymy.common.extensionfunctions.objectextensions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ConstKeys": "[0.16.0, )",
+          "Lanymy.Common.Enums": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.genericityhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.pathhelper": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )",
+          "Lanymy.Common.Helpers.RegexHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.helpers.regexhelper": {
+        "type": "Project"
+      },
+      "lanymy.common.helpers.serializehelper.json": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.Serializer.JsonNetJsonSerializer": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Instruments.FileTextManipulater.Abstractions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.filetextmanipulater.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.PathHelper": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.ExtensionFunctions.ObjectExtensions": "[0.16.0, )"
+        }
+      },
+      "lanymy.common.instruments.serializer.jsonnetjsonserializer": {
+        "type": "Project",
+        "dependencies": {
+          "Lanymy.Common.Helpers.GenericityHelper": "[0.16.0, )",
+          "Lanymy.Common.Instruments.FileTextManipulater": "[0.16.0, )",
+          "Lanymy.Common.Instruments.Serializer.Abstractions": "[0.16.0, )",
+          "Newtonsoft.Json": "[13.0.3, )"
+        }
+      }
+    }
+  }
+}

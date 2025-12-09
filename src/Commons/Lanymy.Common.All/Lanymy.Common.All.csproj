@@ -28,8 +28,8 @@
     <ProjectReference Include="..\Lanymy.Common.ConstKeys\Lanymy.Common.ConstKeys.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Enums\Lanymy.Common.Enums.csproj" />
     <ProjectReference Include="..\Lanymy.Common.ExtensionFunctions.All\Lanymy.Common.ExtensionFunctions.All.csproj" />
-    <ProjectReference Include="..\Lanymy.Common.Helpers.All\Lanymy.Common.Helpers.All.csproj" />
     <ProjectReference Include="..\Lanymy.Common.Instruments.All\Lanymy.Common.Instruments.All.csproj" />
+    <ProjectReference Include="..\Lanymy.Common.Helpers.All\Lanymy.Common.Helpers.All.csproj" />
   </ItemGroup>
 
 
