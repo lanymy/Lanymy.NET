@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Lanymy.Common.Abstractions.Models;
@@ -25,6 +26,14 @@ namespace Lanymy.Common.AllTests
 
             public int Index { get; set; }
 
+        }
+
+        class TestSimpleWorkTask : BaseSimpleWorkTask
+        {
+            public TestSimpleWorkTask(Action<CancellationToken> workAction, int sleepIntervalMilliseconds = 0)
+                : base(workAction, sleepIntervalMilliseconds)
+            {
+            }
         }
 
 
@@ -111,6 +120,41 @@ namespace Lanymy.Common.AllTests
 
 
 
+        }
+
+        [TestMethod()]
+        public async Task BaseSimpleWorkTask_StopAsync_ShouldNotThrowAfterStart()
+        {
+            using var stopSignal = new ManualResetEventSlim(false);
+            using var workEnteredSignal = new ManualResetEventSlim(false);
+
+            using var workTask = new TestSimpleWorkTask(token =>
+            {
+                workEnteredSignal.Set();
+                stopSignal.Wait(token);
+            });
+
+            await workTask.StartAsync();
+
+            Assert.IsTrue(workEnteredSignal.Wait(TimeSpan.FromSeconds(2)));
+
+            stopSignal.Set();
+            await workTask.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskTriggerQueue_StopAsync_ShouldNotThrowAfterStart()
+        {
+            var queue = new WorkTaskTriggerQueue<WorkTaskQueueDataModel>
+            (
+                _ => { },
+                actionTriggerCount: 1,
+                actionTriggerTimeSpan: TimeSpan.FromSeconds(1),
+                taskSleepMilliseconds: 50
+            );
+
+            await queue.StartAsync();
+            await queue.StopAsync();
         }
 
 

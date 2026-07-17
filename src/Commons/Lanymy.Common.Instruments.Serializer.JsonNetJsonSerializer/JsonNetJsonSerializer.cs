@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Threading.Tasks;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
@@ -21,7 +21,7 @@ namespace Lanymy.Common.Instruments
         //};
 
         /// <summary>
-        /// 默认时间格式化字符串yyyy-MM-dd hh:mm:ss.fff
+        /// 默认时间格式化字符串yyyy-MM-dd HH:mm:ss.fff
         /// </summary>
         public const string DATE_FORMAT_STRING = DateTimeFormatKeys.DATE_TIME_FORMAT_1;
 

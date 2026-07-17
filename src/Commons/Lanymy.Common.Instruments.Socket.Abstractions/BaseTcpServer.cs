@@ -47,7 +47,7 @@ namespace Lanymy.Common.Instruments
         public int Port { get; }
 
 
-        #region ÄÚ²¿±äÁ¿
+        #region ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½
 
         protected readonly object _CloseLocker = new Object();
 
@@ -86,7 +86,7 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        #region Í¨ÖªÊÂ¼þ
+        #region Í¨Öªï¿½Â¼ï¿½
 
 
         protected abstract void OnAcceptEvent(ITcpServerClient client);
@@ -222,10 +222,10 @@ namespace Lanymy.Common.Instruments
             //sessionToken.IntervalHeartTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation;
 
 
-            //if (sessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//¹Ø±ÕÐÄÌø³¬Ê±Á´½Ó
-            if ((DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation) > _CurrentHeartTimeOutMilliseconds)//¹Ø±ÕÐÄÌø³¬Ê±Á´½Ó
+            //if (sessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
+            if ((DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation) > _CurrentHeartTimeOutMilliseconds)//ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
             {
-                OnServerClientErrorEvent(tcpServerClient, new Exception("ÐÄÌø³¬Ê±¶Ï¿ªÁ´½Ó"));
+                OnServerClientErrorEvent(tcpServerClient, new Exception("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½"));
             }
             //else if (tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
             else
@@ -290,30 +290,30 @@ namespace Lanymy.Common.Instruments
         }
 
         /// <summary>
-        /// Êý¾Ý°üÑ­»·½âÎö
+        /// ï¿½ï¿½ï¿½Ý°ï¿½Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         /// </summary>
         /// <param name="tcpServerClient"></param>
         /// <param name="buffer"></param>
         /// <param name="cache"></param>
         protected virtual void OnServerClientReceiveDataLoopEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
         {
-
-            var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
-
-            if (packageBytes.IfIsNull())
+            while (true)
             {
-                return;
+                var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
+
+                if (packageBytes.IfIsNull())
+                {
+                    return;
+                }
+
+                if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
+                {
+                    OnServerClientErrorEvent(tcpServerClient, new Exception("data bytes error"));
+                    return;
+                }
+
+                OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
             }
-
-            if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
-            {
-                OnServerClientErrorEvent(tcpServerClient, new Exception("data bytes error"));
-                return;
-            }
-
-            OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
-
-            OnServerClientReceiveDataLoopEvent(tcpServerClient, buffer, cache);
 
         }
 
@@ -347,9 +347,9 @@ namespace Lanymy.Common.Instruments
 
         //            client.CurrentSessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - client.CurrentSessionToken.LastReceiveDateTime).TotalMilliseconds);
 
-        //            if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentHeartTimeOutMilliseconds)//¹Ø±ÕÐÄÌø³¬Ê±Á´½Ó
+        //            if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentHeartTimeOutMilliseconds)//ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
         //            {
-        //                OnServerClientErrorEvent(client, new Exception("ÐÄÌø³¬Ê±¶Ï¿ªÁ´½Ó"));
+        //                OnServerClientErrorEvent(client, new Exception("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½"));
         //            }
         //            else if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
         //            {

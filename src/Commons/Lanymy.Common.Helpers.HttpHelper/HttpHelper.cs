@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -100,7 +100,7 @@ namespace Lanymy.Common.Helpers
         {
 
 
-            var html = await HttpPostAsync(url, parameters);
+            var html = await HttpGetAsync(url, parameters);
             return JsonSerializeHelper.DeserializeFromJson<TReturnDataModel>(html);
 
         }
@@ -264,7 +264,7 @@ namespace Lanymy.Common.Helpers
         public static async Task<TReturnDataModel> HttpPostMultipartFormDataAsync<TReturnDataModel>(string url, List<BaseAttachmentInfoModel> attachmentList) where TReturnDataModel : class
         {
 
-            var html = await HttpPostAsync(url, attachmentList);
+            var html = await HttpPostMultipartFormDataAsync(url, attachmentList);
             return JsonSerializeHelper.DeserializeFromJson<TReturnDataModel>(html);
 
         }

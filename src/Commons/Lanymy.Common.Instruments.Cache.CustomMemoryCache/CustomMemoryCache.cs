@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+﻿﻿using System.Collections.Concurrent;
 
 namespace Lanymy.Common.Instruments
 {
@@ -31,7 +31,7 @@ namespace Lanymy.Common.Instruments
         /// <param name="value"></param>
         public override void SetValue(string key, object value)
         {
-            _DicCache.AddOrUpdate(key, value, (k, v) => v);
+            _DicCache.AddOrUpdate(key, value, (k, oldValue) => value);
         }
 
         /// <summary>

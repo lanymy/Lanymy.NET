@@ -118,13 +118,13 @@ namespace Lanymy.Common.Instruments
         protected override async Task OnStopAsync()
         {
 
-            if (_CurrentCancellationTokenSource.IfIsNull())
+            if (!_CurrentCancellationTokenSource.IfIsNull())
             {
                 _CurrentCancellationTokenSource.Cancel();
-            }
 
-            _CurrentCancellationTokenSource.Dispose();
-            _CurrentCancellationTokenSource = null;
+                _CurrentCancellationTokenSource.Dispose();
+                _CurrentCancellationTokenSource = null;
+            }
 
 
             if (!_CurrentTask.IfIsNullOrEmpty())

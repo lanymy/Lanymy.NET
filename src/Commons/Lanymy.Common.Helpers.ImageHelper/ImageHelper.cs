@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Drawing.Imaging;
 
 namespace Lanymy.Common.Helpers
@@ -20,10 +20,7 @@ namespace Lanymy.Common.Helpers
             bool result;
             try
             {
-                using (var image = encryptImage)
-                {
-                    image.Save(imageFileFullPath, ImageFormat.Png);
-                }
+                encryptImage.Save(imageFileFullPath, ImageFormat.Png);
                 result = true;
             }
             catch

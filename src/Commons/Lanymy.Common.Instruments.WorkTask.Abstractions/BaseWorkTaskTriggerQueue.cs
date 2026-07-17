@@ -1,4 +1,4 @@
-﻿using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.ExtensionFunctions;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -142,7 +142,7 @@ namespace Lanymy.Common.Instruments
             _TimeTriggerTasktCancellationTokenSource = new CancellationTokenSource();
             var token = _TimeTriggerTasktCancellationTokenSource.Token;
 
-            var _TimeTriggerTask = new Task(OnTimeTriggerTask, token, token, TaskCreationOptions.LongRunning);
+            _TimeTriggerTask = new Task(OnTimeTriggerTask, token, token, TaskCreationOptions.LongRunning);
             _TimeTriggerTask.Start();
 
         }
@@ -178,12 +178,16 @@ namespace Lanymy.Common.Instruments
             _TimeTriggerTasktCancellationTokenSource.Cancel();
 
 
-            if (_TimeTriggerTask.Status == TaskStatus.Running)
+            if (!_TimeTriggerTask.IfIsNullOrEmpty() && _TimeTriggerTask.Status == TaskStatus.Running)
             {
                 _TimeTriggerTask.Wait();
             }
 
-            _TimeTriggerTask.Dispose();
+            if (!_TimeTriggerTask.IfIsNullOrEmpty())
+            {
+                _TimeTriggerTask.Dispose();
+                _TimeTriggerTask = null;
+            }
 
 
 

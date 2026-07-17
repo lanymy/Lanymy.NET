@@ -1,4 +1,4 @@
-﻿
+
 
 
 using System;
@@ -11,7 +11,7 @@ namespace Lanymy.Common.ConstKeys
     {
 
         /// <summary>
-        /// yyyy-MM-dd hh:mm:ss.fff 
+        /// yyyy-MM-dd HH:mm:ss.fff 
         /// </summary>
         public const string DATE_TIME_FORMAT_1 = "yyyy-MM-dd HH:mm:ss.fff";
 

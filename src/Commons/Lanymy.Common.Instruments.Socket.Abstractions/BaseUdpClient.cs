@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -290,7 +290,7 @@ namespace Lanymy.Common.Instruments
 
                     try
                     {
-                        if (_ReceiveWorkTaskQueue.IfIsNull())
+                        if (!_ReceiveWorkTaskQueue.IfIsNull())
                         {
                             _ReceiveWorkTaskQueue.StopAsync().Wait();
                             _ReceiveWorkTaskQueue.Dispose();
@@ -304,7 +304,7 @@ namespace Lanymy.Common.Instruments
 
                     try
                     {
-                        if (_SendWorkTaskQueue.IfIsNull())
+                        if (!_SendWorkTaskQueue.IfIsNull())
                         {
                             _SendWorkTaskQueue.StopAsync().Wait();
                             _SendWorkTaskQueue.Dispose();

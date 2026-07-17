@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,6 +14,46 @@ namespace Lanymy.Common.Helpers
     /// </summary>
     public class PathHelper
     {
+        private static bool IsDirectoryPathSyntax(string path)
+        {
+            if (path.IfIsNullOrEmpty())
+            {
+                return false;
+            }
+
+#if NET48
+            var lastChar = path.Last();
+#else
+            var lastChar = path[^1];
+#endif
+
+            return lastChar == Path.DirectorySeparatorChar || lastChar == Path.AltDirectorySeparatorChar;
+        }
+
+        private static bool ShouldTreatAsDirectoryPath(string path)
+        {
+            if (path.IfIsNullOrEmpty())
+            {
+                return false;
+            }
+
+            if (IsDirectoryPathSyntax(path))
+            {
+                return true;
+            }
+
+            if (Directory.Exists(path))
+            {
+                return true;
+            }
+
+            if (File.Exists(path))
+            {
+                return false;
+            }
+
+            return !Path.HasExtension(path);
+        }
 
         /// <summary>
         /// 获取 DLL 全路径
@@ -148,7 +188,7 @@ namespace Lanymy.Common.Helpers
             //    changeType = FileChangeType.NewFile;
             //}
 
-            if (Path.HasExtension(path))
+            if (!ShouldTreatAsDirectoryPath(path))
                 path = Path.GetDirectoryName(path);
 
 #if NET48
@@ -176,7 +216,7 @@ namespace Lanymy.Common.Helpers
 
             if (IsAbsolutePath(path) || IsRelativePath(path))
             {
-                result = Path.HasExtension(path) ? PathTypeEnum.File : PathTypeEnum.Directory;
+                result = ShouldTreatAsDirectoryPath(path) ? PathTypeEnum.Directory : PathTypeEnum.File;
             }
 
             return result;
@@ -364,7 +404,7 @@ namespace Lanymy.Common.Helpers
         public static string GetFileName(string path)
         {
 
-            if (path.IfIsNullOrEmpty() || !Path.HasExtension(path))
+            if (path.IfIsNullOrEmpty() || ShouldTreatAsDirectoryPath(path))
             {
                 return "";
             }
