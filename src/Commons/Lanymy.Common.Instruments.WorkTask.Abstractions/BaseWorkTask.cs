@@ -98,9 +98,9 @@ namespace Lanymy.Common.Instruments
         public void Dispose()
         {
 
-            StopAsync().Wait();
+            TaskHelper.SyncWait(StopAsync());
 
-            OnDisposeAsync().Wait();
+            TaskHelper.SyncWait(OnDisposeAsync());
 
         }
 

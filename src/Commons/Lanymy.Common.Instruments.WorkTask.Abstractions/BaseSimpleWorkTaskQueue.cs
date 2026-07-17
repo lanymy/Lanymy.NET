@@ -74,14 +74,6 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        protected virtual async void OnTask()
-        {
-
-            await OnTaskAsync();
-
-        }
-
-
         public virtual void AddToQueue(TData data)
         {
 
@@ -95,8 +87,11 @@ namespace Lanymy.Common.Instruments
         protected override async Task OnStartAsync()
         {
 
-            _CurrentTask = new Task(OnTask, TaskCreationOptions.LongRunning);
-            _CurrentTask.Start();
+            _CurrentTask = Task.Factory.StartNew(
+                OnTaskAsync,
+                default,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).Unwrap();
 
             await Task.CompletedTask;
 
@@ -107,11 +102,7 @@ namespace Lanymy.Common.Instruments
 
             if (!_CurrentTask.IfIsNullOrEmpty())
             {
-
-                if (_CurrentTask.Status == TaskStatus.Running)
-                {
-                    await _CurrentTask;
-                }
+                await _CurrentTask;
 
                 _CurrentTask.Dispose();
                 _CurrentTask = null;

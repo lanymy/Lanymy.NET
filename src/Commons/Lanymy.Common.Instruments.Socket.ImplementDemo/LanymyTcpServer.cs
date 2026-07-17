@@ -50,11 +50,11 @@ namespace Lanymy.Common.Instruments
                     if (!session.IsLogin)
                     {
 
-                        //µÇÂ½±ê¼ÇTCPÖ÷»úºÅ
+                        // ç™»å½•è®¾å¤‡ TCP æœåŠ¡ç«¯
                         session.SessionTokenID = package.CMO;
                         session.IsLogin = true;
 
-                        ////ÉÏ±¨µÇÂ½Éè±¸ĞÅÏ¢
+                        //// ä¸ŠæŠ¥å·²ç™»å½•è®¾å¤‡ä¿¡æ¯
                         //_CurrentEventAggregator.GetEvent<EquipmentCommandBusEvent>().Publish(new EquipmentCommandEtoModel
                         //{
                         //    EquipmentCommandType = EquipmentCommandTypeEnum.IsLogin,
@@ -63,7 +63,7 @@ namespace Lanymy.Common.Instruments
 
                     }
 
-                    ////ÉÏ±¨µçÁ¿
+                    //// ä¸ŠæŠ¥å¿ƒè·³
                     //_CurrentEventAggregator.GetEvent<EquipmentCommandBusEvent>().Publish(new EquipmentCommandEtoModel
                     //{
                     //    EquipmentCommandType = EquipmentCommandTypeEnum.Heart,
@@ -74,7 +74,7 @@ namespace Lanymy.Common.Instruments
                 else if (package.CommandType == CommandTypeEnum.Control)
                 {
 
-                    //ShowLogMessage(package.CMO, "Ö¸ÁîÓ¦´ğ", package.SourceHex, false, true);
+                    //ShowLogMessage(package.CMO, "æŒ‡ä»¤åº”ç­”", package.SourceHex, false, true);
 
                 }
             }

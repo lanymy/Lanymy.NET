@@ -1,4 +1,4 @@
-﻿//using System;
+//using System;
 //using System.Collections.Concurrent;
 //using System.Collections.Generic;
 //using System.Net;
@@ -110,7 +110,7 @@
 //        protected virtual void OnServerError(Exception ex)
 //        {
 //            OnServerErrorEvent(ex);
-//            CloseAsync().Wait();
+//            _ = CloseAsync();
 //        }
 
 //        protected void CloseTcpServerClient(ITcpServerClient client)
@@ -158,11 +158,6 @@
 
 //            await Task.CompletedTask;
 
-//        }
-
-//        private async void BeginAccept(object obj)
-//        {
-//            await BeginAcceptAsync();
 //        }
 
 //        private async Task BeginAcceptAsync()

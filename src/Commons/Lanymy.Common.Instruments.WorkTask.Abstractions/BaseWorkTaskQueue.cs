@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
@@ -25,12 +25,29 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        protected BaseWorkTaskQueue(Channel<TDataModel> channel, Func<TDataModel, Task> asyncWorkAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction = null, int workTaskTotalCount = 1, int taskSleepMilliseconds = 3 * 1000, int channelCapacityCount = 0, BoundedChannelFullMode channelFullMode = BoundedChannelFullMode.Wait)
+            : base(channel, asyncWorkAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
+        {
+
+        }
+
 
         //protected abstract Task OnAddToQueueAsync(TDataModel data);
 
         protected virtual void OnWorkAction(TDataModel dataModel)
         {
             _CurrentWorkAction(dataModel);
+        }
+
+        protected virtual async Task OnWorkActionAsync(TDataModel dataModel)
+        {
+            if (!_CurrentAsyncWorkAction.IfIsNull())
+            {
+                await _CurrentAsyncWorkAction(dataModel);
+                return;
+            }
+
+            OnWorkAction(dataModel);
         }
 
 
@@ -47,7 +64,7 @@ namespace Lanymy.Common.Instruments
 
                         while (IsRunning && _CurrentChannel.Reader.TryRead(out var dataModel))
                         {
-                            OnWorkAction(dataModel);
+                            await OnWorkActionAsync(dataModel);
                         }
 
                     }
@@ -62,26 +79,6 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        private async void OnTask(object obj)
-        {
-
-            try
-            {
-
-                var token = (CancellationToken)obj;
-                await OnTaskAsync(token);
-
-            }
-            //catch (TaskCanceledException tce)
-            catch
-            {
-
-            }
-
-
-        }
-
-
         protected override async Task OnStartAsync()
         {
 
@@ -95,14 +92,11 @@ namespace Lanymy.Common.Instruments
 
             for (var i = 0; i < WorkTaskTotalCount; i++)
             {
-
-                var task = new Task(OnTask, token, token, TaskCreationOptions.LongRunning);
-                //var task = new Task(async o => await OnTaskAsync(o), token, token, TaskCreationOptions.LongRunning);
-                //var task = new Task(async () => await OnTaskAsync(token), TaskCreationOptions.LongRunning);
-                task.Start();
-
-                //var task = Task.Run(async () => await OnTaskAsync(token), token);
-                //task.Start();
+                var task = Task.Factory.StartNew(
+                    () => OnTaskAsync(token),
+                    token,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default).Unwrap();
 
                 _CurrentWorkTaskList.Add(task);
 
@@ -136,16 +130,21 @@ namespace Lanymy.Common.Instruments
             _CurrentCancellationTokenSource.Cancel();
 
 
+            try
+            {
+                if (_CurrentWorkTaskList.Count > 0)
+                {
+                    await Task.WhenAll(_CurrentWorkTaskList.ToArray());
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignored
+            }
+
             foreach (var task in _CurrentWorkTaskList)
             {
-
-                if (task.Status == TaskStatus.Running)
-                {
-                    task.Wait();
-                }
-
                 task.Dispose();
-
             }
 
 

@@ -1,4 +1,4 @@
-﻿//using System.Collections.Generic;
+//using System.Collections.Generic;
 //using System;
 //using System.Net;
 //using System.Net.Sockets;
@@ -181,14 +181,6 @@
 
 
 
-//        private TimerWorkTaskDataResult OnHeartTimerWorkTask()
-//        {
-
-//            OnHeartTimerWorkTaskAsync().Wait();
-
-//            return null;
-//        }
-
 //        private async Task OnHeartTimerWorkTaskAsync()
 //        {
 //            if (!GetHeartBytesEvent.IfIsNull())
@@ -197,11 +189,6 @@
 //            }
 //        }
 
-
-//        private async void OnSendWorkTaskQueue(byte[] bytes)
-//        {
-//            await OnSendWorkTaskQueueAsync(bytes);
-//        }
 
 //        private async Task OnSendWorkTaskQueueAsync(byte[] bytes)
 //        {
@@ -227,11 +214,6 @@
 
 //        }
 
-
-//        private async void OnReceiveSimpleWorkTask(CancellationToken token)
-//        {
-//            await OnReceiveSimpleWorkTaskAsync(token);
-//        }
 
 //        private async Task OnReceiveSimpleWorkTaskAsync(CancellationToken token)
 //        {

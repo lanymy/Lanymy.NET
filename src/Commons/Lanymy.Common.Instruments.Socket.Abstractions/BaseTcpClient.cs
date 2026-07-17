@@ -81,7 +81,7 @@ namespace Lanymy.Common.Instruments
                 NoDelay = true,
             };
 
-            _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueue, null);
+            _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueueAsync, null);
 
 
         }
@@ -224,7 +224,7 @@ namespace Lanymy.Common.Instruments
 
                 OnConnection();
 
-                _CurrentSendWorkTaskQueue.StartAsync().Wait();
+                TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StartAsync());
 
                 _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
 
@@ -267,18 +267,6 @@ namespace Lanymy.Common.Instruments
             }
         }
 
-
-        private async void OnSendWorkTaskQueue(byte[] sendDataBytes)
-        {
-            try
-            {
-                await OnSendWorkTaskQueueAsync(sendDataBytes);
-            }
-            catch
-            {
-
-            }
-        }
 
         protected virtual async Task OnSendWorkTaskQueueAsync(byte[] sendDataBytes)
         {
@@ -333,7 +321,7 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-                SendAsync(sendDataBytes).Wait();
+                TaskHelper.SyncWait(SendAsync(sendDataBytes));
             }
             catch
             {
@@ -371,7 +359,7 @@ namespace Lanymy.Common.Instruments
 
                         if (!_CurrentSendWorkTaskQueue.IfIsNull())
                         {
-                            _CurrentSendWorkTaskQueue.StopAsync().Wait();
+                            TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StopAsync());
                             _CurrentSendWorkTaskQueue.Dispose();
                             _CurrentSendWorkTaskQueue = null;
                         }

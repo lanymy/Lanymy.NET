@@ -11,12 +11,12 @@ namespace Lanymy.Common.Instruments
     {
 
         /// <summary>
-        /// Ã¿ºËĞÄ´¦ÀíÊı ×îµÍ 25
+        /// æ¯æ ¸çš„çº¿ç¨‹æ•°ï¼Œæœ€å°‘ 25
         /// </summary>
         private const byte MAX_THREADS_PER_PROCESSOR_COUNT = 25;
 
         /// <summary>
-        /// ÕûÌå±¶Êı ×îµÍ2±¶
+        /// çº¿ç¨‹å€æ•°ï¼Œæœ€å°‘ 2 å€
         /// </summary>
         private const byte MAX_THREADS_MULTIPLES = 2;
 
@@ -50,9 +50,9 @@ namespace Lanymy.Common.Instruments
         }
 
         /// <summary>
-        /// ¸ù¾İÕûÌå±¶Êı½øĞĞÉèÖÃ
+        /// æŒ‰çº¿ç¨‹å€æ•°è®¾ç½®æœ€å¤§çº¿ç¨‹æ•°
         /// </summary>
-        /// <param name="multiples">×îµÍ2±¶</param>
+        /// <param name="multiples">æœ€å°‘ 2 å€</param>
         /// <returns></returns>
         public static bool SetMaxThreadsByMultiples(byte multiples = MAX_THREADS_MULTIPLES)
         {
@@ -69,9 +69,9 @@ namespace Lanymy.Common.Instruments
         }
 
         /// <summary>
-        /// ¸ù¾İÃ¿¸öCPUºËĞÄÊıÁ¿½øĞĞÉèÖÃ
+        /// æŒ‰æ¯ä¸ª CPU çš„çº¿ç¨‹æ•°è®¾ç½®æœ€å¤§çº¿ç¨‹æ•°
         /// </summary>
-        /// <param name="perProcessorCount">Ã¿ºËĞÄ´¦ÀíÊı ×îµÍ 25</param>
+        /// <param name="perProcessorCount">æ¯æ ¸çš„çº¿ç¨‹æ•°ï¼Œæœ€å°‘ 25</param>
         /// <returns></returns>
         public static bool SetMaxThreadsByPerProcessorCount(byte perProcessorCount = MAX_THREADS_PER_PROCESSOR_COUNT)
         {

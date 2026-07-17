@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,23 +34,13 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        private async void OnTask(object obj)
-        {
-
-            var token = (CancellationToken)obj;
-
-            await OnTaskAsync(token);
-
-        }
-
-
         protected virtual async Task OnTaskAsync(CancellationToken token)
         {
 
             while (!token.IsCancellationRequested)
             {
 
-                await Task.Delay(TaskSleepMilliseconds);
+                await Task.Delay(TaskSleepMilliseconds, token);
 
                 var timerWorkTaskDataResult = OnWorkFunc();
 
@@ -71,8 +61,11 @@ namespace Lanymy.Common.Instruments
             _CurrentCancellationTokenSource = new CancellationTokenSource();
             var token = _CurrentCancellationTokenSource.Token;
 
-            _CurrentTask = new Task(OnTask, token, token, TaskCreationOptions.LongRunning);
-            _CurrentTask.Start();
+            _CurrentTask = Task.Factory.StartNew(
+                () => OnTaskAsync(token),
+                token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).Unwrap();
 
             await Task.CompletedTask;
 
@@ -93,9 +86,13 @@ namespace Lanymy.Common.Instruments
             _CurrentCancellationTokenSource.Cancel();
 
 
-            if (_CurrentTask.Status == TaskStatus.Running)
+            try
             {
                 await _CurrentTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // ignored
             }
 
             _CurrentTask.Dispose();

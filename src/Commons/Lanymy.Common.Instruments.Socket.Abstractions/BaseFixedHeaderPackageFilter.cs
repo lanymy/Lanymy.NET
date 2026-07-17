@@ -77,7 +77,7 @@ namespace Lanymy.Common.Instruments
                     }
 
 
-                    if (buffer.CursorIndex + packageLength > buffer.Position)//ճ��
+                    if (buffer.CursorIndex + packageLength > buffer.Position)//数据未接收完整，先缓存
                     {
                         cache.Position = buffer.Position - buffer.CursorIndex;
                         Array.Copy(buffer.BufferData, buffer.CursorIndex, cache.Data, 0, cache.Position);

@@ -11,12 +11,12 @@ namespace Lanymy.Common.Instruments.Common
         System.Net.Sockets.Socket CurrentSocket { get; }
 
         /// <summary>
-        /// 是否连接
+        /// 鏄惁杩炴帴
         /// </summary>
         bool IsConnected { get; }
 
         ///// <summary>
-        ///// 是否释放
+        ///// 鏄惁閲婃斁
         ///// </summary>
         //bool IsDisposed { get; }
         /// <summary>

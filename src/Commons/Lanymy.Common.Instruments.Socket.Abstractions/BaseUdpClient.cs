@@ -48,7 +48,7 @@ namespace Lanymy.Common.Instruments
             _CurrentFixedHeaderPackageFilter = fixedHeaderPackageFilter;
 
             _ReceiveWorkTaskQueue = new WorkTaskQueue<UdpSourceDataModel>(OnReceiveWorkTaskQueue, null);
-            _SendWorkTaskQueue = new WorkTaskQueue<SendUdpDataModel>(OnSendWorkTaskQueue, null);
+            _SendWorkTaskQueue = new WorkTaskQueue<SendUdpDataModel>(OnSendWorkTaskQueueAsync, null);
 
         }
 
@@ -100,20 +100,6 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        protected virtual void OnSendWorkTaskQueue(SendUdpDataModel sendUdpDataModel)
-        {
-
-            try
-            {
-                OnSendWorkTaskQueueAsync(sendUdpDataModel).Wait();
-            }
-            catch (Exception ex)
-            {
-                OnErrorEvent(sendUdpDataModel.RemoteIpEndPoint, ex);
-            }
-
-        }
-
         protected async Task OnSendWorkTaskQueueAsync(SendUdpDataModel sendUdpDataModel)
         {
 
@@ -151,13 +137,13 @@ namespace Lanymy.Common.Instruments
 
             _IsRunning = true;
 
-            _ReceiveWorkTaskQueue.StartAsync().Wait();
+            TaskHelper.SyncWait(_ReceiveWorkTaskQueue.StartAsync());
 
             _CurrentUdpClient = new UdpClient(Port);
             _CurrentUdpClient.EnableBroadcast = true;
             _CurrentUdpClient.BeginReceive(ReciveCallBack, null);
 
-            _SendWorkTaskQueue.StartAsync().Wait();
+            TaskHelper.SyncWait(_SendWorkTaskQueue.StartAsync());
 
             OnStart();
 
@@ -189,11 +175,12 @@ namespace Lanymy.Common.Instruments
                 IPEndPoint remoteIPEndPoint = null;
                 byte[] bytes = _CurrentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
 
-                _ReceiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
+                var addReceiveQueueTask = _ReceiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
                 {
                     RemoteIPEndPoint = remoteIPEndPoint,
                     SourceDataBytes = bytes,
-                }).Wait();
+                });
+                TaskHelper.SyncWait(addReceiveQueueTask);
 
                 _CurrentUdpClient.BeginReceive(ReciveCallBack, null);
 
@@ -235,7 +222,7 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-                SendAsync(sendUdpDataModel).Wait();
+                TaskHelper.SyncWait(SendAsync(sendUdpDataModel));
             }
             catch
             {
@@ -292,7 +279,7 @@ namespace Lanymy.Common.Instruments
                     {
                         if (!_ReceiveWorkTaskQueue.IfIsNull())
                         {
-                            _ReceiveWorkTaskQueue.StopAsync().Wait();
+                            TaskHelper.SyncWait(_ReceiveWorkTaskQueue.StopAsync());
                             _ReceiveWorkTaskQueue.Dispose();
                             _ReceiveWorkTaskQueue = null; ;
                         }
@@ -306,7 +293,7 @@ namespace Lanymy.Common.Instruments
                     {
                         if (!_SendWorkTaskQueue.IfIsNull())
                         {
-                            _SendWorkTaskQueue.StopAsync().Wait();
+                            TaskHelper.SyncWait(_SendWorkTaskQueue.StopAsync());
                             _SendWorkTaskQueue.Dispose();
                             _SendWorkTaskQueue = null; ;
                         }

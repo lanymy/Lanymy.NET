@@ -47,7 +47,7 @@ namespace Lanymy.Common.Instruments
         public int Port { get; }
 
 
-        #region �ڲ�����
+        #region 内部变量
 
         protected readonly object _CloseLocker = new Object();
 
@@ -86,7 +86,7 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        #region ֪ͨ�¼�
+        #region 通知事件
 
 
         protected abstract void OnAcceptEvent(ITcpServerClient client);
@@ -234,10 +234,10 @@ namespace Lanymy.Common.Instruments
             //sessionToken.IntervalHeartTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation;
 
 
-            //if (sessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//�ر�������ʱ����
-            if ((DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation) > _CurrentHeartTimeOutMilliseconds)//�ر�������ʱ����
+            //if (sessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//心跳超时断开连接
+            if ((DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation) > _CurrentHeartTimeOutMilliseconds)//心跳超时断开连接
             {
-                OnServerClientErrorEvent(tcpServerClient, new Exception("������ʱ�Ͽ�����"));
+                OnServerClientErrorEvent(tcpServerClient, new Exception("心跳超时断开连接"));
             }
             //else if (tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
             else
@@ -302,7 +302,7 @@ namespace Lanymy.Common.Instruments
         }
 
         /// <summary>
-        /// ���ݰ�ѭ������
+        /// 数据包循环处理
         /// </summary>
         /// <param name="tcpServerClient"></param>
         /// <param name="buffer"></param>
@@ -342,43 +342,6 @@ namespace Lanymy.Common.Instruments
 
         protected abstract TSessionToken CreateSessionToken(string ip, int port);
         protected abstract bool CanSendData(ISessionToken sessionToken);
-
-        //private async void OnHeartTask()
-        //{
-
-        //    while (true)
-        //    {
-
-        //        await Task.Delay(_CurrentIntervalHeartTotalMilliseconds);
-
-        //        Parallel.ForEach(_TcpServerClientDic, item =>
-        //        {
-
-        //            var client = item.Value;
-        //            var sessionToken = client.CurrentSessionToken;
-
-        //            client.CurrentSessionToken.IntervalHeartTotalMilliseconds = (int)((DateTime.Now - client.CurrentSessionToken.LastReceiveDateTime).TotalMilliseconds);
-
-        //            if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentHeartTimeOutMilliseconds)//�ر�������ʱ����
-        //            {
-        //                OnServerClientErrorEvent(client, new Exception("������ʱ�Ͽ�����"));
-        //            }
-        //            else if (client.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
-        //            {
-
-        //                if (CanSendData(sessionToken))
-        //                {
-        //                    SendDataBytes(client, _CurrentFixedHeaderPackageFilter.GetHeartBytes(sessionToken));
-        //                }
-
-        //            }
-
-        //        });
-
-        //    }
-        //}
-
-
 
         public void SendDataBytes(ITcpServerClient client, byte[] dataBytes)
         {

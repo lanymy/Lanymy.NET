@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Channels;
@@ -85,10 +85,7 @@ namespace Lanymy.Common.Instruments
                 }
 
                 var list = _WorkTaskQueueList.Select(o => o.StartAsync()).ToList();
-
-
-                //await Task.WhenAll(list.ToArray());
-                Task.WhenAll(list.ToArray()).Wait();
+                await Task.WhenAll(list.ToArray());
 
 
                 StateType = DynamicAsyncQueueStateTypeEnum.Start;
@@ -111,8 +108,7 @@ namespace Lanymy.Common.Instruments
 
                 foreach (var workTaskQueueModel in _WorkTaskQueueList)
                 {
-                    //await workTaskQueueModel.StopAsync();
-                    workTaskQueueModel.StopAsync().Wait();
+                    await workTaskQueueModel.StopAsync();
                     workTaskQueueModel.Dispose();
                 }
 

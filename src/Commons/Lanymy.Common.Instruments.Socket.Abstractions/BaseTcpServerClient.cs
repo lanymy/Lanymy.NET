@@ -61,7 +61,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        #region ֪ͨ�¼�
+        #region 通知事件
 
 
         public event TcpServerClientErrorEvent ServerClientErrorEvent;
@@ -78,7 +78,7 @@ namespace Lanymy.Common.Instruments
         #endregion
 
 
-        #region �ڲ�����
+        #region 内部变量
 
         protected readonly int _SendDataIntervalMilliseconds;
 
@@ -126,7 +126,7 @@ namespace Lanymy.Common.Instruments
             CurrentSocket.ReceiveBufferSize = ReceiveBufferSize;
 
             _CurrentHeartTimerWorkTask = new TimerWorkTask(OnHeartTimerWorkTask, heartIntervalMilliseconds);
-            _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueue, null);
+            _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueueAsync, null);
 
 
         }
@@ -135,7 +135,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        #region ֪ͨ�¼�
+        #region 通知事件
 
         protected abstract void OnStartReceiveEvent();
 
@@ -273,8 +273,8 @@ namespace Lanymy.Common.Instruments
 
             OnStartReceive();
 
-            _CurrentSendWorkTaskQueue.StartAsync().Wait();
-            _CurrentHeartTimerWorkTask.StartAsync().Wait();
+            TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StartAsync());
+            TaskHelper.SyncWait(_CurrentHeartTimerWorkTask.StartAsync());
 
         }
 
@@ -345,18 +345,6 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        private async void OnSendWorkTaskQueue(byte[] sendDataBytes)
-        {
-            try
-            {
-                await OnSendWorkTaskQueueAsync(sendDataBytes);
-            }
-            catch
-            {
-
-            }
-        }
-
         protected virtual async Task OnSendWorkTaskQueueAsync(byte[] sendDataBytes)
         {
 
@@ -391,16 +379,12 @@ namespace Lanymy.Common.Instruments
         }
 
 
-
-        //public virtual async void Send(byte[] sendDataBytes)
         public virtual void Send(byte[] sendDataBytes)
         {
 
             try
             {
-
-                //await SendAsync(sendDataBytes);
-                SendAsync(sendDataBytes).Wait();
+                TaskHelper.SyncWait(SendAsync(sendDataBytes));
 
             }
             catch
@@ -453,7 +437,7 @@ namespace Lanymy.Common.Instruments
 
                         if (!_CurrentHeartTimerWorkTask.IfIsNull())
                         {
-                            _CurrentHeartTimerWorkTask.StopAsync().Wait();
+                            TaskHelper.SyncWait(_CurrentHeartTimerWorkTask.StopAsync());
                             _CurrentHeartTimerWorkTask.Dispose();
                         }
 
@@ -471,7 +455,7 @@ namespace Lanymy.Common.Instruments
 
                         if (!_CurrentSendWorkTaskQueue.IfIsNull())
                         {
-                            _CurrentSendWorkTaskQueue.StopAsync().Wait();
+                            TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StopAsync());
                             _CurrentSendWorkTaskQueue.Dispose();
                         }
 

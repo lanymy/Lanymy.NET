@@ -86,12 +86,6 @@ namespace Lanymy.Common.Instruments.Client
         }
 
 
-        //private void OnConnectToServer()
-        //{
-        //    ConnectToServerAsync().Wait();
-        //}
-
-
         protected virtual async Task ConnectToServerAsync()
         {
             var cancellationToken = _CurrentReconnectCancellationTokenSource?.Token ?? CancellationToken.None;

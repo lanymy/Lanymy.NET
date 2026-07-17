@@ -79,23 +79,6 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        protected virtual async void OnTask(object obj)
-        {
-
-            try
-            {
-                var token = (CancellationToken)obj;
-                await OnTaskAsync(token);
-            }
-            catch
-            {
-
-            }
-
-        }
-
-
-
         protected override async Task OnStartAsync()
         {
 
@@ -106,8 +89,11 @@ namespace Lanymy.Common.Instruments
 
             var token = _CurrentCancellationTokenSource.Token;
 
-            _CurrentTask = new Task(OnTask, token, token, TaskCreationOptions.LongRunning);
-            _CurrentTask.Start();
+            _CurrentTask = Task.Factory.StartNew(
+                () => OnTaskAsync(token),
+                token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).Unwrap();
 
             await Task.CompletedTask;
 
@@ -121,23 +107,29 @@ namespace Lanymy.Common.Instruments
             if (!_CurrentCancellationTokenSource.IfIsNull())
             {
                 _CurrentCancellationTokenSource.Cancel();
-
-                _CurrentCancellationTokenSource.Dispose();
-                _CurrentCancellationTokenSource = null;
             }
 
 
             if (!_CurrentTask.IfIsNullOrEmpty())
             {
-
-                if (_CurrentTask.Status == TaskStatus.Running)
+                try
                 {
                     await _CurrentTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // ignored
                 }
 
                 _CurrentTask.Dispose();
                 _CurrentTask = null;
 
+            }
+
+            if (!_CurrentCancellationTokenSource.IfIsNull())
+            {
+                _CurrentCancellationTokenSource.Dispose();
+                _CurrentCancellationTokenSource = null;
             }
 
         }

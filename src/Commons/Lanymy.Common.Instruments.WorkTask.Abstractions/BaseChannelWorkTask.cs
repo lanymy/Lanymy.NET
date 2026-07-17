@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -14,10 +14,10 @@ namespace Lanymy.Common.Instruments
     {
 
         protected Channel<TDataModel> _CurrentChannel;
-        protected readonly Action<TDataModel> _CurrentWorkAction;
+        protected readonly Func<TDataModel, Task> _CurrentAsyncWorkAction;
         protected readonly Action<List<TDataModel>> _CurrentStopAndReadQueueAllDataAction;
+        protected readonly Action<TDataModel> _CurrentWorkAction;
 
-        //protected List<TDataModel> _CurrentReadQueueAllDataList = new List<TDataModel>();
         //protected bool _IsReadQueueAllData = false;
 
         public int ChannelCapacityCount { get; }
@@ -30,9 +30,21 @@ namespace Lanymy.Common.Instruments
 
 
         protected BaseChannelWorkTask(Channel<TDataModel> channel, Action<TDataModel> workAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
+            : this(channel, workAction, null, stopAndReadQueueAllDataAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
         {
 
-            if (workAction.IfIsNull())
+        }
+
+        protected BaseChannelWorkTask(Channel<TDataModel> channel, Func<TDataModel, Task> asyncWorkAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
+            : this(channel, null, asyncWorkAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskSleepMilliseconds, channelCapacityCount, channelFullMode)
+        {
+
+        }
+
+        private BaseChannelWorkTask(Channel<TDataModel> channel, Action<TDataModel> workAction, Func<TDataModel, Task> asyncWorkAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
+        {
+
+            if (workAction.IfIsNull() && asyncWorkAction.IfIsNull())
             {
                 throw new ArgumentNullException(nameof(workAction));
             }
@@ -56,6 +68,7 @@ namespace Lanymy.Common.Instruments
 
             WorkTaskTotalCount = workTaskTotalCount;
             _CurrentWorkAction = workAction;
+            _CurrentAsyncWorkAction = asyncWorkAction;
 
             ChannelCapacityCount = channelCapacityCount;
             ChannelFullMode = channelFullMode;

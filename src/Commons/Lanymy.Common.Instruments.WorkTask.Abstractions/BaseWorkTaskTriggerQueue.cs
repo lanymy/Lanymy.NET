@@ -142,21 +142,22 @@ namespace Lanymy.Common.Instruments
             _TimeTriggerTasktCancellationTokenSource = new CancellationTokenSource();
             var token = _TimeTriggerTasktCancellationTokenSource.Token;
 
-            _TimeTriggerTask = new Task(OnTimeTriggerTask, token, token, TaskCreationOptions.LongRunning);
-            _TimeTriggerTask.Start();
+            _TimeTriggerTask = Task.Factory.StartNew(
+                () => OnTimeTriggerTaskAsync(token),
+                token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).Unwrap();
 
         }
 
-        private void OnTimeTriggerTask(object obj)
+        private async Task OnTimeTriggerTaskAsync(CancellationToken token)
         {
-            var token = (CancellationToken)obj;
-
             while (!token.IsCancellationRequested)
             {
 
                 CheckOnActionTrigger();
 
-                Task.Delay(TaskSleepMilliseconds).Wait();
+                await Task.Delay(TaskSleepMilliseconds, token);
 
             }
         }
@@ -178,9 +179,16 @@ namespace Lanymy.Common.Instruments
             _TimeTriggerTasktCancellationTokenSource.Cancel();
 
 
-            if (!_TimeTriggerTask.IfIsNullOrEmpty() && _TimeTriggerTask.Status == TaskStatus.Running)
+            if (!_TimeTriggerTask.IfIsNullOrEmpty())
             {
-                _TimeTriggerTask.Wait();
+                try
+                {
+                    await _TimeTriggerTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // ignored
+                }
             }
 
             if (!_TimeTriggerTask.IfIsNullOrEmpty())
