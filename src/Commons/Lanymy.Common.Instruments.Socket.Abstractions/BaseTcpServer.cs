@@ -188,7 +188,11 @@ namespace Lanymy.Common.Instruments
             CurrentSocket.Listen(_CurrentBacklog);
             _IsRunning = true;
 
-            ThreadPool.QueueUserWorkItem(BeginAccept);
+            _ = Task.Factory.StartNew(
+                () => BeginAcceptAsync(),
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default).Unwrap();
 
             //if (_HeartTask.IfIsNull())
             //{
@@ -199,7 +203,7 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        private void BeginAccept(object obj)
+        private async Task BeginAcceptAsync()
         {
             try
             {
@@ -212,7 +216,7 @@ namespace Lanymy.Common.Instruments
                     tcpServerClient.ReceiveDataEvent += OnServerClientReceiveDataEvent;
                     tcpServerClient.CloseEvent += OnServerClientCloseEvent;
                     tcpServerClient.HeartEvent += OnServerClientHeartEvent;
-                    tcpServerClient.StartReceive();
+                    await tcpServerClient.StartReceiveAsync();
                     OnAccept(tcpServerClient);
                 }
             }

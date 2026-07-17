@@ -259,7 +259,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        internal void StartReceive()
+        internal async Task StartReceiveAsync()
         {
 
             if (_IsRunning)
@@ -273,8 +273,8 @@ namespace Lanymy.Common.Instruments
 
             OnStartReceive();
 
-            TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StartAsync());
-            TaskHelper.SyncWait(_CurrentHeartTimerWorkTask.StartAsync());
+            await _CurrentSendWorkTaskQueue.StartAsync();
+            await _CurrentHeartTimerWorkTask.StartAsync();
 
         }
 
