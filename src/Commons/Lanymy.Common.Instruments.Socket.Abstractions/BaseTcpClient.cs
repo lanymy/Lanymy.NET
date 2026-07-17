@@ -295,7 +295,7 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        protected virtual async Task SendAsync(byte[] sendDataBytes)
+        public virtual async Task SendAsync(byte[] sendDataBytes)
         {
 
             try
@@ -337,13 +337,17 @@ namespace Lanymy.Common.Instruments
 
 
 
-        protected virtual void OnClose()
+        protected virtual async Task OnCloseAsync()
         {
 
             if (!_IsRunning)
             {
                 return;
             }
+
+            WorkTaskQueue<byte[]> currentSendWorkTaskQueue = null;
+            NetworkStream currentNetworkStream = null;
+            System.Net.Sockets.Socket currentSocket = null;
 
             lock (_CloseLocker)
             {
@@ -354,80 +358,98 @@ namespace Lanymy.Common.Instruments
                     _IsFirstStart = false;
                     _IsRunning = false;
 
-                    try
-                    {
+                    currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
+                    _CurrentSendWorkTaskQueue = null;
 
-                        if (!_CurrentSendWorkTaskQueue.IfIsNull())
-                        {
-                            TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StopAsync());
-                            _CurrentSendWorkTaskQueue.Dispose();
-                            _CurrentSendWorkTaskQueue = null;
-                        }
+                    currentNetworkStream = _CurrentNetworkStream;
+                    _CurrentNetworkStream = null;
 
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpClient close send queue failed.", ex));
-                    }
+                    currentSocket = CurrentSocket;
 
-
-                    try
-                    {
-                        if (!_CurrentNetworkStream.IfIsNull())
-                        {
-                            _CurrentNetworkStream.Dispose();
-                            _CurrentNetworkStream = null;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpClient close network stream failed.", ex));
-                    }
-
-                    try
-                    {
-                        CurrentSocket.Shutdown(SocketShutdown.Both);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpClient shutdown socket failed.", ex));
-                    }
-
-                    try
-                    {
-                        CurrentSocket.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpClient dispose socket failed.", ex));
-                    }
-
-
-                    try
-                    {
-
-                        _CurrentBuffer.Clear();
-                        _CurrentCache.Clear();
-
-                        OnCloseEvent();
-
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpClient close finalization failed.", ex));
-                    }
-
+                }
+                else
+                {
+                    return;
                 }
             }
 
+            try
+            {
+
+                if (!currentSendWorkTaskQueue.IfIsNull())
+                {
+                    await currentSendWorkTaskQueue.StopAsync();
+                    currentSendWorkTaskQueue.Dispose();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient close send queue failed.", ex));
+            }
+
+            try
+            {
+                if (!currentNetworkStream.IfIsNull())
+                {
+                    currentNetworkStream.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient close network stream failed.", ex));
+            }
+
+            try
+            {
+                if (!currentSocket.IfIsNull())
+                {
+                    currentSocket.Shutdown(SocketShutdown.Both);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient shutdown socket failed.", ex));
+            }
+
+            try
+            {
+                if (!currentSocket.IfIsNull())
+                {
+                    currentSocket.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient dispose socket failed.", ex));
+            }
+
+            try
+            {
+
+                _CurrentBuffer.Clear();
+                _CurrentCache.Clear();
+
+                OnCloseEvent();
+
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient close finalization failed.", ex));
+            }
 
         }
 
         public void Close()
         {
 
-            OnClose();
+            TaskHelper.SyncWait(CloseAsync());
 
+        }
+
+        public virtual async Task CloseAsync()
+        {
+            await OnCloseAsync();
         }
 
 

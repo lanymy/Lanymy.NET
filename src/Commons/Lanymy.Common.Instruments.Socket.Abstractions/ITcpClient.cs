@@ -1,4 +1,6 @@
-﻿namespace Lanymy.Common.Instruments
+using System.Threading.Tasks;
+
+namespace Lanymy.Common.Instruments
 {
 
 
@@ -12,9 +14,9 @@
         //bool Send(byte[] data);
         void Send(byte[] data);
 
-        void Start();
+        Task SendAsync(byte[] data);
 
-        void Close();
+        void Start();
 
 
     }

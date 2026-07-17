@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
@@ -9,6 +10,8 @@ namespace Lanymy.Common.Instruments
     {
 
         void Close();
+
+        Task CloseAsync();
 
     }
 

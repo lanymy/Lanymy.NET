@@ -13,7 +13,7 @@ namespace Lanymy.Common.Instruments
         //bool Send(byte[] data);
         void Send(byte[] sendDataBytes);
 
-        //Task SendAsync(byte[] sendDataBytes);
+        Task SendAsync(byte[] sendDataBytes);
 
     }
 

@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
 {
@@ -19,8 +20,11 @@ namespace Lanymy.Common.Instruments
 
         bool Send(SendUdpDataModel sendUdpDataModel);
 
+        Task SendAsync(SendUdpDataModel sendUdpDataModel);
 
         void Close();
+
+        Task CloseAsync();
 
 
     }

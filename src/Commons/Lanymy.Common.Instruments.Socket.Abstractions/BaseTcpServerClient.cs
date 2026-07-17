@@ -395,7 +395,7 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        protected virtual async Task SendAsync(byte[] sendDataBytes)
+        public virtual async Task SendAsync(byte[] sendDataBytes)
         {
 
             try
@@ -416,13 +416,18 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        protected virtual void OnClose()
+        protected virtual async Task OnCloseAsync()
         {
 
             if (!_IsRunning)
             {
                 return;
             }
+
+            TimerWorkTask currentHeartTimerWorkTask = null;
+            WorkTaskQueue<byte[]> currentSendWorkTaskQueue = null;
+            NetworkStream currentNetworkStream = null;
+            System.Net.Sockets.Socket currentSocket = null;
 
             lock (_CloseLocker)
             {
@@ -432,115 +437,125 @@ namespace Lanymy.Common.Instruments
 
                     _IsRunning = false;
 
-                    try
-                    {
+                    currentHeartTimerWorkTask = _CurrentHeartTimerWorkTask;
+                    _CurrentHeartTimerWorkTask = null;
 
-                        if (!_CurrentHeartTimerWorkTask.IfIsNull())
-                        {
-                            TaskHelper.SyncWait(_CurrentHeartTimerWorkTask.StopAsync());
-                            _CurrentHeartTimerWorkTask.Dispose();
-                        }
+                    currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
+                    _CurrentSendWorkTaskQueue = null;
 
-                        _CurrentHeartTimerWorkTask = null;
+                    currentNetworkStream = _CurrentNetworkStream;
+                    _CurrentNetworkStream = null;
 
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpServerClient close heart timer failed.", ex));
-                    }
-
-
-                    try
-                    {
-
-                        if (!_CurrentSendWorkTaskQueue.IfIsNull())
-                        {
-                            TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StopAsync());
-                            _CurrentSendWorkTaskQueue.Dispose();
-                        }
-
-                        _CurrentSendWorkTaskQueue = null;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpServerClient close send queue failed.", ex));
-                    }
-
-
-                    try
-                    {
-
-                        if (!_CurrentNetworkStream.IfIsNull())
-                        {
-                            _CurrentNetworkStream.Dispose();
-                            _CurrentNetworkStream = null;
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpServerClient close network stream failed.", ex));
-                    }
-
-                    try
-                    {
-                        CurrentSocket.Shutdown(SocketShutdown.Both);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpServerClient shutdown socket failed.", ex));
-                    }
-
-                    try
-                    {
-                        CurrentSocket.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpServerClient dispose socket failed.", ex));
-                    }
-
-
-                    try
-                    {
-
-                        _CurrentBuffer.Clear();
-                        _CurrentCache.Clear();
-
-                        //_IsSend = false;
-                        //if (!_SendQueue.IfIsNull())
-                        //{
-                        //    _SendQueue.Clear();
-                        //}
-                        //_SendQueue = null;
-
-
-                        OnCloseEvent();
-
-                        if (!CloseEvent.IfIsNull())
-                        {
-                            CloseEvent(this);
-                        }
-
-                        ServerClientErrorEvent = null;
-                        ReceiveDataEvent = null;
-                        StartReceiveEvent = null;
-                        CloseEvent = null;
-                        HeartEvent = null;
-
-                        //CurrentSessionToken = null;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        OnCloseError(new InvalidOperationException("TcpServerClient close finalization failed.", ex));
-                    }
-
+                    currentSocket = CurrentSocket;
 
                 }
+                else
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+
+                if (!currentHeartTimerWorkTask.IfIsNull())
+                {
+                    await currentHeartTimerWorkTask.StopAsync();
+                    currentHeartTimerWorkTask.Dispose();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient close heart timer failed.", ex));
+            }
+
+            try
+            {
+
+                if (!currentSendWorkTaskQueue.IfIsNull())
+                {
+                    await currentSendWorkTaskQueue.StopAsync();
+                    currentSendWorkTaskQueue.Dispose();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient close send queue failed.", ex));
+            }
+
+            try
+            {
+
+                if (!currentNetworkStream.IfIsNull())
+                {
+                    currentNetworkStream.Dispose();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient close network stream failed.", ex));
+            }
+
+            try
+            {
+                if (!currentSocket.IfIsNull())
+                {
+                    currentSocket.Shutdown(SocketShutdown.Both);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient shutdown socket failed.", ex));
+            }
+
+            try
+            {
+                if (!currentSocket.IfIsNull())
+                {
+                    currentSocket.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose socket failed.", ex));
+            }
+
+            try
+            {
+
+                _CurrentBuffer.Clear();
+                _CurrentCache.Clear();
+
+                //_IsSend = false;
+                //if (!_SendQueue.IfIsNull())
+                //{
+                //    _SendQueue.Clear();
+                //}
+                //_SendQueue = null;
 
 
+                OnCloseEvent();
+
+                if (!CloseEvent.IfIsNull())
+                {
+                    CloseEvent(this);
+                }
+
+                ServerClientErrorEvent = null;
+                ReceiveDataEvent = null;
+                StartReceiveEvent = null;
+                CloseEvent = null;
+                HeartEvent = null;
+
+                //CurrentSessionToken = null;
+
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient close finalization failed.", ex));
             }
 
         }
@@ -549,8 +564,13 @@ namespace Lanymy.Common.Instruments
         public void Close()
         {
 
-            OnClose();
+            TaskHelper.SyncWait(CloseAsync());
 
+        }
+
+        public virtual async Task CloseAsync()
+        {
+            await OnCloseAsync();
         }
 
 

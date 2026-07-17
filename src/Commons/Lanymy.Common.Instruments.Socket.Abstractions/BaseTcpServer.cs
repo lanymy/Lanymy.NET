@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -426,11 +427,19 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnServerClose()
         {
+            TaskHelper.SyncWait(CloseAsync());
+        }
+
+        protected virtual async Task OnServerCloseAsync()
+        {
 
             if (!_IsRunning)
             {
                 return;
             }
+
+            System.Net.Sockets.Socket currentSocket = null;
+            List<ITcpServerClient> tcpServerClients = null;
 
             lock (_CloseLocker)
             {
@@ -439,55 +448,60 @@ namespace Lanymy.Common.Instruments
                 {
                     _IsRunning = false;
 
+                    currentSocket = CurrentSocket;
+                    CurrentSocket = null;
 
+                    tcpServerClients = _TcpServerClientDic.Values.ToList();
+                }
+                else
+                {
+                    return;
+                }
+            }
 
-                    try
-                    {
+            try
+            {
 
-                        if (!CurrentSocket.IfIsNull())
-                        {
-                            CurrentSocket.Dispose();
-                            CurrentSocket = null;
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        OnServerCloseError(new InvalidOperationException("TcpServer dispose listen socket failed.", ex));
-                    }
-
-
-                    try
-                    {
-
-                        var enumerator = _TcpServerClientDic.GetEnumerator();
-
-                        while (enumerator.MoveNext())
-                        {
-
-                            try
-                            {
-                                enumerator.Current.Value.Close();
-                            }
-                            catch (Exception ex)
-                            {
-                                OnServerClientErrorEvent(enumerator.Current.Value, new InvalidOperationException("TcpServer close child client failed.", ex));
-                            }
-
-                        }
-
-                        OnServerCloseEvent();
-
-                        _TcpServerClientDic.Clear();
-
-                    }
-                    catch (Exception ex)
-                    {
-                        OnServerCloseError(new InvalidOperationException("TcpServer close finalization failed.", ex));
-                    }
-
+                if (!currentSocket.IfIsNull())
+                {
+                    currentSocket.Dispose();
                 }
 
+            }
+            catch (Exception ex)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer dispose listen socket failed.", ex));
+            }
+
+
+            try
+            {
+
+                if (!tcpServerClients.IfIsNullOrEmpty())
+                {
+                    foreach (var tcpServerClient in tcpServerClients)
+                    {
+
+                        try
+                        {
+                            await tcpServerClient.CloseAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            OnServerClientErrorEvent(tcpServerClient, new InvalidOperationException("TcpServer close child client failed.", ex));
+                        }
+
+                    }
+                }
+
+                OnServerCloseEvent();
+
+                _TcpServerClientDic.Clear();
+
+            }
+            catch (Exception ex)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer close finalization failed.", ex));
             }
 
         }
@@ -499,6 +513,11 @@ namespace Lanymy.Common.Instruments
 
             OnServerClose();
 
+        }
+
+        public virtual async Task CloseAsync()
+        {
+            await OnServerCloseAsync();
         }
 
         public void Dispose()

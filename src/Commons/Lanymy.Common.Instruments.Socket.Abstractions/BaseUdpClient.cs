@@ -233,7 +233,7 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        protected async Task SendAsync(SendUdpDataModel sendUdpDataModel)
+        public async Task SendAsync(SendUdpDataModel sendUdpDataModel)
         {
 
             try
@@ -261,11 +261,21 @@ namespace Lanymy.Common.Instruments
         public void Close()
         {
 
+            TaskHelper.SyncWait(CloseAsync());
+
+        }
+
+        public virtual async Task CloseAsync()
+        {
+
             if (!_IsRunning)
             {
                 return;
             }
 
+            WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue = null;
+            WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue = null;
+            UdpClient currentUdpClient = null;
 
             lock (_CloseLocker)
             {
@@ -275,59 +285,72 @@ namespace Lanymy.Common.Instruments
 
                     _IsRunning = false;
 
-                    try
-                    {
-                        if (!_ReceiveWorkTaskQueue.IfIsNull())
-                        {
-                            TaskHelper.SyncWait(_ReceiveWorkTaskQueue.StopAsync());
-                            _ReceiveWorkTaskQueue.Dispose();
-                            _ReceiveWorkTaskQueue = null; ;
-                        }
-                    }
-                    catch
-                    {
+                    receiveWorkTaskQueue = _ReceiveWorkTaskQueue;
+                    _ReceiveWorkTaskQueue = null;
 
-                    }
+                    sendWorkTaskQueue = _SendWorkTaskQueue;
+                    _SendWorkTaskQueue = null;
 
-                    try
-                    {
-                        if (!_SendWorkTaskQueue.IfIsNull())
-                        {
-                            TaskHelper.SyncWait(_SendWorkTaskQueue.StopAsync());
-                            _SendWorkTaskQueue.Dispose();
-                            _SendWorkTaskQueue = null; ;
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-
-
-                    try
-                    {
-
-                        _CurrentUdpClient.Close();
-                        _CurrentUdpClient.Dispose();
-
-                    }
-                    catch
-                    {
-
-                    }
-
-
-                    try
-                    {
-                        OnCloseEvent();
-                    }
-                    catch
-                    {
-
-                    }
-
+                    currentUdpClient = _CurrentUdpClient;
+                    _CurrentUdpClient = null;
 
                 }
+                else
+                {
+                    return;
+                }
+
+            }
+
+            try
+            {
+                if (!receiveWorkTaskQueue.IfIsNull())
+                {
+                    await receiveWorkTaskQueue.StopAsync();
+                    receiveWorkTaskQueue.Dispose();
+                }
+            }
+            catch
+            {
+
+            }
+
+            try
+            {
+                if (!sendWorkTaskQueue.IfIsNull())
+                {
+                    await sendWorkTaskQueue.StopAsync();
+                    sendWorkTaskQueue.Dispose();
+                }
+            }
+            catch
+            {
+
+            }
+
+
+            try
+            {
+
+                if (!currentUdpClient.IfIsNull())
+                {
+                    currentUdpClient.Close();
+                    currentUdpClient.Dispose();
+                }
+
+            }
+            catch
+            {
+
+            }
+
+
+            try
+            {
+                OnCloseEvent();
+            }
+            catch
+            {
 
             }
         }
