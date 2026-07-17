@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Handlers.Logging;
 using DotNetty.Transport.Bootstrapping;
@@ -27,6 +28,8 @@ namespace Lanymy.Common.Instruments.Client
 
         protected readonly IPEndPoint _CurrentTcpServerIPEndPoint;
         protected Bootstrap _CurrentBootstrap;
+        protected Task _CurrentReconnectTask;
+        protected CancellationTokenSource _CurrentReconnectCancellationTokenSource;
 
         protected BaseNettySocketClient(TClientChannelContext serverChannelContext) : base(serverChannelContext)
         {
@@ -35,10 +38,7 @@ namespace Lanymy.Common.Instruments.Client
             var tcpServerPort = _CurrentChannelOptions.Port;
             _CurrentTcpServerIPEndPoint = new IPEndPoint(IPAddress.Parse(tcpServerIP), tcpServerPort);
 
-            _CurrentChannelContext.CurrentConnectToServerAction = new WeakReference<Action>(async () =>
-            {
-                await ConnectToServerAsync();
-            });
+            _CurrentChannelContext.CurrentConnectToServerAction = new WeakReference<Action>(EnsureReconnectLoopStarted);
 
         }
 
@@ -71,7 +71,8 @@ namespace Lanymy.Common.Instruments.Client
 
 
 
-                Task.Run(ConnectToServerAsync);
+                _CurrentReconnectCancellationTokenSource = new CancellationTokenSource();
+                EnsureReconnectLoopStarted();
 
                 await Task.CompletedTask;
 
@@ -93,26 +94,80 @@ namespace Lanymy.Common.Instruments.Client
 
         protected virtual async Task ConnectToServerAsync()
         {
-            try
+            var cancellationToken = _CurrentReconnectCancellationTokenSource?.Token ?? CancellationToken.None;
+
+            while (IsRunning && !cancellationToken.IsCancellationRequested)
             {
-                if (!_CurrentBootstrap.IfIsNull())
+                try
                 {
+                    if (_CurrentBootstrap.IfIsNull())
+                    {
+                        return;
+                    }
+
+                    if (!_CurrentChannelHost.IfIsNull() && _CurrentChannelHost.Active)
+                    {
+                        return;
+                    }
+
                     _CurrentChannelHost = await _CurrentBootstrap.ConnectAsync(_CurrentTcpServerIPEndPoint);
+                    return;
+                }
+                catch
+                {
+                    if (!IsRunning || cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        await Task.Delay(_CurrentChannelOptions.IntervalHeartTotalMilliseconds, cancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                }
+            }
+
+        }
+
+        protected virtual void EnsureReconnectLoopStarted()
+        {
+            if (!IsRunning)
+            {
+                return;
+            }
+
+            lock (_Locker)
+            {
+                if (!IsRunning)
+                {
+                    return;
                 }
 
-            }
-            catch (Exception e)
-            {
-                //连不上服务器 继续 重连
-                await Task.Delay(_CurrentChannelOptions.IntervalHeartTotalMilliseconds);
-                await ConnectToServerAsync();
-            }
+                if (!_CurrentReconnectTask.IfIsNullOrEmpty() && !_CurrentReconnectTask.IsCompleted)
+                {
+                    return;
+                }
 
+                if (_CurrentReconnectCancellationTokenSource.IfIsNull())
+                {
+                    _CurrentReconnectCancellationTokenSource = new CancellationTokenSource();
+                }
+
+                _CurrentReconnectTask = ConnectToServerAsync();
+            }
         }
 
 
         protected override async Task OnStopAsync()
         {
+            if (!_CurrentReconnectCancellationTokenSource.IfIsNull())
+            {
+                _CurrentReconnectCancellationTokenSource.Cancel();
+            }
 
             try
             {
@@ -123,11 +178,33 @@ namespace Lanymy.Common.Instruments.Client
             }
             finally
             {
-                await _CurrentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                if (!_CurrentBossGroup.IfIsNull())
+                {
+                    await _CurrentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
             }
 
             try
             {
+                if (!_CurrentReconnectTask.IfIsNullOrEmpty())
+                {
+                    await _CurrentReconnectTask;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignored
+            }
+
+            try
+            {
+                if (!_CurrentReconnectCancellationTokenSource.IfIsNull())
+                {
+                    _CurrentReconnectCancellationTokenSource.Dispose();
+                }
+
+                _CurrentReconnectCancellationTokenSource = null;
+                _CurrentReconnectTask = null;
                 _CurrentBootstrap = null;
                 _CurrentChannelHost = null;
                 _CurrentBossGroup = null;

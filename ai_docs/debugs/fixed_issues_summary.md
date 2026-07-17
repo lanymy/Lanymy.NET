@@ -89,6 +89,21 @@
 - 影响说明：
   - 已存在无扩展名文件、已存在带点号目录的误判风险已明显下降
 
+### 8. `BaseNettySocketClient` 重连流程无取消边界
+
+- 问题：
+  - 原先启动阶段使用 `Task.Run(ConnectToServerAsync)` 放飞重连任务
+  - 连接失败时通过递归再次调用 `ConnectToServerAsync()`
+  - `OnChannelInactive()` 还会追加第二条重连入口
+- 修复文件：
+  - [BaseNettySocketClient.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Netty.Abstractions/Client/BaseNettySocketClient.cs)
+- 当前处理：
+  - 已改为单一的可取消重连循环
+  - 启动和断线都统一走 `EnsureReconnectLoopStarted()`
+  - `StopAsync()` 中会先取消重连循环，再关闭频道与事件循环组
+- 影响说明：
+  - 避免并发重连、递归重连和停止后仍继续重连的高风险生命周期问题
+
 ## 已排除项
 
 ### `JsonNetJsonSerializer` 的 `hh / HH` 疑点
