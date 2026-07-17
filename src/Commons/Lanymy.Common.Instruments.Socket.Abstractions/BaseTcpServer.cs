@@ -92,11 +92,11 @@ namespace Lanymy.Common.Instruments
 
         protected abstract void OnAcceptEvent(ITcpServerClient client);
 
-        protected virtual void OnAccept(ITcpServerClient client)
+        protected virtual bool TryInitializeAcceptedClient(ITcpServerClient client)
         {
-
             try
             {
+
                 var ep = client.RemoteEndPoint as IPEndPoint;
                 var session = CreateSessionToken(ep?.Address.ToString(), ep?.Port ?? 0);
                 client.CurrentSessionToken = session;
@@ -104,6 +104,20 @@ namespace Lanymy.Common.Instruments
                 //_TcpServerClientDic.AddOrUpdate(session.SessionID, client, (k, c) => client);
                 _TcpServerClientDic[session.SessionID] = client;
 
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
+        protected virtual void OnAccept(ITcpServerClient client)
+        {
+
+            try
+            {
                 OnAcceptEvent(client);
             }
             catch
@@ -217,6 +231,13 @@ namespace Lanymy.Common.Instruments
                     tcpServerClient.ReceiveDataEvent += OnServerClientReceiveDataEvent;
                     tcpServerClient.CloseEvent += OnServerClientCloseEvent;
                     tcpServerClient.HeartEvent += OnServerClientHeartEvent;
+
+                    if (!TryInitializeAcceptedClient(tcpServerClient))
+                    {
+                        socket.Dispose();
+                        continue;
+                    }
+
                     await tcpServerClient.StartReceiveAsync();
                     OnAccept(tcpServerClient);
                 }
