@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -177,6 +177,21 @@ namespace Lanymy.Common.Instruments
 
 
             Close();
+        }
+
+        protected virtual void OnCloseError(Exception ex)
+        {
+            try
+            {
+                lock (_ErrorLocker)
+                {
+                    OnErrorEvent(ex);
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         #endregion
@@ -362,9 +377,9 @@ namespace Lanymy.Common.Instruments
                         }
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpClient close send queue failed.", ex));
                     }
 
 
@@ -376,27 +391,27 @@ namespace Lanymy.Common.Instruments
                             _CurrentNetworkStream = null;
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpClient close network stream failed.", ex));
                     }
 
                     try
                     {
                         CurrentSocket.Shutdown(SocketShutdown.Both);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpClient shutdown socket failed.", ex));
                     }
 
                     try
                     {
                         CurrentSocket.Dispose();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpClient dispose socket failed.", ex));
                     }
 
 
@@ -409,9 +424,9 @@ namespace Lanymy.Common.Instruments
                         OnCloseEvent();
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpClient close finalization failed.", ex));
                     }
 
                 }

@@ -46,6 +46,7 @@
 - `BaseUdpClient`、`BaseTcpClient`、`BaseTcpServerClient`、`BaseTcpServer` 的关闭链都包含多个资源释放步骤。
 - 当前大量使用分段 `try/catch {}`。
 - 这会导致调用方难以判断“对象已关闭”是否等于“资源已完全释放”。
+- 当前已开始第一步治理：`BaseTcpClient`、`BaseTcpServerClient`、`BaseTcpServer` 的关闭阶段异常已改为按步骤上报，而不是纯吞掉。
 
 关键代码：
 

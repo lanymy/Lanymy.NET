@@ -104,6 +104,22 @@
 - 影响说明：
   - 避免并发重连、递归重连和停止后仍继续重连的高风险生命周期问题
 
+### 9. Socket 关闭链纯吞异常导致状态不透明
+
+- 问题：
+  - `BaseTcpClient`、`BaseTcpServerClient`、`BaseTcpServer` 关闭链中的多个释放步骤原先使用空 `catch`
+  - 调用方只能看到“执行过 Close()”，无法区分是哪一段资源释放失败
+- 修复文件：
+  - [BaseTcpClient.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpClient.cs)
+  - [BaseTcpServerClient.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpServerClient.cs)
+  - [BaseTcpServer.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpServer.cs)
+- 当前处理：
+  - 已为关闭阶段增加专用错误上报入口
+  - 每个释放步骤在失败时会包装阶段信息，并通过现有错误回调链上报
+  - 关闭阶段错误不再走会再次触发 `Close()` 的常规错误入口，避免递归关闭
+- 影响说明：
+  - 外部或派生类现在能观察到“发送队列关闭失败”“流释放失败”“Socket Shutdown 失败”等具体阶段信息
+
 ## 已排除项
 
 ### `JsonNetJsonSerializer` 的 `hh / HH` 疑点

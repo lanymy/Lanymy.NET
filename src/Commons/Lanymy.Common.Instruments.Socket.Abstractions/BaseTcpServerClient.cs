@@ -61,7 +61,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        #region 通知事件
+        #region 通知锟铰硷拷
 
 
         public event TcpServerClientErrorEvent ServerClientErrorEvent;
@@ -78,7 +78,7 @@ namespace Lanymy.Common.Instruments
         #endregion
 
 
-        #region 内部变量
+        #region 锟节诧拷锟斤拷锟斤拷
 
         protected readonly int _SendDataIntervalMilliseconds;
 
@@ -135,7 +135,7 @@ namespace Lanymy.Common.Instruments
 
 
 
-        #region 通知事件
+        #region 通知锟铰硷拷
 
         protected abstract void OnStartReceiveEvent();
 
@@ -190,6 +190,26 @@ namespace Lanymy.Common.Instruments
 
             Close();
 
+        }
+
+        protected virtual void OnCloseError(Exception ex)
+        {
+            try
+            {
+                OnServerClientErrorEvent(ex);
+
+                lock (_ServerClientErrorLocker)
+                {
+                    if (!ServerClientErrorEvent.IfIsNull())
+                    {
+                        ServerClientErrorEvent(this, ex);
+                    }
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         protected abstract void OnReceiveDataEvent(BufferModel buffer, CacheModel cache);
@@ -440,9 +460,9 @@ namespace Lanymy.Common.Instruments
                         _CurrentHeartTimerWorkTask = null;
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpServerClient close heart timer failed.", ex));
                     }
 
 
@@ -458,9 +478,9 @@ namespace Lanymy.Common.Instruments
                         _CurrentSendWorkTaskQueue = null;
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpServerClient close send queue failed.", ex));
                     }
 
 
@@ -474,27 +494,27 @@ namespace Lanymy.Common.Instruments
                         }
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpServerClient close network stream failed.", ex));
                     }
 
                     try
                     {
                         CurrentSocket.Shutdown(SocketShutdown.Both);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpServerClient shutdown socket failed.", ex));
                     }
 
                     try
                     {
                         CurrentSocket.Dispose();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpServerClient dispose socket failed.", ex));
                     }
 
 
@@ -528,9 +548,9 @@ namespace Lanymy.Common.Instruments
                         //CurrentSessionToken = null;
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnCloseError(new InvalidOperationException("TcpServerClient close finalization failed.", ex));
                     }
 
 

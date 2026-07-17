@@ -138,6 +138,18 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        protected virtual void OnServerCloseError(Exception ex)
+        {
+            try
+            {
+                OnServerErrorEvent(ex);
+            }
+            catch
+            {
+
+            }
+        }
+
 
         protected void CloseTcpServerClient(ITcpServerClient client)
         {
@@ -472,9 +484,9 @@ namespace Lanymy.Common.Instruments
                         }
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnServerCloseError(new InvalidOperationException("TcpServer dispose listen socket failed.", ex));
                     }
 
 
@@ -490,9 +502,9 @@ namespace Lanymy.Common.Instruments
                             {
                                 enumerator.Current.Value.Close();
                             }
-                            catch
+                            catch (Exception ex)
                             {
-
+                                OnServerClientErrorEvent(enumerator.Current.Value, new InvalidOperationException("TcpServer close child client failed.", ex));
                             }
 
                         }
@@ -502,9 +514,9 @@ namespace Lanymy.Common.Instruments
                         _TcpServerClientDic.Clear();
 
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        OnServerCloseError(new InvalidOperationException("TcpServer close finalization failed.", ex));
                     }
 
                 }
