@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
@@ -131,11 +131,6 @@ namespace Lanymy.Common.Instruments
 
         }
 
-
-        protected override async Task OnDisposeAsync()
-        {
-            await StopAsync();
-        }
     }
 
 }

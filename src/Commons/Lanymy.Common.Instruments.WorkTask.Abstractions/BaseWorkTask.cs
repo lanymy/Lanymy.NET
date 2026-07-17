@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
@@ -98,7 +98,7 @@ namespace Lanymy.Common.Instruments
         public void Dispose()
         {
 
-            //OnStopAsync().Wait();
+            StopAsync().Wait();
 
             OnDisposeAsync().Wait();
 

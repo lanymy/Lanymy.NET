@@ -49,6 +49,7 @@
 - 这是当前仓库里较现代的一类机制模块，因为它已经采用了 `Channel`。
 - 适合继续作为任务处理、队列消费能力的基础。
 - 但当前实现也混合了较传统的线程 / Task 使用方式，维护时需要谨慎看待生命周期与停止逻辑。
+- 抽象层约束当前以 `BaseWorkTask` 为根统一定义；中间抽象层默认不重复声明同一个抽象生命周期成员，具体类需要显式实现自己的清理钩子。
 
 ## 6. 当前风险点
 
@@ -69,4 +70,5 @@
 - 可补一份“WorkTask 生命周期与停止语义”专题
 - 可评估是否需要更明确的异常处理、日志和监控扩展点
 - 当前已补充生命周期专题见 [WorkTask-Lifecycle.md](./WorkTask-Lifecycle.md)
+- 当前抽象继承约定见 [../../conventions/AbstractHierarchy-Convention.md](../../conventions/AbstractHierarchy-Convention.md)
 - 当前第二轮系统性体检记录见 [../../debugs/review_round_02.md](../../debugs/review_round_02.md)

@@ -40,16 +40,18 @@
 
 ### 3.3 释放链
 
-- `BaseWorkTask.Dispose()` 当前不直接等价于“完整 Stop + Release”。
-- 是否真正停止后台任务，取决于子类 `OnDisposeAsync()` 是否主动调用 `StopAsync()`。
+- `BaseWorkTask.Dispose()` 当前先执行 `StopAsync()`，再执行 `OnDisposeAsync()`。
+- `StopAsync()` 负责停机与后台任务闭合，`OnDisposeAsync()` 负责子类自己的额外清理。
+- `OnDisposeAsync()` 的抽象约束由 `BaseWorkTask` 统一定义，中间抽象层不重复声明同一个成员。
+- `BaseSimpleWorkTask`、`BaseSimpleWorkTaskQueue` 不再重复声明 `OnDisposeAsync()`，真正 concrete class 仍需显式实现。
 
 ## 4. 当前高风险点
 
 ### 4.1 `Dispose()` 语义不统一
 
-- `BaseWorkTask.Dispose()` 只调用 `OnDisposeAsync().Wait()`，自身不保证先执行 `StopAsync()`。
-- `BaseSimpleWorkTask.OnDisposeAsync()` 会 `await StopAsync()`，但 `BaseWorkTaskQueue.OnDisposeAsync()` 当前几乎为空。
-- 这意味着不同派生类型的 `Dispose()` 语义并不一致。
+- 这一项已完成第一步收敛：`BaseWorkTask.Dispose()` 已统一为“先 `StopAsync()` 再 `OnDisposeAsync()`”。
+- 当前 `WorkTask` 体系不再依赖具体派生类型自己决定 `Dispose()` 是否顺带停机。
+- 后续仍需继续关注停止链内部的 `Wait()`、`async void` 与异常可观测性问题。
 
 关键代码：
 
@@ -107,7 +109,7 @@
 1. 先修明确缺陷：
    - `BaseSimpleWorkTask`
    - `BaseWorkTaskTriggerQueue`
-2. 再统一 `Dispose()` 与 `StopAsync()` 语义。
+2. 继续验证 `Dispose()` 统一入口下的剩余阻塞点与异常边界。
 3. 再减少 `Wait()` 和 `async void` 造成的阻塞与不可观测性。
 4. 最后补充 `Channel` 生命周期命名与所有权文档。
 

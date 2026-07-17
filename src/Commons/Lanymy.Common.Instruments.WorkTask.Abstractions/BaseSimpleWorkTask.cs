@@ -142,11 +142,6 @@ namespace Lanymy.Common.Instruments
 
         }
 
-
-        protected override async Task OnDisposeAsync()
-        {
-            await StopAsync();
-        }
     }
 
 }

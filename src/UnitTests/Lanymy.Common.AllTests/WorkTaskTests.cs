@@ -34,6 +34,11 @@ namespace Lanymy.Common.AllTests
                 : base(workAction, sleepIntervalMilliseconds)
             {
             }
+
+            protected override async Task OnDisposeAsync()
+            {
+                await Task.CompletedTask;
+            }
         }
 
 
@@ -155,6 +160,25 @@ namespace Lanymy.Common.AllTests
 
             await queue.StartAsync();
             await queue.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskQueue_Dispose_ShouldStopRunningTask()
+        {
+            var queue = new WorkTaskQueue<WorkTaskQueueDataModel>
+            (
+                _ => { },
+                _ => { },
+                taskSleepMilliseconds: 50
+            );
+
+            await queue.StartAsync();
+
+            Assert.IsTrue(queue.IsRunning);
+
+            queue.Dispose();
+
+            Assert.IsFalse(queue.IsRunning);
         }
 
 

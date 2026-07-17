@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
 {
@@ -22,6 +23,10 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        protected override async Task OnDisposeAsync()
+        {
+            await Task.CompletedTask;
+        }
 
 
     }

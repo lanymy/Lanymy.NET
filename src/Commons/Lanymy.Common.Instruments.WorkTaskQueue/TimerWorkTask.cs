@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,8 +17,7 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnDisposeAsync()
         {
-            await OnStopAsync();
-            //await Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
     }
