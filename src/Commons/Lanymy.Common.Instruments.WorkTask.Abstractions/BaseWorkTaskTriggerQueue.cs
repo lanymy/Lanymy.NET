@@ -133,6 +133,19 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        private void FlushCachedDataOnStop()
+        {
+            if (_CurrentCacheConcurrentQueue.IsEmpty)
+            {
+                return;
+            }
+
+            var onActionTriggerCountIndex = _OnActionTriggerCountIndex + OnActionTriggerCount;
+            Interlocked.Exchange(ref _OnActionTriggerCountIndex, onActionTriggerCountIndex);
+
+            CheckOnActionTrigger();
+        }
+
 
         protected override async Task OnStartAsync()
         {
@@ -164,14 +177,10 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
-
-            await base.OnStopAsync();
-
-            var onActionTriggerCountIndex = _OnActionTriggerCountIndex + OnActionTriggerCount;
-            Interlocked.Exchange(ref _OnActionTriggerCountIndex, onActionTriggerCountIndex);
-
             if (_TimeTriggerTasktCancellationTokenSource.IfIsNullOrEmpty())
             {
+                await base.OnStopAsync();
+                FlushCachedDataOnStop();
                 return;
             }
 
@@ -204,6 +213,9 @@ namespace Lanymy.Common.Instruments
                 _TimeTriggerTasktCancellationTokenSource.Dispose();
                 _TimeTriggerTasktCancellationTokenSource = null;
             }
+
+            await base.OnStopAsync();
+            FlushCachedDataOnStop();
 
         }
 

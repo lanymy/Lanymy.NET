@@ -137,6 +137,16 @@ namespace Lanymy.Common.Instruments
 
             var list = new List<TDataModel>();
 
+            if (_IsInternalChannel)
+            {
+                while (_CurrentChannel.Reader.TryRead(out var item))
+                {
+                    list.Add(item);
+                }
+
+                return list;
+            }
+
             await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
             {
                 list.Add(item);

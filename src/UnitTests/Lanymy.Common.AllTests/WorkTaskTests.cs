@@ -41,6 +41,24 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        class TestExternalChannelWorkTaskQueue : BaseWorkTaskQueue<WorkTaskQueueDataModel>
+        {
+            public TestExternalChannelWorkTaskQueue(Channel<WorkTaskQueueDataModel> channel, Action<List<WorkTaskQueueDataModel>> stopAndReadQueueAllDataAction)
+                : base(channel, _ => { }, stopAndReadQueueAllDataAction, taskSleepMilliseconds: 50)
+            {
+            }
+        }
+
+        class TestWorkTaskTriggerQueue : BaseWorkTaskTriggerQueue<WorkTaskQueueDataModel>
+        {
+            public TestWorkTaskTriggerQueue(Action<List<WorkTaskQueueDataModel>> workTriggerAction, ushort actionTriggerCount, TimeSpan actionTriggerTimeSpan, int taskSleepMilliseconds = 50)
+                : base(null, workTriggerAction, actionTriggerCount, actionTriggerTimeSpan, taskSleepMilliseconds)
+            {
+            }
+
+            public int CachedCount => _CurrentCacheConcurrentQueue.Count;
+        }
+
 
         [TestMethod()]
         public async Task WorkTaskTest()
@@ -179,6 +197,62 @@ namespace Lanymy.Common.AllTests
             queue.Dispose();
 
             Assert.IsFalse(queue.IsRunning);
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskQueue_StopAsync_WithExternalChannelAndReadCallback_ShouldNotHang()
+        {
+            var channel = Channel.CreateUnbounded<WorkTaskQueueDataModel>();
+            List<WorkTaskQueueDataModel> remainingDataList = null;
+
+            var queue = new TestExternalChannelWorkTaskQueue(channel, dataList =>
+            {
+                remainingDataList = dataList;
+            });
+
+            await queue.StartAsync();
+
+            var stopTask = queue.StopAsync();
+            var completedTask = await Task.WhenAny(stopTask, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(stopTask, completedTask);
+            await stopTask;
+            Assert.IsNotNull(remainingDataList);
+            Assert.AreEqual(0, remainingDataList.Count);
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskTriggerQueue_StopAsync_ShouldFlushCachedBatch()
+        {
+            List<WorkTaskQueueDataModel> flushedDataList = null;
+
+            var queue = new TestWorkTaskTriggerQueue
+            (
+                dataList =>
+                {
+                    flushedDataList = dataList;
+                },
+                actionTriggerCount: 10,
+                actionTriggerTimeSpan: TimeSpan.FromSeconds(30),
+                taskSleepMilliseconds: 50
+            );
+
+            await queue.StartAsync();
+            await queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 7 });
+
+            var deadline = DateTime.UtcNow.AddSeconds(2);
+            while (queue.CachedCount == 0 && DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(20);
+            }
+
+            Assert.AreEqual(1, queue.CachedCount);
+
+            await queue.StopAsync();
+
+            Assert.IsNotNull(flushedDataList);
+            Assert.AreEqual(1, flushedDataList.Count);
+            Assert.AreEqual(7, flushedDataList[0].Index);
         }
 
 
