@@ -44,12 +44,27 @@ namespace Lanymy.Common.Instruments
                 Array.Copy(cache.Data, 0, dataBytesTemp, 0, cache.Position);
                 Array.Copy(buffer.BufferData, 0, dataBytesTemp, cache.Position, buffer.Position);
 
+                if (HeaderSize > position)
+                {
+                    cache.Position = position;
+                    Array.Copy(dataBytesTemp, 0, cache.Data, 0, cache.Position);
+                    buffer.Clear();
+                    return null;
+                }
 
                 packageLength = HeaderSize + GetBodyLengthFromHeader(0, dataBytesTemp);
 
+                if (packageLength > position)
+                {
+                    cache.Position = position;
+                    Array.Copy(dataBytesTemp, 0, cache.Data, 0, cache.Position);
+                    buffer.Clear();
+                    return null;
+                }
+
                 dataBytes = new byte[packageLength];
 
-                Array.Copy(dataBytesTemp, dataBytes, packageLength);
+                Array.Copy(dataBytesTemp, 0, dataBytes, 0, packageLength);
 
                 buffer.CursorIndex = packageLength - cache.Position;
 
