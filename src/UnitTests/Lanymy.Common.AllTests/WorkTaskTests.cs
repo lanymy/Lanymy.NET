@@ -166,6 +166,63 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        class TestStartFailWorkTask : BaseWorkTask
+        {
+            private readonly Exception _startException;
+            private readonly Action _disposeAction;
+
+            public TestStartFailWorkTask(Exception startException, Action disposeAction = null)
+            {
+                _startException = startException;
+                _disposeAction = disposeAction;
+            }
+
+            protected override Task OnStartAsync()
+            {
+                throw _startException;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnDisposeAsync()
+            {
+                _disposeAction?.Invoke();
+                return Task.CompletedTask;
+            }
+        }
+
+        class TestDisposeOrderWorkTask : BaseWorkTask
+        {
+            private readonly Action _stopAction;
+            private readonly Action _disposeAction;
+
+            public TestDisposeOrderWorkTask(Action stopAction, Action disposeAction)
+            {
+                _stopAction = stopAction;
+                _disposeAction = disposeAction;
+            }
+
+            protected override Task OnStartAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                _stopAction();
+                throw new InvalidOperationException("stop failed");
+            }
+
+            protected override Task OnDisposeAsync()
+            {
+                _disposeAction();
+                return Task.CompletedTask;
+            }
+        }
+
 
         [TestMethod()]
         public async Task WorkTaskTest()
@@ -426,6 +483,32 @@ namespace Lanymy.Common.AllTests
             Assert.IsTrue(Volatile.Read(ref tickCount) >= 2);
 
             await workTask.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task BaseWorkTask_StartAsync_WhenStartFails_ShouldRollbackIsRunning()
+        {
+            var workTask = new TestStartFailWorkTask(new InvalidOperationException("start failed"));
+
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => workTask.StartAsync());
+
+            Assert.IsFalse(workTask.IsRunning);
+        }
+
+        [TestMethod()]
+        public void BaseWorkTask_Dispose_WhenStopFails_ShouldStillInvokeOnDisposeAsync()
+        {
+            var order = new List<string>();
+            var workTask = new TestDisposeOrderWorkTask(
+                () => order.Add("stop"),
+                () => order.Add("dispose"));
+
+            workTask.StartAsync().Wait();
+
+            var ex = Assert.ThrowsException<InvalidOperationException>(() => workTask.Dispose());
+
+            Assert.AreEqual("stop failed", ex.Message);
+            CollectionAssert.AreEqual(new List<string> { "stop", "dispose" }, order);
         }
 
         [TestMethod()]

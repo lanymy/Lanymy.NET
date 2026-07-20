@@ -26,6 +26,42 @@ namespace Lanymy.Common.Instruments
 
         public abstract TPackage DecodePackage(byte[] packageBytes);
 
+        protected virtual int GetMaxPackageLength(BufferModel buffer, CacheModel cache)
+        {
+            return buffer.BufferSize + cache.Data.Length;
+        }
+
+        protected virtual int GetPackageLength(int cursorIndex, byte[] bufferBytes, BufferModel buffer, CacheModel cache)
+        {
+            var bodyLength = GetBodyLengthFromHeader(cursorIndex, bufferBytes);
+            if (bodyLength < 0)
+            {
+                throw new InvalidOperationException("body length is invalid.");
+            }
+
+            var packageLength = HeaderSize + bodyLength;
+            if (packageLength < HeaderSize)
+            {
+                throw new InvalidOperationException("package length is invalid.");
+            }
+
+            var maxPackageLength = GetMaxPackageLength(buffer, cache);
+            if (packageLength > maxPackageLength)
+            {
+                throw new InvalidOperationException($"package length {packageLength} exceeded max {maxPackageLength}.");
+            }
+
+            return packageLength;
+        }
+
+        protected virtual void EnsureCacheCapacity(int cacheLength, CacheModel cache)
+        {
+            if (cacheLength > cache.Data.Length)
+            {
+                throw new InvalidOperationException($"cache length {cacheLength} exceeded capacity {cache.Data.Length}.");
+            }
+        }
+
 
         public virtual byte[] GetPackageBytes(BufferModel buffer, CacheModel cache)
         {
@@ -46,16 +82,18 @@ namespace Lanymy.Common.Instruments
 
                 if (HeaderSize > position)
                 {
+                    EnsureCacheCapacity(position, cache);
                     cache.Position = position;
                     Array.Copy(dataBytesTemp, 0, cache.Data, 0, cache.Position);
                     buffer.Clear();
                     return null;
                 }
 
-                packageLength = HeaderSize + GetBodyLengthFromHeader(0, dataBytesTemp);
+                packageLength = GetPackageLength(0, dataBytesTemp, buffer, cache);
 
                 if (packageLength > position)
                 {
+                    EnsureCacheCapacity(position, cache);
                     cache.Position = position;
                     Array.Copy(dataBytesTemp, 0, cache.Data, 0, cache.Position);
                     buffer.Clear();
@@ -88,13 +126,14 @@ namespace Lanymy.Common.Instruments
                     }
                     else
                     {
-                        packageLength = HeaderSize + GetBodyLengthFromHeader(buffer.CursorIndex, buffer.BufferData);
+                        packageLength = GetPackageLength(buffer.CursorIndex, buffer.BufferData, buffer, cache);
                     }
 
 
                     if (buffer.CursorIndex + packageLength > buffer.Position)//数据未接收完整，先缓存
                     {
                         cache.Position = buffer.Position - buffer.CursorIndex;
+                        EnsureCacheCapacity(cache.Position, cache);
                         Array.Copy(buffer.BufferData, buffer.CursorIndex, cache.Data, 0, cache.Position);
                         buffer.Clear();
                     }

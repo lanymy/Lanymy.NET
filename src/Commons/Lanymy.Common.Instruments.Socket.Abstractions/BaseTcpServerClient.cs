@@ -152,7 +152,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnServerClientError(ex);
+                ReportServerClientError(ex);
             }
 
         }
@@ -164,7 +164,7 @@ namespace Lanymy.Common.Instruments
 
         protected abstract void OnServerClientErrorEvent(Exception ex);
 
-        protected virtual void OnServerClientError(Exception ex)
+        protected virtual void ReportServerClientError(Exception ex)
         {
 
             try
@@ -187,29 +187,20 @@ namespace Lanymy.Common.Instruments
             {
 
             }
+        }
+
+        protected virtual void OnServerClientError(Exception ex)
+        {
+            ReportServerClientError(ex);
 
             Close();
+
 
         }
 
         protected virtual void OnCloseError(Exception ex)
         {
-            try
-            {
-                OnServerClientErrorEvent(ex);
-
-                lock (_ServerClientErrorLocker)
-                {
-                    if (!ServerClientErrorEvent.IfIsNull())
-                    {
-                        ServerClientErrorEvent(this, ex);
-                    }
-                }
-            }
-            catch
-            {
-
-            }
+            ReportServerClientError(ex);
         }
 
         protected abstract void OnReceiveDataEvent(BufferModel buffer, CacheModel cache);
@@ -230,7 +221,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnServerClientError(ex);
+                ReportServerClientError(ex);
             }
 
         }
@@ -249,7 +240,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnServerClientError(ex);
+                ReportServerClientError(ex);
             }
 
             return null;
@@ -271,10 +262,10 @@ namespace Lanymy.Common.Instruments
 
             BeginReceive();
 
-            OnStartReceive();
-
             await _CurrentSendWorkTaskQueue.StartAsync();
             await _CurrentHeartTimerWorkTask.StartAsync();
+
+            OnStartReceive();
 
         }
 
@@ -313,6 +304,12 @@ namespace Lanymy.Common.Instruments
 
                 _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
 
+                if (_CurrentReadCount <= 0)
+                {
+                    Close();
+                    return;
+                }
+
 
                 if (_CurrentReadCount > 0)
                 {
@@ -350,13 +347,14 @@ namespace Lanymy.Common.Instruments
 
             try
             {
+                var currentNetworkStream = _CurrentNetworkStream;
 
                 //if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && IsConnected && !_CurrentNetworkStream.IfIsNull())
-                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty())
+                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && !currentNetworkStream.IfIsNull())
                 {
 
-                    await _CurrentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
-                    await _CurrentNetworkStream.FlushAsync();
+                    await currentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
+                    await currentNetworkStream.FlushAsync();
 
                     //if (CurrentSessionToken != null)
                     //{
@@ -438,14 +436,8 @@ namespace Lanymy.Common.Instruments
                     _IsRunning = false;
 
                     currentHeartTimerWorkTask = _CurrentHeartTimerWorkTask;
-                    _CurrentHeartTimerWorkTask = null;
-
                     currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
-                    _CurrentSendWorkTaskQueue = null;
-
                     currentNetworkStream = _CurrentNetworkStream;
-                    _CurrentNetworkStream = null;
-
                     currentSocket = CurrentSocket;
 
                 }
@@ -483,6 +475,24 @@ namespace Lanymy.Common.Instruments
             catch (Exception ex)
             {
                 OnCloseError(new InvalidOperationException("TcpServerClient close send queue failed.", ex));
+            }
+
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_CurrentHeartTimerWorkTask, currentHeartTimerWorkTask))
+                {
+                    _CurrentHeartTimerWorkTask = null;
+                }
+
+                if (ReferenceEquals(_CurrentSendWorkTaskQueue, currentSendWorkTaskQueue))
+                {
+                    _CurrentSendWorkTaskQueue = null;
+                }
+
+                if (ReferenceEquals(_CurrentNetworkStream, currentNetworkStream))
+                {
+                    _CurrentNetworkStream = null;
+                }
             }
 
             try

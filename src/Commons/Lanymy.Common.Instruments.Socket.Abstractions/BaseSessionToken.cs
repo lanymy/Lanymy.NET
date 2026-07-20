@@ -1,4 +1,5 @@
 using System;
+using Lanymy.Common.Helpers;
 using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
@@ -59,6 +60,7 @@ namespace Lanymy.Common.Instruments
             Port = port;
             ConnectionDateTime = DateTime.Now;
             LastReceiveDateTime = ConnectionDateTime;
+            LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(ConnectionDateTime);
             LastSendDateTime = ConnectionDateTime;
 
         }

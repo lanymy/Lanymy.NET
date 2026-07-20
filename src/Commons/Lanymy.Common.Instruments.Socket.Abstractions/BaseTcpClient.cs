@@ -100,7 +100,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnError(ex);
+                ReportError(ex);
             }
         }
 
@@ -152,7 +152,7 @@ namespace Lanymy.Common.Instruments
             catch (Exception e)
             {
 
-                OnError(e);
+                ReportError(e);
 
             }
 
@@ -160,7 +160,7 @@ namespace Lanymy.Common.Instruments
 
         protected abstract void OnErrorEvent(Exception ex);
 
-        protected virtual void OnError(Exception ex)
+        protected virtual void ReportError(Exception ex)
         {
 
             try
@@ -174,6 +174,11 @@ namespace Lanymy.Common.Instruments
             {
 
             }
+        }
+
+        protected virtual void OnError(Exception ex)
+        {
+            ReportError(ex);
 
 
             Close();
@@ -181,17 +186,7 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnCloseError(Exception ex)
         {
-            try
-            {
-                lock (_ErrorLocker)
-                {
-                    OnErrorEvent(ex);
-                }
-            }
-            catch
-            {
-
-            }
+            ReportError(ex);
         }
 
         #endregion
@@ -222,9 +217,9 @@ namespace Lanymy.Common.Instruments
                 CurrentSocket.Connect(new IPEndPoint(IPAddress.Parse(ServerIP), Port));
                 _CurrentNetworkStream = new NetworkStream(CurrentSocket);
 
-                OnConnection();
-
                 TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StartAsync());
+
+                OnConnection();
 
                 _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
 
@@ -244,6 +239,12 @@ namespace Lanymy.Common.Instruments
             {
 
                 _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
+
+                if (_CurrentReadCount <= 0)
+                {
+                    Close();
+                    return;
+                }
 
                 if (_CurrentReadCount > 0)
                 {
@@ -273,13 +274,14 @@ namespace Lanymy.Common.Instruments
 
             try
             {
+                var currentNetworkStream = _CurrentNetworkStream;
 
                 //if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && IsConnected && !_CurrentNetworkStream.IfIsNull())
-                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty())
+                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && !currentNetworkStream.IfIsNull())
                 {
 
-                    await _CurrentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
-                    await _CurrentNetworkStream.FlushAsync();
+                    await currentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
+                    await currentNetworkStream.FlushAsync();
                     //CurrentSessionToken.LastSendDateTime = DateTime.Now;
 
                     await Task.Delay(_SendDataIntervalMilliseconds);
@@ -359,11 +361,7 @@ namespace Lanymy.Common.Instruments
                     _IsRunning = false;
 
                     currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
-                    _CurrentSendWorkTaskQueue = null;
-
                     currentNetworkStream = _CurrentNetworkStream;
-                    _CurrentNetworkStream = null;
-
                     currentSocket = CurrentSocket;
 
                 }
@@ -386,6 +384,19 @@ namespace Lanymy.Common.Instruments
             catch (Exception ex)
             {
                 OnCloseError(new InvalidOperationException("TcpClient close send queue failed.", ex));
+            }
+
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_CurrentSendWorkTaskQueue, currentSendWorkTaskQueue))
+                {
+                    _CurrentSendWorkTaskQueue = null;
+                }
+
+                if (ReferenceEquals(_CurrentNetworkStream, currentNetworkStream))
+                {
+                    _CurrentNetworkStream = null;
+                }
             }
 
             try

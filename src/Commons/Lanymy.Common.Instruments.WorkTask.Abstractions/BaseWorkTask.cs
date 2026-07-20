@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
@@ -49,7 +50,15 @@ namespace Lanymy.Common.Instruments
 
             IsRunning = true;
 
-            await OnStartAsync();
+            try
+            {
+                await OnStartAsync();
+            }
+            catch
+            {
+                IsRunning = false;
+                throw;
+            }
 
         }
 
@@ -97,14 +106,45 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
+            Exception stopException = null;
+            Exception disposeException = null;
 
-            TaskHelper.SyncWait(StopAsync());
+            try
+            {
+                TaskHelper.SyncWait(StopAsync());
+            }
+            catch (Exception ex)
+            {
+                stopException = ex;
+            }
 
-            TaskHelper.SyncWait(OnDisposeAsync());
+            try
+            {
+                TaskHelper.SyncWait(OnDisposeAsync());
+            }
+            catch (Exception ex)
+            {
+                disposeException = ex;
+            }
+
+            if (stopException != null && disposeException != null)
+            {
+                throw new AggregateException(stopException, disposeException);
+            }
+
+            if (stopException != null)
+            {
+                ExceptionDispatchInfo.Capture(stopException).Throw();
+            }
+
+            if (disposeException != null)
+            {
+                ExceptionDispatchInfo.Capture(disposeException).Throw();
+            }
+
+
 
         }
 
-
     }
-
 }

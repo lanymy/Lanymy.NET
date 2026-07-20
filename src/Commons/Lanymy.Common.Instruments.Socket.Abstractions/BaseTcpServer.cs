@@ -135,6 +135,12 @@ namespace Lanymy.Common.Instruments
             OnServerClientErrorCallBackEvent(client, ex);
         }
 
+        protected virtual void HandleServerManagedClientError(ITcpServerClient client, Exception ex)
+        {
+            OnServerClientErrorEvent(client, ex);
+            CloseTcpServerClient(client);
+        }
+
         protected abstract void OnServerErrorEvent(Exception ex);
 
         protected virtual void OnServerError(Exception ex)
@@ -224,7 +230,19 @@ namespace Lanymy.Common.Instruments
             {
                 while (_IsRunning)
                 {
-                    var socket = CurrentSocket.Accept();
+                    var currentSocket = CurrentSocket;
+                    if (!_IsRunning || currentSocket.IfIsNull())
+                    {
+                        return;
+                    }
+
+                    var socket = currentSocket.Accept();
+                    if (!_IsRunning)
+                    {
+                        socket.Dispose();
+                        return;
+                    }
+
                     var tcpServerClient = CreateTcpServerClient(socket);
                     tcpServerClient.StartReceiveEvent += OnServerClientStartReceiveEvent;
                     tcpServerClient.ServerClientErrorEvent += OnServerClientErrorEvent;
@@ -242,10 +260,35 @@ namespace Lanymy.Common.Instruments
                     OnAccept(tcpServerClient);
                 }
             }
+            catch (Exception exception) when (CanIgnoreAcceptException(exception))
+            {
+            }
             catch (Exception exception)
             {
                 OnServerError(exception);
             }
+        }
+
+        protected virtual bool CanIgnoreAcceptException(Exception ex)
+        {
+            if (_IsRunning)
+            {
+                return false;
+            }
+
+            if (ex is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (ex is SocketException socketException)
+            {
+                return socketException.SocketErrorCode == SocketError.Interrupted
+                    || socketException.SocketErrorCode == SocketError.OperationAborted
+                    || socketException.SocketErrorCode == SocketError.NotSocket;
+            }
+
+            return false;
         }
 
 
@@ -263,7 +306,7 @@ namespace Lanymy.Common.Instruments
             //if (sessionToken.IntervalHeartTotalMilliseconds > _CurrentHeartTimeOutMilliseconds)//心跳超时断开连接
             if ((DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now) - sessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation) > _CurrentHeartTimeOutMilliseconds)//心跳超时断开连接
             {
-                OnServerClientErrorEvent(tcpServerClient, new Exception("心跳超时断开连接"));
+                HandleServerManagedClientError(tcpServerClient, new Exception("心跳超时断开连接"));
             }
             //else if (tcpServerClient.CurrentSessionToken.IntervalHeartTotalMilliseconds >= _CurrentIntervalHeartTotalMilliseconds)
             else
@@ -346,7 +389,7 @@ namespace Lanymy.Common.Instruments
 
                 if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
                 {
-                    OnServerClientErrorEvent(tcpServerClient, new Exception("data bytes error"));
+                    HandleServerManagedClientError(tcpServerClient, new Exception("data bytes error"));
                     return;
                 }
 

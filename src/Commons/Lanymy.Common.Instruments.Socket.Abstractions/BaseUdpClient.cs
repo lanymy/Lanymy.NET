@@ -67,7 +67,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnErrorEvent(udpSourceDataModel.RemoteIPEndPoint, ex);
+                ReportError(udpSourceDataModel.RemoteIPEndPoint, ex);
             }
 
         }
@@ -80,23 +80,51 @@ namespace Lanymy.Common.Instruments
 
             if (!_CurrentFixedHeaderPackageFilter.CheckPackage(packageBytes))
             {
-                OnErrorEvent(remoteIPEndPoint, new Exception("data bytes error"));
+                ReportError(remoteIPEndPoint, new Exception("data bytes error"));
                 return;
             }
 
             var package = _CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes);
             package.RemoteIpEndPoint = remoteIPEndPoint;
 
-            OnReceivePackage(package);
+            DispatchReceivePackage(package);
 
         }
 
 
         protected abstract void OnReceivePackage(TPackage package);
 
+        protected virtual void DispatchReceivePackage(TPackage package)
+        {
+
+            try
+            {
+                OnReceivePackage(package);
+            }
+            catch (Exception ex)
+            {
+                ReportError(package?.RemoteIpEndPoint, ex);
+            }
+
+        }
+
 
         protected virtual void OnErrorEvent(IPEndPoint remoteIPEndPoint, Exception ex)
         {
+
+        }
+
+        protected virtual void ReportError(IPEndPoint remoteIPEndPoint, Exception ex)
+        {
+
+            try
+            {
+                OnErrorEvent(remoteIPEndPoint, ex);
+            }
+            catch
+            {
+
+            }
 
         }
 
@@ -105,11 +133,12 @@ namespace Lanymy.Common.Instruments
 
             try
             {
+                var currentUdpClient = _CurrentUdpClient;
 
-                if (_IsRunning && !sendUdpDataModel.PackageBytes.IfIsNullOrEmpty())
+                if (_IsRunning && !sendUdpDataModel.PackageBytes.IfIsNullOrEmpty() && !currentUdpClient.IfIsNull())
                 {
 
-                    await _CurrentUdpClient.SendAsync(sendUdpDataModel.PackageBytes, sendUdpDataModel.PackageBytes.Length, sendUdpDataModel.RemoteIpEndPoint);
+                    await currentUdpClient.SendAsync(sendUdpDataModel.PackageBytes, sendUdpDataModel.PackageBytes.Length, sendUdpDataModel.RemoteIpEndPoint);
 
                     await Task.Delay(_SendDataIntervalMilliseconds);
 
@@ -118,7 +147,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnErrorEvent(sendUdpDataModel.RemoteIpEndPoint, ex);
+                ReportError(sendUdpDataModel.RemoteIpEndPoint, ex);
             }
 
         }
@@ -129,26 +158,175 @@ namespace Lanymy.Common.Instruments
 
         public void Start()
         {
-
-            if (_IsRunning)
+            if (!TryBeginStart(out var receiveWorkTaskQueue, out var sendWorkTaskQueue))
             {
                 return;
             }
 
-            _IsRunning = true;
+            UdpClient currentUdpClient = null;
+            var receiveWorkTaskQueueStarted = false;
+            var sendWorkTaskQueueStarted = false;
 
-            TaskHelper.SyncWait(_ReceiveWorkTaskQueue.StartAsync());
+            try
+            {
+                TaskHelper.SyncWait(receiveWorkTaskQueue.StartAsync());
+                receiveWorkTaskQueueStarted = true;
 
-            _CurrentUdpClient = new UdpClient(Port);
-            _CurrentUdpClient.EnableBroadcast = true;
-            _CurrentUdpClient.BeginReceive(ReciveCallBack, null);
+                if (!CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, null))
+                {
+                    return;
+                }
 
-            TaskHelper.SyncWait(_SendWorkTaskQueue.StartAsync());
+                currentUdpClient = new UdpClient(Port);
+                currentUdpClient.EnableBroadcast = true;
+                if (!TryBindCurrentUdpClient(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient))
+                {
+                    try
+                    {
+                        currentUdpClient.Close();
+                        currentUdpClient.Dispose();
+                    }
+                    catch
+                    {
+                    }
+                    return;
+                }
 
-            OnStart();
+                currentUdpClient.BeginReceive(ReciveCallBack, null);
+
+                if (!CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient))
+                {
+                    return;
+                }
+
+                TaskHelper.SyncWait(sendWorkTaskQueue.StartAsync());
+                sendWorkTaskQueueStarted = true;
+
+                if (!CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient))
+                {
+                    return;
+                }
+
+                OnStart();
+            }
+            catch
+            {
+                ResetStartState(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient, receiveWorkTaskQueueStarted, sendWorkTaskQueueStarted);
+                throw;
+            }
 
         }
 
+        protected virtual bool TryBeginStart(out WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, out WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue)
+        {
+            receiveWorkTaskQueue = null;
+            sendWorkTaskQueue = null;
+
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed || _IsRunning)
+                {
+                    return false;
+                }
+
+                receiveWorkTaskQueue = _ReceiveWorkTaskQueue;
+                sendWorkTaskQueue = _SendWorkTaskQueue;
+
+                if (receiveWorkTaskQueue.IfIsNull() || sendWorkTaskQueue.IfIsNull())
+                {
+                    return false;
+                }
+
+                _IsRunning = true;
+                return true;
+            }
+        }
+
+        protected virtual bool CanContinueStart(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue, UdpClient currentUdpClient)
+        {
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed || !_IsRunning)
+                {
+                    return false;
+                }
+
+                if (!ReferenceEquals(_ReceiveWorkTaskQueue, receiveWorkTaskQueue) || !ReferenceEquals(_SendWorkTaskQueue, sendWorkTaskQueue))
+                {
+                    return false;
+                }
+
+                if (currentUdpClient != null && !ReferenceEquals(_CurrentUdpClient, currentUdpClient))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        protected virtual bool TryBindCurrentUdpClient(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue, UdpClient currentUdpClient)
+        {
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed || !_IsRunning)
+                {
+                    return false;
+                }
+
+                if (!ReferenceEquals(_ReceiveWorkTaskQueue, receiveWorkTaskQueue) || !ReferenceEquals(_SendWorkTaskQueue, sendWorkTaskQueue))
+                {
+                    return false;
+                }
+
+                _CurrentUdpClient = currentUdpClient;
+                return true;
+            }
+        }
+
+        protected virtual void ResetStartState(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue, UdpClient currentUdpClient, bool receiveWorkTaskQueueStarted, bool sendWorkTaskQueueStarted)
+        {
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_CurrentUdpClient, currentUdpClient))
+                {
+                    _CurrentUdpClient = null;
+                }
+
+                _IsRunning = false;
+            }
+
+            try
+            {
+                currentUdpClient?.Close();
+                currentUdpClient?.Dispose();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (sendWorkTaskQueueStarted && !sendWorkTaskQueue.IfIsNull())
+                {
+                    TaskHelper.SyncWait(sendWorkTaskQueue.StopAsync());
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (receiveWorkTaskQueueStarted && !receiveWorkTaskQueue.IfIsNull())
+                {
+                    TaskHelper.SyncWait(receiveWorkTaskQueue.StopAsync());
+                }
+            }
+            catch
+            {
+            }
+        }
 
         protected abstract void OnStartEvent();
 
@@ -159,33 +337,91 @@ namespace Lanymy.Common.Instruments
             {
                 OnStartEvent();
             }
-            catch
+            catch (Exception ex)
             {
-
+                ReportError(null, ex);
             }
 
         }
 
         private void ReciveCallBack(IAsyncResult asyncResult)
         {
-
-            if (_IsRunning)
+            if (!TryGetReceiveContext(out var currentUdpClient, out var receiveWorkTaskQueue))
             {
+                return;
+            }
 
-                IPEndPoint remoteIPEndPoint = null;
-                byte[] bytes = _CurrentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
+            IPEndPoint remoteIPEndPoint = null;
 
-                var addReceiveQueueTask = _ReceiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
+            try
+            {
+                byte[] bytes = currentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
+
+                var addReceiveQueueTask = receiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
                 {
                     RemoteIPEndPoint = remoteIPEndPoint,
                     SourceDataBytes = bytes,
                 });
                 TaskHelper.SyncWait(addReceiveQueueTask);
 
-                _CurrentUdpClient.BeginReceive(ReciveCallBack, null);
-
+                if (CanContinueReceive(currentUdpClient, receiveWorkTaskQueue))
+                {
+                    currentUdpClient.BeginReceive(ReciveCallBack, null);
+                }
+            }
+            catch (ObjectDisposedException ex)
+            {
+                if (_IsRunning)
+                {
+                    ReportError(remoteIPEndPoint, ex);
+                }
+            }
+            catch (SocketException ex)
+            {
+                if (_IsRunning)
+                {
+                    ReportError(remoteIPEndPoint, ex);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_IsRunning)
+                {
+                    ReportError(remoteIPEndPoint, ex);
+                }
             }
 
+        }
+
+        protected virtual bool TryGetReceiveContext(out UdpClient currentUdpClient, out WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
+        {
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed || !_IsRunning)
+                {
+                    currentUdpClient = null;
+                    receiveWorkTaskQueue = null;
+                    return false;
+                }
+
+                currentUdpClient = _CurrentUdpClient;
+                receiveWorkTaskQueue = _ReceiveWorkTaskQueue;
+                return !currentUdpClient.IfIsNull() && !receiveWorkTaskQueue.IfIsNull();
+            }
+        }
+
+        protected virtual bool CanContinueReceive(UdpClient currentUdpClient, WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
+        {
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed || !_IsRunning)
+                {
+                    return false;
+                }
+
+                return ReferenceEquals(_CurrentUdpClient, currentUdpClient)
+                    && ReferenceEquals(_ReceiveWorkTaskQueue, receiveWorkTaskQueue);
+            }
         }
 
         public bool Send(byte[] data, IPEndPoint remoteIpEndPoint)
@@ -213,45 +449,54 @@ namespace Lanymy.Common.Instruments
 
         public bool Send(TSendPackage sendPackage)
         {
+            if (sendPackage == null)
+            {
+                return false;
+            }
+
             var packageDataBytes = _CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage);
             return Send(packageDataBytes, sendPackage.RemoteIpEndPoint);
         }
 
         public bool Send(SendUdpDataModel sendUdpDataModel)
         {
-
             try
             {
-                TaskHelper.SyncWait(SendAsync(sendUdpDataModel));
+                return TrySendAsync(sendUdpDataModel).GetAwaiter().GetResult();
             }
             catch
             {
-
+                return false;
             }
-
-            return true;
-
         }
 
         public async Task SendAsync(SendUdpDataModel sendUdpDataModel)
         {
+            await TrySendAsync(sendUdpDataModel);
+        }
+
+        protected virtual async Task<bool> TrySendAsync(SendUdpDataModel sendUdpDataModel)
+        {
+            if (_IsDisposed || !_IsRunning || sendUdpDataModel == null || sendUdpDataModel.RemoteIpEndPoint == null || sendUdpDataModel.PackageBytes.IfIsNullOrEmpty())
+            {
+                return false;
+            }
 
             try
             {
-
-                if (_IsRunning)
+                var sendWorkTaskQueue = _SendWorkTaskQueue;
+                if (!sendWorkTaskQueue.IfIsNull())
                 {
-                    await _SendWorkTaskQueue.AddToQueueAsync(sendUdpDataModel);
+                    await sendWorkTaskQueue.AddToQueueAsync(sendUdpDataModel);
+                    return true;
                 }
-
+                return false;
             }
             catch (Exception ex)
             {
-
-                OnErrorEvent(sendUdpDataModel.RemoteIpEndPoint, ex);
-
+                ReportError(sendUdpDataModel.RemoteIpEndPoint, ex);
+                return false;
             }
-
         }
 
 
@@ -286,13 +531,8 @@ namespace Lanymy.Common.Instruments
                     _IsRunning = false;
 
                     receiveWorkTaskQueue = _ReceiveWorkTaskQueue;
-                    _ReceiveWorkTaskQueue = null;
-
                     sendWorkTaskQueue = _SendWorkTaskQueue;
-                    _SendWorkTaskQueue = null;
-
                     currentUdpClient = _CurrentUdpClient;
-                    _CurrentUdpClient = null;
 
                 }
                 else
@@ -307,7 +547,6 @@ namespace Lanymy.Common.Instruments
                 if (!receiveWorkTaskQueue.IfIsNull())
                 {
                     await receiveWorkTaskQueue.StopAsync();
-                    receiveWorkTaskQueue.Dispose();
                 }
             }
             catch
@@ -320,12 +559,19 @@ namespace Lanymy.Common.Instruments
                 if (!sendWorkTaskQueue.IfIsNull())
                 {
                     await sendWorkTaskQueue.StopAsync();
-                    sendWorkTaskQueue.Dispose();
                 }
             }
             catch
             {
 
+            }
+
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_CurrentUdpClient, currentUdpClient))
+                {
+                    _CurrentUdpClient = null;
+                }
             }
 
 
@@ -349,9 +595,9 @@ namespace Lanymy.Common.Instruments
             {
                 OnCloseEvent();
             }
-            catch
+            catch (Exception ex)
             {
-
+                ReportError(null, ex);
             }
         }
 
@@ -360,7 +606,75 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
+            if (_IsDisposed)
+            {
+                return;
+            }
+
+            WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue = null;
+            WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue = null;
+            UdpClient currentUdpClient = null;
+
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed)
+                {
+                    return;
+                }
+
+                _IsDisposed = true;
+
+                receiveWorkTaskQueue = _ReceiveWorkTaskQueue;
+                sendWorkTaskQueue = _SendWorkTaskQueue;
+                currentUdpClient = _CurrentUdpClient;
+            }
+
             Close();
+
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_ReceiveWorkTaskQueue, receiveWorkTaskQueue))
+                {
+                    _ReceiveWorkTaskQueue = null;
+                }
+
+                if (ReferenceEquals(_SendWorkTaskQueue, sendWorkTaskQueue))
+                {
+                    _SendWorkTaskQueue = null;
+                }
+
+                if (ReferenceEquals(_CurrentUdpClient, currentUdpClient))
+                {
+                    _CurrentUdpClient = null;
+                }
+
+                _IsRunning = false;
+            }
+
+            try
+            {
+                receiveWorkTaskQueue?.Dispose();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                sendWorkTaskQueue?.Dispose();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                currentUdpClient?.Close();
+                currentUdpClient?.Dispose();
+            }
+            catch
+            {
+            }
         }
 
     }
