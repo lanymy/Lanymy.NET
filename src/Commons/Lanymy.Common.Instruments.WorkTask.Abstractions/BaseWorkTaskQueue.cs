@@ -50,6 +50,21 @@ namespace Lanymy.Common.Instruments
             OnWorkAction(dataModel);
         }
 
+        protected virtual void OnWorkError(TDataModel dataModel, Exception ex)
+        {
+        }
+
+        private void TryOnWorkError(TDataModel dataModel, Exception ex)
+        {
+            try
+            {
+                OnWorkError(dataModel, ex);
+            }
+            catch
+            {
+            }
+        }
+
 
         protected virtual async Task OnTaskAsync(CancellationToken token)
         {
@@ -64,14 +79,27 @@ namespace Lanymy.Common.Instruments
 
                         while (IsRunning && _CurrentChannel.Reader.TryRead(out var dataModel))
                         {
-                            await OnWorkActionAsync(dataModel);
+                            try
+                            {
+                                await OnWorkActionAsync(dataModel);
+                            }
+                            catch (OperationCanceledException) when (token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+                            catch (Exception ex)
+                            {
+                                TryOnWorkError(dataModel, ex);
+                            }
                         }
 
                     }
 
                 }
             }
-            //catch (TaskCanceledException tce)
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+            }
             catch
             {
 

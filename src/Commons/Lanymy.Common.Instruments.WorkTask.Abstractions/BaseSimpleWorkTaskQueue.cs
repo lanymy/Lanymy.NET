@@ -49,6 +49,21 @@ namespace Lanymy.Common.Instruments
             _WorkAction(data);
         }
 
+        protected virtual void OnWorkError(TData data, Exception ex)
+        {
+        }
+
+        private void TryOnWorkError(TData data, Exception ex)
+        {
+            try
+            {
+                OnWorkError(data, ex);
+            }
+            catch
+            {
+            }
+        }
+
 
         private async Task OnTaskAsync()
         {
@@ -61,7 +76,14 @@ namespace Lanymy.Common.Instruments
                 while (_CurrentCacheConcurrentQueue.TryDequeue(out data))
                 {
 
-                    OnWorkAction(data);
+                    try
+                    {
+                        OnWorkAction(data);
+                    }
+                    catch (Exception ex)
+                    {
+                        TryOnWorkError(data, ex);
+                    }
 
                 }
 

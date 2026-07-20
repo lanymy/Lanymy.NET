@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -53,6 +53,21 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        protected virtual void OnWorkError(CancellationToken token, Exception ex)
+        {
+        }
+
+        private void TryOnWorkError(CancellationToken token, Exception ex)
+        {
+            try
+            {
+                OnWorkError(token, ex);
+            }
+            catch
+            {
+            }
+        }
+
 
         private async Task OnTaskAsync(CancellationToken token)
         {
@@ -62,7 +77,18 @@ namespace Lanymy.Common.Instruments
                 while (!token.IsCancellationRequested && IsRunning)
                 {
 
-                    OnWorkAction(token);
+                    try
+                    {
+                        OnWorkAction(token);
+                    }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        TryOnWorkError(token, ex);
+                    }
 
                     if (_SleepIntervalMilliseconds > 0)
                     {
@@ -70,6 +96,9 @@ namespace Lanymy.Common.Instruments
                     }
 
                 }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
             }
             catch
             {

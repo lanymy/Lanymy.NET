@@ -33,22 +33,57 @@ namespace Lanymy.Common.Instruments
             return _CurrentWorkFunc();
         }
 
+        protected virtual void OnWorkError(Exception ex)
+        {
+        }
+
+        private void TryOnWorkError(Exception ex)
+        {
+            try
+            {
+                OnWorkError(ex);
+            }
+            catch
+            {
+            }
+        }
+
 
         protected virtual async Task OnTaskAsync(CancellationToken token)
         {
 
-            while (!token.IsCancellationRequested)
+            try
             {
-
-                await Task.Delay(TaskSleepMilliseconds, token);
-
-                var timerWorkTaskDataResult = OnWorkFunc();
-
-                if (!timerWorkTaskDataResult.IfIsNullOrEmpty() && timerWorkTaskDataResult.IsBreak)
+                while (!token.IsCancellationRequested)
                 {
-                    break;
-                }
 
+                    await Task.Delay(TaskSleepMilliseconds, token);
+
+                    TimerWorkTaskDataResult timerWorkTaskDataResult;
+
+                    try
+                    {
+                        timerWorkTaskDataResult = OnWorkFunc();
+                    }
+                    catch (OperationCanceledException) when (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        TryOnWorkError(ex);
+                        continue;
+                    }
+
+                    if (!timerWorkTaskDataResult.IfIsNullOrEmpty() && timerWorkTaskDataResult.IsBreak)
+                    {
+                        break;
+                    }
+
+                }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
             }
 
         }

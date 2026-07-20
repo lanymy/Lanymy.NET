@@ -41,6 +41,90 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        class TestResilientSimpleWorkTask : BaseSimpleWorkTask
+        {
+            private readonly Action<CancellationToken> _action;
+            private readonly Action<Exception> _errorAction;
+
+            public TestResilientSimpleWorkTask(Action<CancellationToken> action, Action<Exception> errorAction, int sleepIntervalMilliseconds = 0)
+                : base(_ => { }, sleepIntervalMilliseconds)
+            {
+                _action = action;
+                _errorAction = errorAction;
+            }
+
+            protected override void OnWorkAction(CancellationToken token)
+            {
+                _action(token);
+            }
+
+            protected override void OnWorkError(CancellationToken token, Exception ex)
+            {
+                _errorAction(ex);
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                await Task.CompletedTask;
+            }
+        }
+
+        class TestResilientSimpleWorkTaskQueue : BaseSimpleWorkTaskQueue<WorkTaskQueueDataModel>
+        {
+            private readonly Action<WorkTaskQueueDataModel> _action;
+            private readonly Action<WorkTaskQueueDataModel, Exception> _errorAction;
+
+            public TestResilientSimpleWorkTaskQueue(Action<WorkTaskQueueDataModel> action, Action<WorkTaskQueueDataModel, Exception> errorAction, int sleepIntervalMilliseconds = 10)
+                : base(_ => { }, sleepIntervalMilliseconds)
+            {
+                _action = action;
+                _errorAction = errorAction;
+            }
+
+            protected override void OnWorkAction(WorkTaskQueueDataModel data)
+            {
+                _action(data);
+            }
+
+            protected override void OnWorkError(WorkTaskQueueDataModel data, Exception ex)
+            {
+                _errorAction(data, ex);
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                await Task.CompletedTask;
+            }
+        }
+
+        class TestResilientTimerWorkTask : BaseTimerWorkTask
+        {
+            private readonly Func<TimerWorkTaskDataResult> _func;
+            private readonly Action<Exception> _errorAction;
+
+            public TestResilientTimerWorkTask(Func<TimerWorkTaskDataResult> func, Action<Exception> errorAction, int taskSleepMilliseconds = 10)
+                : base(() => null, taskSleepMilliseconds)
+            {
+                _func = func;
+                _errorAction = errorAction;
+            }
+
+            protected override TimerWorkTaskDataResult OnWorkFunc()
+            {
+                return _func();
+            }
+
+            protected override void OnWorkError(Exception ex)
+            {
+                _errorAction(ex);
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                await Task.CompletedTask;
+            }
+        }
+
         class TestExternalChannelWorkTaskQueue : BaseWorkTaskQueue<WorkTaskQueueDataModel>
         {
             public TestExternalChannelWorkTaskQueue(Channel<WorkTaskQueueDataModel> channel, Action<List<WorkTaskQueueDataModel>> stopAndReadQueueAllDataAction)
@@ -57,6 +141,29 @@ namespace Lanymy.Common.AllTests
             }
 
             public int CachedCount => _CurrentCacheConcurrentQueue.Count;
+        }
+
+        class TestResilientWorkTaskQueue : BaseWorkTaskQueue<WorkTaskQueueDataModel>
+        {
+            private readonly Action<WorkTaskQueueDataModel> _action;
+            private readonly Action<WorkTaskQueueDataModel, Exception> _errorAction;
+
+            public TestResilientWorkTaskQueue(Action<WorkTaskQueueDataModel> action, Action<WorkTaskQueueDataModel, Exception> errorAction)
+                : base(null, _ => { }, null, taskSleepMilliseconds: 50)
+            {
+                _action = action;
+                _errorAction = errorAction;
+            }
+
+            protected override void OnWorkAction(WorkTaskQueueDataModel dataModel)
+            {
+                _action(dataModel);
+            }
+
+            protected override void OnWorkError(WorkTaskQueueDataModel dataModel, Exception ex)
+            {
+                _errorAction(dataModel, ex);
+            }
         }
 
 
@@ -166,6 +273,162 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod()]
+        public async Task BaseSimpleWorkTask_ShouldContinueAfterSingleIterationThrows()
+        {
+            var errorTypes = new List<Type>();
+            var successSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var executionCount = 0;
+
+            using var workTask = new TestResilientSimpleWorkTask
+            (
+                _ =>
+                {
+                    var currentCount = Interlocked.Increment(ref executionCount);
+
+                    if (currentCount == 1)
+                    {
+                        throw new InvalidOperationException("boom");
+                    }
+
+                    successSignal.TrySetResult(true);
+                },
+                ex =>
+                {
+                    lock (errorTypes)
+                    {
+                        errorTypes.Add(ex.GetType());
+                    }
+                },
+                sleepIntervalMilliseconds: 10
+            );
+
+            await workTask.StartAsync();
+
+            var completedTask = await Task.WhenAny(successSignal.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(successSignal.Task, completedTask);
+            Assert.IsTrue(workTask.IsRunning);
+
+            lock (errorTypes)
+            {
+                CollectionAssert.AreEqual(new List<Type> { typeof(InvalidOperationException) }, errorTypes);
+            }
+
+            Assert.IsTrue(Volatile.Read(ref executionCount) >= 2);
+
+            await workTask.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task BaseSimpleWorkTaskQueue_ShouldContinueAfterSingleItemThrows()
+        {
+            var processedIndexes = new List<int>();
+            var errorIndexes = new List<int>();
+            var processedSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using var queue = new TestResilientSimpleWorkTaskQueue
+            (
+                data =>
+                {
+                    if (data.Index == 1)
+                    {
+                        throw new InvalidOperationException("boom");
+                    }
+
+                    lock (processedIndexes)
+                    {
+                        processedIndexes.Add(data.Index);
+                    }
+
+                    if (data.Index == 2)
+                    {
+                        processedSignal.TrySetResult(true);
+                    }
+                },
+                (data, ex) =>
+                {
+                    if (ex is InvalidOperationException)
+                    {
+                        lock (errorIndexes)
+                        {
+                            errorIndexes.Add(data.Index);
+                        }
+                    }
+                },
+                sleepIntervalMilliseconds: 10
+            );
+
+            await queue.StartAsync();
+            queue.AddToQueue(new WorkTaskQueueDataModel { Index = 1 });
+            queue.AddToQueue(new WorkTaskQueueDataModel { Index = 2 });
+
+            var completedTask = await Task.WhenAny(processedSignal.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(processedSignal.Task, completedTask);
+            Assert.IsTrue(queue.IsRunning);
+
+            lock (errorIndexes)
+            {
+                CollectionAssert.AreEqual(new List<int> { 1 }, errorIndexes);
+            }
+
+            lock (processedIndexes)
+            {
+                CollectionAssert.AreEqual(new List<int> { 2 }, processedIndexes);
+            }
+
+            await queue.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task BaseTimerWorkTask_ShouldContinueAfterSingleTickThrows()
+        {
+            var errorTypes = new List<Type>();
+            var successSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tickCount = 0;
+
+            using var workTask = new TestResilientTimerWorkTask
+            (
+                () =>
+                {
+                    var currentTick = Interlocked.Increment(ref tickCount);
+
+                    if (currentTick == 1)
+                    {
+                        throw new InvalidOperationException("boom");
+                    }
+
+                    successSignal.TrySetResult(true);
+                    return null;
+                },
+                ex =>
+                {
+                    lock (errorTypes)
+                    {
+                        errorTypes.Add(ex.GetType());
+                    }
+                },
+                taskSleepMilliseconds: 10
+            );
+
+            await workTask.StartAsync();
+
+            var completedTask = await Task.WhenAny(successSignal.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(successSignal.Task, completedTask);
+            Assert.IsTrue(workTask.IsRunning);
+
+            lock (errorTypes)
+            {
+                CollectionAssert.AreEqual(new List<Type> { typeof(InvalidOperationException) }, errorTypes);
+            }
+
+            Assert.IsTrue(Volatile.Read(ref tickCount) >= 2);
+
+            await workTask.StopAsync();
+        }
+
+        [TestMethod()]
         public async Task WorkTaskTriggerQueue_StopAsync_ShouldNotThrowAfterStart()
         {
             var queue = new WorkTaskTriggerQueue<WorkTaskQueueDataModel>
@@ -253,6 +516,66 @@ namespace Lanymy.Common.AllTests
             Assert.IsNotNull(flushedDataList);
             Assert.AreEqual(1, flushedDataList.Count);
             Assert.AreEqual(7, flushedDataList[0].Index);
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskQueue_WorkerShouldContinueAfterSingleItemThrows()
+        {
+            var processedIndexes = new List<int>();
+            var errorIndexes = new List<int>();
+            var processedSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var queue = new TestResilientWorkTaskQueue
+            (
+                dataModel =>
+                {
+                    if (dataModel.Index == 1)
+                    {
+                        throw new InvalidOperationException("boom");
+                    }
+
+                    lock (processedIndexes)
+                    {
+                        processedIndexes.Add(dataModel.Index);
+                    }
+
+                    if (dataModel.Index == 2)
+                    {
+                        processedSignal.TrySetResult(true);
+                    }
+                },
+                (dataModel, ex) =>
+                {
+                    if (ex is InvalidOperationException)
+                    {
+                        lock (errorIndexes)
+                        {
+                            errorIndexes.Add(dataModel.Index);
+                        }
+                    }
+                }
+            );
+
+            await queue.StartAsync();
+            await queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 1 });
+            await queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 2 });
+
+            var completedTask = await Task.WhenAny(processedSignal.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(processedSignal.Task, completedTask);
+            Assert.IsTrue(queue.IsRunning);
+
+            lock (errorIndexes)
+            {
+                CollectionAssert.AreEqual(new List<int> { 1 }, errorIndexes);
+            }
+
+            lock (processedIndexes)
+            {
+                CollectionAssert.AreEqual(new List<int> { 2 }, processedIndexes);
+            }
+
+            await queue.StopAsync();
         }
 
 
