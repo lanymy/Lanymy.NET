@@ -39,7 +39,7 @@ namespace Lanymy.Common.Instruments
             }
         }
 
-        //public bool IsDisposed => _IsDisposed;
+        public bool IsDisposed => _IsDisposed;
         public bool IsAccept => _IsRunning;
 
         public int ReceiveBufferSize { get; }
@@ -53,6 +53,7 @@ namespace Lanymy.Common.Instruments
         protected readonly object _CloseLocker = new Object();
 
         protected volatile bool _IsRunning = false;
+        protected volatile bool _IsDisposed = false;
 
         protected readonly int _SendDataIntervalMilliseconds;
 
@@ -115,16 +116,14 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnAccept(ITcpServerClient client)
         {
-
             try
             {
                 OnAcceptEvent(client);
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnServerClientErrorEvent(client, ex);
             }
-
         }
 
 
@@ -132,7 +131,46 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnServerClientErrorEvent(ITcpServerClient client, Exception ex)
         {
+            if (!IsManagedTcpServerClient(client))
+            {
+                return;
+            }
+
             OnServerClientErrorCallBackEvent(client, ex);
+        }
+
+        protected virtual void AttachTcpServerClientEventHandlers(ITcpServerClient tcpServerClient)
+        {
+            tcpServerClient.StartReceiveEvent += OnServerClientStartReceiveEvent;
+            tcpServerClient.ServerClientErrorEvent += OnServerClientErrorEvent;
+            tcpServerClient.ReceiveDataEvent += OnServerClientReceiveDataEvent;
+            tcpServerClient.CloseEvent += OnServerClientCloseEvent;
+            tcpServerClient.HeartEvent += OnServerClientHeartEvent;
+        }
+
+        protected virtual void DetachTcpServerClientEventHandlers(ITcpServerClient tcpServerClient)
+        {
+            if (tcpServerClient.IfIsNull())
+            {
+                return;
+            }
+
+            tcpServerClient.StartReceiveEvent -= OnServerClientStartReceiveEvent;
+            tcpServerClient.ServerClientErrorEvent -= OnServerClientErrorEvent;
+            tcpServerClient.ReceiveDataEvent -= OnServerClientReceiveDataEvent;
+            tcpServerClient.CloseEvent -= OnServerClientCloseEvent;
+            tcpServerClient.HeartEvent -= OnServerClientHeartEvent;
+        }
+
+        protected virtual bool IsManagedTcpServerClient(ITcpServerClient tcpServerClient)
+        {
+            if (tcpServerClient.IfIsNull() || tcpServerClient.CurrentSessionToken.IfIsNull())
+            {
+                return false;
+            }
+
+            return _TcpServerClientDic.TryGetValue(tcpServerClient.CurrentSessionToken.SessionID, out var currentClient)
+                   && ReferenceEquals(currentClient, tcpServerClient);
         }
 
         protected virtual void HandleServerManagedClientError(ITcpServerClient client, Exception ex)
@@ -182,9 +220,14 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void CloseTcpServerClient(ISessionToken sessionToken)
         {
+            if (sessionToken.IfIsNull())
+            {
+                return;
+            }
 
             if (_TcpServerClientDic.TryRemove(sessionToken.SessionID, out var client))
             {
+                DetachTcpServerClientEventHandlers(client);
                 client.Close();
             }
 
@@ -196,32 +239,140 @@ namespace Lanymy.Common.Instruments
 
         protected abstract TTcpServerClient CreateTcpServerClient(System.Net.Sockets.Socket client);
 
-        public void Start()
+        protected virtual System.Net.Sockets.Socket CreateListenSocket()
         {
-
-            CurrentSocket = new System.Net.Sockets.Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            return new System.Net.Sockets.Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
                 NoDelay = true,
             };
+        }
 
-            var ipEndPoint = new IPEndPoint(IPAddress.Any, Port);
-            CurrentSocket.Bind(ipEndPoint);
-            CurrentSocket.Listen(_CurrentBacklog);
-            _IsRunning = true;
+        protected virtual void BindAndListenSocket(System.Net.Sockets.Socket currentSocket, IPEndPoint ipEndPoint)
+        {
+            currentSocket.Bind(ipEndPoint);
+            currentSocket.Listen(_CurrentBacklog);
+        }
 
-            _ = Task.Factory.StartNew(
-                () => BeginAcceptAsync(),
-                CancellationToken.None,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default).Unwrap();
+        protected virtual bool TryBeginStart(out System.Net.Sockets.Socket currentSocket)
+        {
+            currentSocket = null;
 
-            //if (_HeartTask.IfIsNull())
-            //{
-            //    _HeartTask = new Task(OnHeartTask, TaskCreationOptions.LongRunning);
-            //    _HeartTask.Start();
-            //}
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed || _IsRunning)
+                {
+                    return false;
+                }
 
+                currentSocket = CreateListenSocket();
+                CurrentSocket = currentSocket;
+                _IsRunning = true;
+                return true;
+            }
+        }
 
+        protected virtual bool CanContinueStart(System.Net.Sockets.Socket currentSocket)
+        {
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed)
+                {
+                    return false;
+                }
+
+                if (!ReferenceEquals(CurrentSocket, currentSocket))
+                {
+                    return false;
+                }
+
+                return _IsRunning;
+            }
+        }
+
+        protected virtual void ResetStartState(System.Net.Sockets.Socket currentSocket)
+        {
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(CurrentSocket, currentSocket))
+                {
+                    CurrentSocket = null;
+                }
+
+                _IsRunning = false;
+            }
+
+            if (currentSocket.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                currentSocket.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer reset start listen socket failed.", ex));
+            }
+        }
+
+        public void Start()
+        {
+            if (!TryBeginStart(out var currentSocket))
+            {
+                return;
+            }
+
+            try
+            {
+                var ipEndPoint = new IPEndPoint(IPAddress.Any, Port);
+                BindAndListenSocket(currentSocket, ipEndPoint);
+                if (!CanContinueStart(currentSocket))
+                {
+                    ResetStartState(currentSocket);
+                    return;
+                }
+
+                _ = Task.Factory.StartNew(
+                    () => BeginAcceptAsync(),
+                    CancellationToken.None,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default).Unwrap();
+
+                //if (_HeartTask.IfIsNull())
+                //{
+                //    _HeartTask = new Task(OnHeartTask, TaskCreationOptions.LongRunning);
+                //    _HeartTask.Start();
+                //}
+            }
+            catch (Exception ex)
+            {
+                var canContinueStart = CanContinueStart(currentSocket);
+                ResetStartState(currentSocket);
+                if (!canContinueStart && CanIgnoreStartException(ex))
+                {
+                    return;
+                }
+
+                throw;
+            }
+        }
+
+        protected virtual bool CanIgnoreStartException(Exception ex)
+        {
+            if (ex is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (ex is SocketException socketException)
+            {
+                return socketException.SocketErrorCode == SocketError.Interrupted
+                    || socketException.SocketErrorCode == SocketError.OperationAborted
+                    || socketException.SocketErrorCode == SocketError.NotSocket;
+            }
+
+            return false;
         }
 
         private async Task BeginAcceptAsync()
@@ -236,7 +387,21 @@ namespace Lanymy.Common.Instruments
                         return;
                     }
 
-                    var socket = currentSocket.Accept();
+                    System.Net.Sockets.Socket socket = null;
+                    try
+                    {
+                        socket = currentSocket.Accept();
+                    }
+                    catch (Exception exception) when (CanIgnoreAcceptException(exception, currentSocket))
+                    {
+                        return;
+                    }
+                    catch (Exception exception)
+                    {
+                        OnServerError(exception);
+                        return;
+                    }
+
                     if (!_IsRunning)
                     {
                         socket.Dispose();
@@ -244,24 +409,24 @@ namespace Lanymy.Common.Instruments
                     }
 
                     var tcpServerClient = CreateTcpServerClient(socket);
-                    tcpServerClient.StartReceiveEvent += OnServerClientStartReceiveEvent;
-                    tcpServerClient.ServerClientErrorEvent += OnServerClientErrorEvent;
-                    tcpServerClient.ReceiveDataEvent += OnServerClientReceiveDataEvent;
-                    tcpServerClient.CloseEvent += OnServerClientCloseEvent;
-                    tcpServerClient.HeartEvent += OnServerClientHeartEvent;
+                    AttachTcpServerClientEventHandlers(tcpServerClient);
 
                     if (!TryInitializeAcceptedClient(tcpServerClient))
                     {
+                        DetachTcpServerClientEventHandlers(tcpServerClient);
                         socket.Dispose();
                         continue;
                     }
 
                     await tcpServerClient.StartReceiveAsync();
+                    if (!tcpServerClient.IsRunning)
+                    {
+                        DetachTcpServerClientEventHandlers(tcpServerClient);
+                        continue;
+                    }
+
                     OnAccept(tcpServerClient);
                 }
-            }
-            catch (Exception exception) when (CanIgnoreAcceptException(exception))
-            {
             }
             catch (Exception exception)
             {
@@ -269,9 +434,9 @@ namespace Lanymy.Common.Instruments
             }
         }
 
-        protected virtual bool CanIgnoreAcceptException(Exception ex)
+        protected virtual bool CanIgnoreAcceptException(Exception ex, System.Net.Sockets.Socket acceptSocket)
         {
-            if (_IsRunning)
+            if (_IsRunning && ReferenceEquals(CurrentSocket, acceptSocket))
             {
                 return false;
             }
@@ -296,6 +461,10 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnServerClientHeartEvent(ITcpServerClient tcpServerClient)
         {
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
 
             var sessionToken = tcpServerClient.CurrentSessionToken;
 
@@ -329,6 +498,11 @@ namespace Lanymy.Common.Instruments
         protected abstract void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient);
         protected virtual void OnServerClientCloseEvent(ITcpServerClient tcpServerClient)
         {
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
+
             OnServerClientCloseCallBackEvent(tcpServerClient);
             CloseTcpServerClient(tcpServerClient);
         }
@@ -336,12 +510,21 @@ namespace Lanymy.Common.Instruments
         protected abstract void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient);
         protected virtual void OnServerClientStartReceiveEvent(ITcpServerClient tcpServerClient)
         {
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
+
             OnServerClientStartReceiveCallBackEvent(tcpServerClient);
         }
 
         protected abstract void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache);
         protected virtual void OnServerClientReceiveDataEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
         {
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
 
             OnServerClientReceiveDataCallBackEvent(tcpServerClient, buffer, cache);
 
@@ -378,8 +561,18 @@ namespace Lanymy.Common.Instruments
         /// <param name="cache"></param>
         protected virtual void OnServerClientReceiveDataLoopEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
         {
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
+
             while (true)
             {
+                if (!IsManagedTcpServerClient(tcpServerClient))
+                {
+                    return;
+                }
+
                 var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
 
                 if (packageBytes.IfIsNull())
@@ -414,66 +607,56 @@ namespace Lanymy.Common.Instruments
 
         public void SendDataBytes(ITcpServerClient client, byte[] dataBytes)
         {
+            if (client.IfIsNull() || !IsManagedTcpServerClient(client))
+            {
+                return;
+            }
+
+            if (!CanSendData(client.CurrentSessionToken))
+            {
+                return;
+            }
 
             try
             {
-                if (CanSendData(client.CurrentSessionToken))
-                {
-                    client.Send(dataBytes);
-                }
+                client.Send(dataBytes);
             }
-            catch
+            catch (Exception ex)
             {
-
+                HandleServerManagedClientError(client, ex);
             }
-
         }
 
 
         public void SendDataBytes(Guid sessionID, byte[] dataBytes)
         {
-
-            try
+            var client = GetTcpServerClient(sessionID);
+            if (!client.IfIsNull())
             {
-                var client = GetTcpServerClient(sessionID);
-
-                if (!client.IfIsNull())
-                {
-                    SendDataBytes(client, dataBytes);
-                }
+                SendDataBytes(client, dataBytes);
             }
-            catch
-            {
-
-            }
-
         }
 
 
         public void SendPackage(Guid sessionID, TSendPackage sendPackage)
         {
+            var client = GetTcpServerClient(sessionID);
+            if (client.IfIsNull())
+            {
+                return;
+            }
 
             try
             {
-
-                var client = GetTcpServerClient(sessionID);
-                if (client.IfIsNull())
-                {
-                    return;
-                }
                 var session = client.CurrentSessionToken;
                 sendPackage.SendNum = session.SendNum;
-
                 var sendPackageDataBytes = _CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage);
-
                 SendDataBytes(client, sendPackageDataBytes);
-
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnServerClientErrorEvent(client, ex);
             }
-
         }
 
         protected ITcpServerClient GetTcpServerClient(Guid sessionID)
@@ -545,9 +728,9 @@ namespace Lanymy.Common.Instruments
                 {
                     foreach (var tcpServerClient in tcpServerClients)
                     {
-
                         try
                         {
+                            DetachTcpServerClientEventHandlers(tcpServerClient);
                             await tcpServerClient.CloseAsync();
                         }
                         catch (Exception ex)
@@ -586,6 +769,12 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
+            if (_IsDisposed)
+            {
+                return;
+            }
+
+            _IsDisposed = true;
 
             Close();
 

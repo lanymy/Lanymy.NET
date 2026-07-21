@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -58,6 +59,7 @@ namespace Lanymy.Common.Instruments
         public int SendBufferSize { get; }
 
         public bool IsRunning => _IsRunning;
+        public bool IsDisposed => _IsDisposed;
 
 
 
@@ -83,6 +85,7 @@ namespace Lanymy.Common.Instruments
         protected readonly int _SendDataIntervalMilliseconds;
 
         protected volatile bool _IsRunning = false;
+        protected volatile bool _IsDisposed = false;
         //protected volatile bool _IsSend = false;
 
         protected volatile int _CurrentReadCount = 0;
@@ -203,6 +206,15 @@ namespace Lanymy.Common.Instruments
             ReportServerClientError(ex);
         }
 
+        protected virtual void ClearServerClientEvents()
+        {
+            ServerClientErrorEvent = null;
+            ReceiveDataEvent = null;
+            StartReceiveEvent = null;
+            CloseEvent = null;
+            HeartEvent = null;
+        }
+
         protected abstract void OnReceiveDataEvent(BufferModel buffer, CacheModel cache);
 
         protected virtual void OnReceiveData(BufferModel buffer, CacheModel cache)
@@ -252,6 +264,10 @@ namespace Lanymy.Common.Instruments
 
         internal async Task StartReceiveAsync()
         {
+            if (_IsDisposed)
+            {
+                return;
+            }
 
             if (_IsRunning)
             {
@@ -260,49 +276,164 @@ namespace Lanymy.Common.Instruments
 
             _IsRunning = true;
 
-            BeginReceive();
+            var sendWorkTaskQueueStarted = false;
+            var heartTimerStarted = false;
 
-            await _CurrentSendWorkTaskQueue.StartAsync();
-            await _CurrentHeartTimerWorkTask.StartAsync();
+            try
+            {
+                if (!TryBeginReceive())
+                {
+                    await ResetStartReceiveStateAsync(sendWorkTaskQueueStarted, heartTimerStarted);
+                    return;
+                }
 
-            OnStartReceive();
+                if (!CanContinueStartReceive())
+                {
+                    await ResetStartReceiveStateAsync(sendWorkTaskQueueStarted, heartTimerStarted);
+                    return;
+                }
+
+                await _CurrentSendWorkTaskQueue.StartAsync();
+                sendWorkTaskQueueStarted = true;
+                if (!CanContinueStartReceive())
+                {
+                    await ResetStartReceiveStateAsync(sendWorkTaskQueueStarted, heartTimerStarted);
+                    return;
+                }
+
+                await _CurrentHeartTimerWorkTask.StartAsync();
+                heartTimerStarted = true;
+                if (!CanContinueStartReceive())
+                {
+                    await ResetStartReceiveStateAsync(sendWorkTaskQueueStarted, heartTimerStarted);
+                    return;
+                }
+
+                OnStartReceive();
+            }
+            catch (Exception ex)
+            {
+                OnServerClientError(ex);
+                await ResetStartReceiveStateAsync(sendWorkTaskQueueStarted, heartTimerStarted);
+            }
 
         }
 
+        protected virtual bool CanContinueStartReceive()
+        {
+            return _IsRunning
+                   && !_CurrentSendWorkTaskQueue.IfIsNull()
+                   && !_CurrentHeartTimerWorkTask.IfIsNull();
+        }
 
-        private void BeginReceive()
+        protected virtual async Task ResetStartReceiveStateAsync(bool sendWorkTaskQueueStarted, bool heartTimerStarted)
+        {
+            _IsRunning = false;
+
+            if (heartTimerStarted && !_CurrentHeartTimerWorkTask.IfIsNull())
+            {
+                try
+                {
+                    await _CurrentHeartTimerWorkTask.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    ReportServerClientError(new InvalidOperationException("TcpServerClient reset start heart timer failed.", ex));
+                }
+            }
+
+            if (sendWorkTaskQueueStarted && !_CurrentSendWorkTaskQueue.IfIsNull())
+            {
+                try
+                {
+                    await _CurrentSendWorkTaskQueue.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    ReportServerClientError(new InvalidOperationException("TcpServerClient reset start send queue failed.", ex));
+                }
+            }
+
+            var currentNetworkStream = _CurrentNetworkStream;
+            _CurrentNetworkStream = null;
+
+            if (!currentNetworkStream.IfIsNull())
+            {
+                try
+                {
+                    currentNetworkStream.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    ReportServerClientError(new InvalidOperationException("TcpServerClient reset start network stream failed.", ex));
+                }
+            }
+
+            _CurrentBuffer.Clear();
+            _CurrentCache.Clear();
+        }
+
+
+        private bool TryBeginReceive()
         {
             try
             {
 
                 if (_IsRunning)
                 {
-
                     _CurrentBuffer.Clear();
                     _CurrentCache.Clear();
-                    _CurrentNetworkStream = new NetworkStream(CurrentSocket);
-                    _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
+                    var currentNetworkStream = new NetworkStream(CurrentSocket);
+                    _CurrentNetworkStream = currentNetworkStream;
+                    if (!CanContinueReceive(currentNetworkStream))
+                    {
+                        return false;
+                    }
+
+                    currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
 
                 }
+
+                return true;
 
             }
             catch (Exception exception)
             {
                 OnServerClientError(exception);
+                return false;
             }
+        }
+
+        protected virtual bool CanContinueReceive(NetworkStream currentNetworkStream)
+        {
+            return TcpReceiveGuardHelper.CanContinueReceive(_IsRunning, currentNetworkStream, _CurrentNetworkStream);
+        }
+
+        protected virtual bool CanIgnoreReceiveException(Exception exception, NetworkStream currentNetworkStream)
+        {
+            return TcpReceiveGuardHelper.CanIgnoreReceiveException(exception, CanContinueReceive(currentNetworkStream));
         }
 
 
         protected virtual void OnReceive(IAsyncResult ar)
         {
+            NetworkStream currentNetworkStream = null;
 
             try
             {
 
                 if (!_IsRunning)
+                {
                     return;
+                }
 
-                _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
+                currentNetworkStream = _CurrentNetworkStream;
+                if (!CanContinueReceive(currentNetworkStream))
+                {
+                    return;
+                }
+
+                _CurrentReadCount = currentNetworkStream.EndRead(ar);
 
                 if (_CurrentReadCount <= 0)
                 {
@@ -329,11 +460,15 @@ namespace Lanymy.Common.Instruments
                 }
 
                 //if (_IsRunning && IsConnected && !_CurrentNetworkStream.IfIsNull())
-                if (_IsRunning)
+                if (CanContinueReceive(currentNetworkStream))
                 {
-                    _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize - _CurrentBuffer.Position, OnReceive, null);
+                    currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize - _CurrentBuffer.Position, OnReceive, null);
                 }
 
+            }
+            catch (Exception exception) when (CanIgnoreReceiveException(exception, currentNetworkStream))
+            {
+                return;
             }
             catch (Exception exception)
             {
@@ -379,38 +514,32 @@ namespace Lanymy.Common.Instruments
 
         public virtual void Send(byte[] sendDataBytes)
         {
-
             try
             {
                 TaskHelper.SyncWait(SendAsync(sendDataBytes));
-
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnServerClientError(ex);
             }
-
         }
 
 
         public virtual async Task SendAsync(byte[] sendDataBytes)
         {
+            if (_IsDisposed || !_IsRunning || sendDataBytes.IfIsNullOrEmpty())
+            {
+                return;
+            }
 
             try
             {
-
-                //if (!sendDataBytes.IfIsNullOrEmpty() && IsConnected)
-                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty())
-                {
-                    await _CurrentSendWorkTaskQueue.AddToQueueAsync(sendDataBytes);
-                }
-
+                await _CurrentSendWorkTaskQueue.AddToQueueAsync(sendDataBytes);
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnServerClientError(ex);
             }
-
         }
 
 
@@ -548,24 +677,30 @@ namespace Lanymy.Common.Instruments
 
 
                 OnCloseEvent();
-
-                if (!CloseEvent.IfIsNull())
-                {
-                    CloseEvent(this);
-                }
-
-                ServerClientErrorEvent = null;
-                ReceiveDataEvent = null;
-                StartReceiveEvent = null;
-                CloseEvent = null;
-                HeartEvent = null;
-
-                //CurrentSessionToken = null;
-
             }
             catch (Exception ex)
             {
                 OnCloseError(new InvalidOperationException("TcpServerClient close finalization failed.", ex));
+            }
+            finally
+            {
+                try
+                {
+                    if (!CloseEvent.IfIsNull())
+                    {
+                        CloseEvent(this);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OnCloseError(new InvalidOperationException("TcpServerClient close event failed.", ex));
+                }
+                finally
+                {
+                    ClearServerClientEvents();
+                }
+
+                //CurrentSessionToken = null;
             }
 
         }
@@ -586,6 +721,12 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
+            if (_IsDisposed)
+            {
+                return;
+            }
+
+            _IsDisposed = true;
 
             Close();
 

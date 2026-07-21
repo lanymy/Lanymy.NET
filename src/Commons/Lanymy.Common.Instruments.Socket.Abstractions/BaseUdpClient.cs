@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
 using Lanymy.Common.Instruments.Common;
@@ -126,6 +127,11 @@ namespace Lanymy.Common.Instruments
 
             }
 
+        }
+
+        protected virtual void OnCloseError(Exception ex)
+        {
+            ReportError(null, ex);
         }
 
         protected async Task OnSendWorkTaskQueueAsync(SendUdpDataModel sendUdpDataModel)
@@ -544,26 +550,20 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-                if (!receiveWorkTaskQueue.IfIsNull())
-                {
-                    await receiveWorkTaskQueue.StopAsync();
-                }
+                await StopReceiveWorkTaskQueueAsync(receiveWorkTaskQueue);
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnCloseError(new InvalidOperationException("UdpClient close receive queue failed.", ex));
             }
 
             try
             {
-                if (!sendWorkTaskQueue.IfIsNull())
-                {
-                    await sendWorkTaskQueue.StopAsync();
-                }
+                await StopSendWorkTaskQueueAsync(sendWorkTaskQueue);
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnCloseError(new InvalidOperationException("UdpClient close send queue failed.", ex));
             }
 
             lock (_CloseLocker)
@@ -577,17 +577,11 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-
-                if (!currentUdpClient.IfIsNull())
-                {
-                    currentUdpClient.Close();
-                    currentUdpClient.Dispose();
-                }
-
+                DisposeCurrentUdpClient(currentUdpClient);
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnCloseError(new InvalidOperationException("UdpClient dispose udp client failed.", ex));
             }
 
 
@@ -597,8 +591,43 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                ReportError(null, ex);
+                OnCloseError(new InvalidOperationException("UdpClient close finalization failed.", ex));
             }
+        }
+
+        protected virtual async Task StopReceiveWorkTaskQueueAsync(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
+        {
+            if (!receiveWorkTaskQueue.IfIsNull())
+            {
+                await receiveWorkTaskQueue.StopAsync();
+            }
+        }
+
+        protected virtual async Task StopSendWorkTaskQueueAsync(WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue)
+        {
+            if (!sendWorkTaskQueue.IfIsNull())
+            {
+                await sendWorkTaskQueue.StopAsync();
+            }
+        }
+
+        protected virtual void DisposeCurrentUdpClient(UdpClient currentUdpClient)
+        {
+            if (!currentUdpClient.IfIsNull())
+            {
+                currentUdpClient.Close();
+                currentUdpClient.Dispose();
+            }
+        }
+
+        protected virtual void DisposeReceiveWorkTaskQueue(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
+        {
+            receiveWorkTaskQueue?.Dispose();
+        }
+
+        protected virtual void DisposeSendWorkTaskQueue(WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue)
+        {
+            sendWorkTaskQueue?.Dispose();
         }
 
 
@@ -629,7 +658,16 @@ namespace Lanymy.Common.Instruments
                 currentUdpClient = _CurrentUdpClient;
             }
 
-            Close();
+            var disposeExceptions = new List<Exception>();
+
+            try
+            {
+                Close();
+            }
+            catch (Exception ex)
+            {
+                disposeExceptions.Add(ex);
+            }
 
             lock (_CloseLocker)
             {
@@ -653,27 +691,45 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-                receiveWorkTaskQueue?.Dispose();
+                DisposeReceiveWorkTaskQueue(receiveWorkTaskQueue);
             }
-            catch
+            catch (Exception ex)
             {
-            }
-
-            try
-            {
-                sendWorkTaskQueue?.Dispose();
-            }
-            catch
-            {
+                var disposeReceiveQueueException = new InvalidOperationException("UdpClient dispose receive queue failed.", ex);
+                OnCloseError(disposeReceiveQueueException);
+                disposeExceptions.Add(disposeReceiveQueueException);
             }
 
             try
             {
-                currentUdpClient?.Close();
-                currentUdpClient?.Dispose();
+                DisposeSendWorkTaskQueue(sendWorkTaskQueue);
             }
-            catch
+            catch (Exception ex)
             {
+                var disposeSendQueueException = new InvalidOperationException("UdpClient dispose send queue failed.", ex);
+                OnCloseError(disposeSendQueueException);
+                disposeExceptions.Add(disposeSendQueueException);
+            }
+
+            try
+            {
+                DisposeCurrentUdpClient(currentUdpClient);
+            }
+            catch (Exception ex)
+            {
+                var disposeUdpClientException = new InvalidOperationException("UdpClient dispose udp client failed.", ex);
+                OnCloseError(disposeUdpClientException);
+                disposeExceptions.Add(disposeUdpClientException);
+            }
+
+            if (disposeExceptions.Count == 1)
+            {
+                ExceptionDispatchInfo.Capture(disposeExceptions[0]).Throw();
+            }
+
+            if (disposeExceptions.Count > 1)
+            {
+                throw new AggregateException(disposeExceptions);
             }
         }
 

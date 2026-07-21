@@ -15,10 +15,10 @@ namespace Lanymy.Common.Instruments.Common
         /// </summary>
         bool IsConnected { get; }
 
-        ///// <summary>
-        ///// 是否释放
-        ///// </summary>
-        //bool IsDisposed { get; }
+        /// <summary>
+        /// 是否释放
+        /// </summary>
+        bool IsDisposed { get; }
         /// <summary>
         /// ReceiveBufferSize
         /// </summary>

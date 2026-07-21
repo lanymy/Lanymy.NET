@@ -24,6 +24,7 @@
 - **理解跨框架兼容**：读 [architecture/compatibility/README.md](./architecture/compatibility/README.md)。
 - **理解 Helpers / Instruments 两大能力面**：读 [architecture/helpers/README.md](./architecture/helpers/README.md) 与 [architecture/instruments/README.md](./architecture/instruments/README.md)。
 - **了解测试现状**：读 [architecture/testing/README.md](./architecture/testing/README.md)。
+- **确认功能修改后的测试补齐规则**：读 [conventions/Testing-Convention.md](./conventions/Testing-Convention.md)。
 - **查看问题复验与修复过程**：读 [debugs/review_round_01.md](./debugs/review_round_01.md) 与 [debugs/fixed_issues_summary.md](./debugs/fixed_issues_summary.md)。
 - **查看第二轮系统性体检**：读 [debugs/review_round_02.md](./debugs/review_round_02.md) 与 [debugs/remediation_roadmap.md](./debugs/remediation_roadmap.md)。
 
@@ -79,7 +80,8 @@ ai_docs/
 │   ├── README.md
 │   ├── FileHeader-Convention.md
 │   ├── Naming-Convention.md
-│   └── MultiTargeting-Convention.md
+│   ├── MultiTargeting-Convention.md
+│   └── Testing-Convention.md
 ├── debugs/
 │   ├── README.md
 │   ├── review_candidates.md

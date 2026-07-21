@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -490,7 +491,7 @@ namespace Lanymy.Common.AllTests
         {
             var workTask = new TestStartFailWorkTask(new InvalidOperationException("start failed"));
 
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => workTask.StartAsync());
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => workTask.StartAsync());
 
             Assert.IsFalse(workTask.IsRunning);
         }
@@ -505,7 +506,7 @@ namespace Lanymy.Common.AllTests
 
             workTask.StartAsync().Wait();
 
-            var ex = Assert.ThrowsException<InvalidOperationException>(() => workTask.Dispose());
+            var ex = Assert.ThrowsExactly<InvalidOperationException>(() => workTask.Dispose());
 
             Assert.AreEqual("stop failed", ex.Message);
             CollectionAssert.AreEqual(new List<string> { "stop", "dispose" }, order);
@@ -599,6 +600,135 @@ namespace Lanymy.Common.AllTests
             Assert.IsNotNull(flushedDataList);
             Assert.AreEqual(1, flushedDataList.Count);
             Assert.AreEqual(7, flushedDataList[0].Index);
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskTriggerQueue_WorkTriggerActionThrow_ShouldRecoverAndRetryBatch()
+        {
+            var triggerCallCount = 0;
+            List<int> processedIndexes = null;
+            var processedSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var queue = new TestWorkTaskTriggerQueue
+            (
+                dataList =>
+                {
+                    var currentCallCount = Interlocked.Increment(ref triggerCallCount);
+                    if (currentCallCount == 1)
+                    {
+                        throw new InvalidOperationException("trigger failed");
+                    }
+
+                    processedIndexes = dataList.Select(o => o.Index).ToList();
+                    processedSignal.TrySetResult(true);
+                },
+                actionTriggerCount: 1,
+                actionTriggerTimeSpan: TimeSpan.FromSeconds(30),
+                taskSleepMilliseconds: 50
+            );
+
+            await queue.StartAsync();
+            await queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 1 });
+
+            var firstAttemptDeadline = DateTime.UtcNow.AddSeconds(2);
+            while (triggerCallCount == 0 && DateTime.UtcNow < firstAttemptDeadline)
+            {
+                await Task.Delay(20);
+            }
+
+            Assert.AreEqual(1, triggerCallCount);
+            Assert.IsTrue(queue.IsRunning);
+
+            await queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 2 });
+
+            var completedTask = await Task.WhenAny(processedSignal.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(processedSignal.Task, completedTask);
+            Assert.AreEqual(2, triggerCallCount);
+            CollectionAssert.AreEqual(new List<int> { 1, 2 }, processedIndexes);
+            Assert.IsTrue(queue.IsRunning);
+
+            await queue.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskTriggerQueue_WorkTriggerActionCanRequeueWithoutDeadlock()
+        {
+            var processedBatches = new List<List<int>>();
+            var secondBatchSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hasRequeued = 0;
+            TestWorkTaskTriggerQueue queue = null;
+
+            queue = new TestWorkTaskTriggerQueue
+            (
+                dataList =>
+                {
+                    var batchIndexes = dataList.Select(o => o.Index).ToList();
+                    lock (processedBatches)
+                    {
+                        processedBatches.Add(batchIndexes);
+                    }
+
+                    if (batchIndexes.Count == 1 && batchIndexes[0] == 1 && Interlocked.Exchange(ref hasRequeued, 1) == 0)
+                    {
+                        queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 2 }).GetAwaiter().GetResult();
+                        return;
+                    }
+
+                    if (batchIndexes.Count == 1 && batchIndexes[0] == 2)
+                    {
+                        secondBatchSignal.TrySetResult(true);
+                    }
+                },
+                actionTriggerCount: 1,
+                actionTriggerTimeSpan: TimeSpan.FromSeconds(30),
+                taskSleepMilliseconds: 50
+            );
+
+            await queue.StartAsync();
+            await queue.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 1 });
+
+            var completedTask = await Task.WhenAny(secondBatchSignal.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(secondBatchSignal.Task, completedTask);
+
+            lock (processedBatches)
+            {
+                Assert.AreEqual(2, processedBatches.Count);
+                CollectionAssert.AreEqual(new List<int> { 1 }, processedBatches[0]);
+                CollectionAssert.AreEqual(new List<int> { 2 }, processedBatches[1]);
+            }
+
+            await queue.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task WorkTaskTriggerQueueContext_StopAsync_WithPendingChannelData_ShouldNotHang()
+        {
+            var context = new WorkTaskTriggerQueueContext<WorkTaskQueueDataModel>
+            (
+                _ =>
+                {
+                    Thread.Sleep(200);
+                },
+                workTaskCount: 1,
+                actionTriggerCount: 1,
+                actionTriggerTimeSpan: TimeSpan.FromSeconds(3)
+            );
+
+            await context.StartAsync();
+
+            for (var i = 0; i < 20; i++)
+            {
+                await context.AddToQueueAsync(new WorkTaskQueueDataModel { Index = i });
+            }
+
+            var stopTask = context.StopAsync();
+            var completedTask = await Task.WhenAny(stopTask, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(stopTask, completedTask);
+            await stopTask;
+            Assert.IsFalse(context.IsRunning);
         }
 
         [TestMethod()]

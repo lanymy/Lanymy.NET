@@ -89,10 +89,37 @@
 - 但原始错误与关闭过程中的二次错误常常被吞掉。
 - 这会让“业务错误”“网络断开”“关闭失败”混在一起。
 
+### 4.5 TCP 主线已收敛约束
+
+- `BaseTcpServer` 当前已补齐启动失败回滚、`CloseAsync()` 后可重启、启动中 `CloseAsync()` 可取消本轮启动这三类基础契约。
+- `BaseTcpServer` 对子连接事件已增加“托管态”过滤：
+  - 已脱管客户端的 `Error` / `Close` / `StartReceive` / `ReceiveData` / `Heart` 回调会被直接忽略。
+  - 服务端主动关闭子连接前会先解绑事件，避免子连接 `CloseEvent` 反向触发重复关闭。
+- `BaseTcpServer` 的收包循环与公开发送入口已增加托管态保护：
+  - 未托管客户端不会再继续进入 `ReceiveDataLoop` 的包处理阶段。
+  - 外部保留下来的旧客户端实例不能再通过 `SendDataBytes(ITcpServerClient, ...)` 继续发送。
+- `BaseTcpServerClient` 与 `BaseTcpClient` 的接收回调已统一采用“流快照 + 连续性校验 + 关闭期异常忽略”模型：
+  - 旧 `NetworkStream` / 已清空 `NetworkStream` 的回调不会再误打空引用。
+  - 关闭交错期间的 `ObjectDisposedException`、`IOException` 和中止类 `SocketException` 会被视为关闭噪音而不是运行期错误。
+- `BaseTcpServerClient` 的关闭尾声已拆分为：
+  - 内部 `OnCloseEvent()`
+  - 外部 `CloseEvent`
+  - 事件句柄清理
+- 这保证了：
+  - 内部关闭回调异常不会阻断外部关闭通知。
+  - 外部关闭事件异常不会阻断事件句柄最终清零。
+
+关键代码：
+
+- [BaseTcpServer.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpServer.cs)
+- [BaseTcpServerClient.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpServerClient.cs)
+- [BaseTcpClient.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpClient.cs)
+- [TcpReceiveGuardHelper.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/TcpReceiveGuardHelper.cs)
+
 ## 5. 当前建议
 
-1. 先处理 Netty 客户端重连边界。
-2. 再梳理 `Socket.Abstractions` 的关闭链，明确每段资源的所有权和失败行为。
+1. 传统 `Socket.Abstractions` 主线当前可暂时从“生命周期竞态治理”切到“重复模式收敛与文档沉淀”。
+2. 优先继续处理 Netty 客户端重连边界，因为它仍是当前最明显的长寿命生命周期风险点。
 3. 再减少关闭路径中的 `.Wait()` 与空 `catch`。
 4. 最后根据需要补更细的：
    - TCP Client 生命周期图

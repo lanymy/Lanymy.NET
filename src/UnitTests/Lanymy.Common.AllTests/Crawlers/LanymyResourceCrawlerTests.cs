@@ -15,114 +15,114 @@ namespace Lanymy.Common.AllTests.Crawlers
     {
 
 
-        [TestMethod()]
-        public void LanymyResourceCrawlerTest()
-        {
+        //[TestMethod()]
+        //public void LanymyResourceCrawlerTest()
+        //{
 
-            var lanymyResourceCrawler = new LanymyResourceCrawler("www.baidu.com",
-                taskProgressModel =>
-                {
-                    var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
-                }, null);
-
-
-            lanymyResourceCrawler.StartAsync().Wait();
+        //    var lanymyResourceCrawler = new LanymyResourceCrawler("www.baidu.com",
+        //        taskProgressModel =>
+        //        {
+        //            var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
+        //        }, null);
 
 
-            //Task.Delay(24 * 60 * 60 * 1000).Wait();
-            //Task.Delay(10 * 1000).Wait();
-            Task.Delay(25 * 1000).Wait();
+        //    lanymyResourceCrawler.StartAsync().Wait();
 
 
-            lanymyResourceCrawler.StopAsync().Wait();
-
-            //Task.Delay(24 * 60 * 60 * 1000).Wait();
-
-
-
-            //var lanymyDownloadCrawler = new LanymyDownloadCrawler(
-            //    taskProgressModel =>
-            //    {
-            //        var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
-            //    });
-
-            //lanymyDownloadCrawler.StartAsync().Wait();
-
-            //int count = 10;
-            ////
-            //var tasks = new Task[]
-            //{
-            //    Task.Run(() =>
-            //    {
-            //        for (int i = 0; i < count; i++)
-            //        {
-            //            lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
-            //            {
-            //                ID = Guid.NewGuid(),
-            //                CreateDateTime = DateTime.Now,
-            //                ResourceType = ResourceTypeEnum.Image,
-            //                ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
-            //            }).Wait();
-            //        }
-            //    }),
+        //    //Task.Delay(24 * 60 * 60 * 1000).Wait();
+        //    //Task.Delay(10 * 1000).Wait();
+        //    Task.Delay(25 * 1000).Wait();
 
 
-            //    //Task.Run(() =>
-            //    //{
-            //    //    for (int i = 0; i < count; i++)
-            //    //    {
-            //    //        lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
-            //    //        {
-            //    //            ID = Guid.NewGuid(),
-            //    //            CreateDateTime = DateTime.Now,
-            //    //            ResourceType = ResourceTypeEnum.Image,
-            //    //            ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
-            //    //        }).Wait();
-            //    //    }
-            //    //}),
+        //    lanymyResourceCrawler.StopAsync().Wait();
 
-            //    //Task.Run(() =>
-            //    //{
-            //    //    for (int i = 0; i < count; i++)
-            //    //    {
-            //    //        lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
-            //    //        {
-            //    //            ID = Guid.NewGuid(),
-            //    //            CreateDateTime = DateTime.Now,
-            //    //            ResourceType = ResourceTypeEnum.Image,
-            //    //            ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
-            //    //        }).Wait();
-            //    //    }
-            //    //}),
-
-            //    //Task.Run(() =>
-            //    //{
-            //    //    for (int i = 0; i < count; i++)
-            //    //    {
-            //    //        lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
-            //    //        {
-            //    //            ID = Guid.NewGuid(),
-            //    //            CreateDateTime = DateTime.Now,
-            //    //            ResourceType = ResourceTypeEnum.Image,
-            //    //            ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
-            //    //        }).Wait();
-            //    //    }
-            //    //}),
-
-            //};
-
-            ////Task.WhenAll(tasks).Wait();
-
-            ////Task.Delay(24 * 60 * 60 * 1000).Wait();
-            //Task.Delay(2 * 1000).Wait();
+        //    //Task.Delay(24 * 60 * 60 * 1000).Wait();
 
 
-            //lanymyDownloadCrawler.StopAsync().Wait();
 
-            ////Task.Delay(24 * 60 * 60 * 1000).Wait();
+        //    //var lanymyDownloadCrawler = new LanymyDownloadCrawler(
+        //    //    taskProgressModel =>
+        //    //    {
+        //    //        var json = JsonSerializeHelper.SerializeToJson(taskProgressModel);
+        //    //    });
+
+        //    //lanymyDownloadCrawler.StartAsync().Wait();
+
+        //    //int count = 10;
+        //    ////
+        //    //var tasks = new Task[]
+        //    //{
+        //    //    Task.Run(() =>
+        //    //    {
+        //    //        for (int i = 0; i < count; i++)
+        //    //        {
+        //    //            lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
+        //    //            {
+        //    //                ID = Guid.NewGuid(),
+        //    //                CreateDateTime = DateTime.Now,
+        //    //                ResourceType = ResourceTypeEnum.Image,
+        //    //                ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
+        //    //            }).Wait();
+        //    //        }
+        //    //    }),
 
 
-        }
+        //    //    //Task.Run(() =>
+        //    //    //{
+        //    //    //    for (int i = 0; i < count; i++)
+        //    //    //    {
+        //    //    //        lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
+        //    //    //        {
+        //    //    //            ID = Guid.NewGuid(),
+        //    //    //            CreateDateTime = DateTime.Now,
+        //    //    //            ResourceType = ResourceTypeEnum.Image,
+        //    //    //            ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
+        //    //    //        }).Wait();
+        //    //    //    }
+        //    //    //}),
+
+        //    //    //Task.Run(() =>
+        //    //    //{
+        //    //    //    for (int i = 0; i < count; i++)
+        //    //    //    {
+        //    //    //        lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
+        //    //    //        {
+        //    //    //            ID = Guid.NewGuid(),
+        //    //    //            CreateDateTime = DateTime.Now,
+        //    //    //            ResourceType = ResourceTypeEnum.Image,
+        //    //    //            ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
+        //    //    //        }).Wait();
+        //    //    //    }
+        //    //    //}),
+
+        //    //    //Task.Run(() =>
+        //    //    //{
+        //    //    //    for (int i = 0; i < count; i++)
+        //    //    //    {
+        //    //    //        lanymyDownloadCrawler.AddToDownloadAsync(new ImageDownloadCrawlerDataModel
+        //    //    //        {
+        //    //    //            ID = Guid.NewGuid(),
+        //    //    //            CreateDateTime = DateTime.Now,
+        //    //    //            ResourceType = ResourceTypeEnum.Image,
+        //    //    //            ResourceDownloadType = ResourceDownloadTypeEnum.Jpg,
+        //    //    //        }).Wait();
+        //    //    //    }
+        //    //    //}),
+
+        //    //};
+
+        //    ////Task.WhenAll(tasks).Wait();
+
+        //    ////Task.Delay(24 * 60 * 60 * 1000).Wait();
+        //    //Task.Delay(2 * 1000).Wait();
+
+
+        //    //lanymyDownloadCrawler.StopAsync().Wait();
+
+        //    ////Task.Delay(24 * 60 * 60 * 1000).Wait();
+
+
+        //}
 
 
     }

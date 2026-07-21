@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Lanymy.Common.Instruments
     {
 
 
-        public System.Net.Sockets.Socket CurrentSocket { get; }
+        public System.Net.Sockets.Socket CurrentSocket { get; private set; }
 
         public bool IsConnected
         {
@@ -37,6 +38,7 @@ namespace Lanymy.Common.Instruments
         public int ReceiveBufferSize { get; }
         public int SendBufferSize { get; }
         public bool IsRunning => _IsRunning;
+        public bool IsDisposed => _IsDisposed;
         public string ServerIP { get; }
         public int Port { get; }
 
@@ -47,6 +49,7 @@ namespace Lanymy.Common.Instruments
 
         private volatile bool _IsFirstStart = true;
         protected volatile bool _IsRunning = false;
+        protected volatile bool _IsDisposed = false;
 
         protected volatile int _CurrentReadCount = 0;
 
@@ -76,12 +79,8 @@ namespace Lanymy.Common.Instruments
             _CurrentBuffer = new BufferModel(ReceiveBufferSize);
             _CurrentCache = new CacheModel(ReceiveBufferSize);
 
-            CurrentSocket = new System.Net.Sockets.Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
-            {
-                NoDelay = true,
-            };
-
-            _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueueAsync, null);
+            CurrentSocket = CreateSocket();
+            _CurrentSendWorkTaskQueue = CreateSendWorkTaskQueue();
 
 
         }
@@ -160,6 +159,19 @@ namespace Lanymy.Common.Instruments
 
         protected abstract void OnErrorEvent(Exception ex);
 
+        protected virtual System.Net.Sockets.Socket CreateSocket()
+        {
+            return new System.Net.Sockets.Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            {
+                NoDelay = true,
+            };
+        }
+
+        protected virtual WorkTaskQueue<byte[]> CreateSendWorkTaskQueue()
+        {
+            return new WorkTaskQueue<byte[]>(OnSendWorkTaskQueueAsync, null);
+        }
+
         protected virtual void ReportError(Exception ex)
         {
 
@@ -193,6 +205,10 @@ namespace Lanymy.Common.Instruments
 
         public void Start()
         {
+            if (_IsDisposed)
+            {
+                return;
+            }
 
             if (_IsRunning)
             {
@@ -205,8 +221,22 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
+            var currentSocket = CurrentSocket;
+            if (currentSocket.IfIsNull())
+            {
+                currentSocket = CreateSocket();
+                CurrentSocket = currentSocket;
+            }
+
+            var currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
+            if (currentSendWorkTaskQueue.IfIsNull())
+            {
+                currentSendWorkTaskQueue = CreateSendWorkTaskQueue();
+                _CurrentSendWorkTaskQueue = currentSendWorkTaskQueue;
+            }
 
             _IsRunning = true;
+            var sendWorkTaskQueueStarted = false;
 
             try
             {
@@ -214,19 +244,25 @@ namespace Lanymy.Common.Instruments
                 _CurrentBuffer.Clear();
                 _CurrentCache.Clear();
 
-                CurrentSocket.Connect(new IPEndPoint(IPAddress.Parse(ServerIP), Port));
-                _CurrentNetworkStream = new NetworkStream(CurrentSocket);
+                currentSocket.Connect(new IPEndPoint(IPAddress.Parse(ServerIP), Port));
+                var currentNetworkStream = new NetworkStream(currentSocket);
+                _CurrentNetworkStream = currentNetworkStream;
 
-                TaskHelper.SyncWait(_CurrentSendWorkTaskQueue.StartAsync());
+                TaskHelper.SyncWait(currentSendWorkTaskQueue.StartAsync());
+                sendWorkTaskQueueStarted = true;
 
                 OnConnection();
 
-                _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
+                if (CanContinueReceive(currentNetworkStream))
+                {
+                    currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
+                }
 
             }
             catch (Exception exception)
             {
-                OnError(exception);
+                ResetStartState(currentSocket, currentSendWorkTaskQueue, sendWorkTaskQueueStarted);
+                ReportError(exception);
             }
 
 
@@ -234,11 +270,22 @@ namespace Lanymy.Common.Instruments
 
         private void OnReceive(IAsyncResult ar)
         {
+            NetworkStream currentNetworkStream = null;
 
             try
             {
+                if (!_IsRunning)
+                {
+                    return;
+                }
 
-                _CurrentReadCount = _CurrentNetworkStream.EndRead(ar);
+                currentNetworkStream = _CurrentNetworkStream;
+                if (!CanContinueReceive(currentNetworkStream))
+                {
+                    return;
+                }
+
+                _CurrentReadCount = currentNetworkStream.EndRead(ar);
 
                 if (_CurrentReadCount <= 0)
                 {
@@ -256,16 +303,30 @@ namespace Lanymy.Common.Instruments
 
                 }
 
-                if (_IsRunning)
+                if (CanContinueReceive(currentNetworkStream))
                 {
-                    _CurrentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize - _CurrentBuffer.Position, OnReceive, null);
+                    currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize - _CurrentBuffer.Position, OnReceive, null);
                 }
 
+            }
+            catch (Exception exception) when (CanIgnoreReceiveException(exception, currentNetworkStream))
+            {
+                return;
             }
             catch (Exception exception)
             {
                 OnError(exception);
             }
+        }
+
+        protected virtual bool CanContinueReceive(NetworkStream currentNetworkStream)
+        {
+            return TcpReceiveGuardHelper.CanContinueReceive(_IsRunning, currentNetworkStream, _CurrentNetworkStream);
+        }
+
+        protected virtual bool CanIgnoreReceiveException(Exception exception, NetworkStream currentNetworkStream)
+        {
+            return TcpReceiveGuardHelper.CanIgnoreReceiveException(exception, CanContinueReceive(currentNetworkStream));
         }
 
 
@@ -299,42 +360,118 @@ namespace Lanymy.Common.Instruments
 
         public virtual async Task SendAsync(byte[] sendDataBytes)
         {
+            if (_IsDisposed || !_IsRunning || sendDataBytes.IfIsNullOrEmpty())
+            {
+                return;
+            }
 
             try
             {
-
-                //if (!sendDataBytes.IfIsNullOrEmpty() && IsConnected)
-                if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty())
-                {
-                    await _CurrentSendWorkTaskQueue.AddToQueueAsync(sendDataBytes);
-                }
-
+                await _CurrentSendWorkTaskQueue.AddToQueueAsync(sendDataBytes);
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnError(ex);
             }
-
         }
 
 
         public void Send(byte[] sendDataBytes)
         {
-
             try
             {
                 TaskHelper.SyncWait(SendAsync(sendDataBytes));
             }
-            catch
+            catch (Exception ex)
             {
-
+                OnError(ex);
             }
-
         }
 
         public void Send(TSendPackage sendPackage)
         {
-            Send(_CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage));
+            try
+            {
+                Send(_CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage));
+            }
+            catch (Exception ex)
+            {
+                ReportError(ex);
+            }
+        }
+
+        protected virtual void ResetStartState(System.Net.Sockets.Socket currentSocket, WorkTaskQueue<byte[]> currentSendWorkTaskQueue, bool sendWorkTaskQueueStarted)
+        {
+            _IsRunning = false;
+
+            if (!currentSendWorkTaskQueue.IfIsNull())
+            {
+                try
+                {
+                    if (sendWorkTaskQueueStarted)
+                    {
+                        TaskHelper.SyncWait(currentSendWorkTaskQueue.StopAsync());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportError(new InvalidOperationException("TcpClient reset start send queue failed.", ex));
+                }
+
+                try
+                {
+                    currentSendWorkTaskQueue.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    ReportError(new InvalidOperationException("TcpClient dispose failed start send queue failed.", ex));
+                }
+            }
+
+            if (!ReferenceEquals(_CurrentSendWorkTaskQueue, currentSendWorkTaskQueue))
+            {
+                currentSendWorkTaskQueue = null;
+            }
+
+            if (ReferenceEquals(_CurrentSendWorkTaskQueue, currentSendWorkTaskQueue))
+            {
+                _CurrentSendWorkTaskQueue = CreateSendWorkTaskQueue();
+            }
+
+            var currentNetworkStream = _CurrentNetworkStream;
+            _CurrentNetworkStream = null;
+
+            if (!currentNetworkStream.IfIsNull())
+            {
+                try
+                {
+                    currentNetworkStream.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    ReportError(new InvalidOperationException("TcpClient reset start network stream failed.", ex));
+                }
+            }
+
+            if (!currentSocket.IfIsNull())
+            {
+                try
+                {
+                    currentSocket.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    ReportError(new InvalidOperationException("TcpClient reset start socket failed.", ex));
+                }
+            }
+
+            if (ReferenceEquals(CurrentSocket, currentSocket))
+            {
+                CurrentSocket = CreateSocket();
+            }
+
+            _CurrentBuffer.Clear();
+            _CurrentCache.Clear();
         }
 
 
@@ -396,6 +533,11 @@ namespace Lanymy.Common.Instruments
                 if (ReferenceEquals(_CurrentNetworkStream, currentNetworkStream))
                 {
                     _CurrentNetworkStream = null;
+                }
+
+                if (ReferenceEquals(CurrentSocket, currentSocket))
+                {
+                    CurrentSocket = null;
                 }
             }
 
@@ -467,6 +609,12 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
+            if (_IsDisposed)
+            {
+                return;
+            }
+
+            _IsDisposed = true;
 
             Close();
 

@@ -104,7 +104,7 @@ namespace Lanymy.Common.Instruments
 
                 StateType = DynamicAsyncQueueStateTypeEnum.Cancel;
 
-                _CurrentChannel.Writer.Complete();
+                _CurrentChannel.Writer.TryComplete();
 
                 foreach (var workTaskQueueModel in _WorkTaskQueueList)
                 {
@@ -124,6 +124,7 @@ namespace Lanymy.Common.Instruments
 
                 //}
 
+                DrainRemainingChannelData();
                 await _CurrentChannel.Reader.Completion;
 
                 _WorkTaskQueueList.Clear();
@@ -137,6 +138,13 @@ namespace Lanymy.Common.Instruments
 
             //await Task.CompletedTask;
 
+        }
+
+        private void DrainRemainingChannelData()
+        {
+            while (_CurrentChannel.Reader.TryRead(out _))
+            {
+            }
         }
 
         //public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()

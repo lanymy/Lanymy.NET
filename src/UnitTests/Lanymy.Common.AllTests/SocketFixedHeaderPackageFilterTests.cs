@@ -187,7 +187,7 @@ namespace Lanymy.Common.AllTests
             buffer.BufferData[3] = 0x03;
             buffer.Position = 4;
 
-            Assert.ThrowsException<InvalidOperationException>(() => filter.GetPackageBytes(buffer, cache));
+            Assert.ThrowsExactly<InvalidOperationException>(() => filter.GetPackageBytes(buffer, cache));
         }
 
         [TestMethod]
@@ -209,7 +209,7 @@ namespace Lanymy.Common.AllTests
                 buffer.BufferData[i] = 0xBB;
             }
 
-            Assert.ThrowsException<InvalidOperationException>(() => filter.GetPackageBytes(buffer, cache));
+            Assert.ThrowsExactly<InvalidOperationException>(() => filter.GetPackageBytes(buffer, cache));
         }
     }
 }

@@ -99,38 +99,73 @@ namespace Lanymy.Common.Instruments
 
         private void CheckOnActionTrigger()
         {
-
-            if (_OnActionTriggerCountIndex >= OnActionTriggerCount || (DateTime.Now - OnActionTriggerLastDateTime).TotalMilliseconds > _OnActionTriggerMilliseconds)
+            if (_OnActionTriggerCountIndex < OnActionTriggerCount && (DateTime.Now - OnActionTriggerLastDateTime).TotalMilliseconds <= _OnActionTriggerMilliseconds)
             {
-
-
-                lock (_Locker)
-                {
-
-                    _IsWorkTriggerActionRun = true;
-
-                    if (!_CurrentCacheConcurrentQueue.IsEmpty)
-                    {
-                        _CurrentWorkTaskTriggerQueueAction(_CurrentCacheConcurrentQueue.ToList());
-                    }
-#if NET48
-                    TDataModel item;
-                    while (_CurrentCacheConcurrentQueue.TryDequeue(out item))
-                    {
-                        // 持续出队直到队列为空
-                    }
-#else
-                    _CurrentCacheConcurrentQueue.Clear();
-#endif
-                    Interlocked.Exchange(ref _OnActionTriggerCountIndex, 0);
-                    OnActionTriggerLastDateTime = DateTime.Now;
-
-                    _IsWorkTriggerActionRun = false;
-
-                }
-
+                return;
             }
 
+            List<TDataModel> currentBatchDataList = null;
+            var currentBatchCount = 0;
+            var isTriggerActionSucceeded = false;
+
+            lock (_Locker)
+            {
+                if (_IsWorkTriggerActionRun)
+                {
+                    return;
+                }
+
+                if (_OnActionTriggerCountIndex < OnActionTriggerCount && (DateTime.Now - OnActionTriggerLastDateTime).TotalMilliseconds <= _OnActionTriggerMilliseconds)
+                {
+                    return;
+                }
+
+                currentBatchDataList = _CurrentCacheConcurrentQueue.ToList();
+                currentBatchCount = currentBatchDataList.Count;
+                _IsWorkTriggerActionRun = true;
+            }
+
+            try
+            {
+                if (currentBatchCount > 0)
+                {
+                    _CurrentWorkTaskTriggerQueueAction(currentBatchDataList);
+                    isTriggerActionSucceeded = true;
+                }
+            }
+            finally
+            {
+                lock (_Locker)
+                {
+                    if (isTriggerActionSucceeded && currentBatchCount > 0)
+                    {
+                        ClearTriggeredBatch(currentBatchCount);
+                        var remainingTriggerCount = Math.Max(0, _OnActionTriggerCountIndex - currentBatchCount);
+                        Interlocked.Exchange(ref _OnActionTriggerCountIndex, remainingTriggerCount);
+                        OnActionTriggerLastDateTime = DateTime.Now;
+                    }
+
+                    _IsWorkTriggerActionRun = false;
+                }
+            }
+        }
+
+        private void ClearTriggeredBatch(int batchCount)
+        {
+#if NET48
+            var dequeuedCount = 0;
+            TDataModel item;
+            while (dequeuedCount < batchCount && _CurrentCacheConcurrentQueue.TryDequeue(out item))
+            {
+                dequeuedCount++;
+            }
+#else
+            var dequeuedCount = 0;
+            while (dequeuedCount < batchCount && _CurrentCacheConcurrentQueue.TryDequeue(out _))
+            {
+                dequeuedCount++;
+            }
+#endif
         }
 
         private void FlushCachedDataOnStop()
@@ -179,8 +214,14 @@ namespace Lanymy.Common.Instruments
         {
             if (_TimeTriggerTasktCancellationTokenSource.IfIsNullOrEmpty())
             {
-                await base.OnStopAsync();
-                FlushCachedDataOnStop();
+                try
+                {
+                    await base.OnStopAsync();
+                }
+                finally
+                {
+                    FlushCachedDataOnStop();
+                }
                 return;
             }
 
@@ -214,8 +255,14 @@ namespace Lanymy.Common.Instruments
                 _TimeTriggerTasktCancellationTokenSource = null;
             }
 
-            await base.OnStopAsync();
-            FlushCachedDataOnStop();
+            try
+            {
+                await base.OnStopAsync();
+            }
+            finally
+            {
+                FlushCachedDataOnStop();
+            }
 
         }
 

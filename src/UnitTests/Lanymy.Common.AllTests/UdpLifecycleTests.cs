@@ -71,6 +71,12 @@ namespace Lanymy.Common.AllTests
 
             public Exception ReceivePackageException { get; set; }
             public Exception StartEventException { get; set; }
+            public Exception CloseEventException { get; set; }
+            public Exception CloseReceiveQueueException { get; set; }
+            public Exception CloseSendQueueException { get; set; }
+            public Exception DisposeUdpClientException { get; set; }
+            public Exception DisposeReceiveQueueException { get; set; }
+            public Exception DisposeSendQueueException { get; set; }
             public Exception LastError { get; private set; }
             public int ErrorCount { get; private set; }
             public int ReceivedPackageCount => _receivedPackageCount;
@@ -108,6 +114,10 @@ namespace Lanymy.Common.AllTests
 
             protected override void OnCloseEvent()
             {
+                if (CloseEventException != null)
+                {
+                    throw CloseEventException;
+                }
             }
 
             protected override void OnErrorEvent(IPEndPoint remoteIPEndPoint, Exception ex)
@@ -149,6 +159,56 @@ namespace Lanymy.Common.AllTests
 
                 return CanContinueReceive(currentUdpClient, receiveWorkTaskQueue);
             }
+
+            protected override async Task StopReceiveWorkTaskQueueAsync(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
+            {
+                if (CloseReceiveQueueException != null)
+                {
+                    throw CloseReceiveQueueException;
+                }
+
+                await base.StopReceiveWorkTaskQueueAsync(receiveWorkTaskQueue);
+            }
+
+            protected override async Task StopSendWorkTaskQueueAsync(WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue)
+            {
+                if (CloseSendQueueException != null)
+                {
+                    throw CloseSendQueueException;
+                }
+
+                await base.StopSendWorkTaskQueueAsync(sendWorkTaskQueue);
+            }
+
+            protected override void DisposeCurrentUdpClient(UdpClient currentUdpClient)
+            {
+                if (DisposeUdpClientException != null)
+                {
+                    throw DisposeUdpClientException;
+                }
+
+                base.DisposeCurrentUdpClient(currentUdpClient);
+            }
+
+            protected override void DisposeReceiveWorkTaskQueue(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
+            {
+                if (DisposeReceiveQueueException != null)
+                {
+                    throw DisposeReceiveQueueException;
+                }
+
+                base.DisposeReceiveWorkTaskQueue(receiveWorkTaskQueue);
+            }
+
+            protected override void DisposeSendWorkTaskQueue(WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue)
+            {
+                if (DisposeSendQueueException != null)
+                {
+                    throw DisposeSendQueueException;
+                }
+
+                base.DisposeSendWorkTaskQueue(sendWorkTaskQueue);
+            }
         }
 
         [TestMethod]
@@ -158,7 +218,7 @@ namespace Lanymy.Common.AllTests
             var port = ((IPEndPoint)occupiedSocket.Client.LocalEndPoint).Port;
             var client = new TestUdpClient(port);
 
-            Assert.ThrowsException<SocketException>(() => client.Start());
+            Assert.ThrowsExactly<SocketException>(() => client.Start());
 
             Assert.IsFalse(client.IsAccept);
 
@@ -413,6 +473,61 @@ namespace Lanymy.Common.AllTests
 
             Assert.IsTrue(client.IsDisposed);
             Assert.IsFalse(client.IsAccept);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_CloseAsync_WhenReceiveQueueStopFails_ShouldReportCloseErrorAndRemainStopped()
+        {
+            var client = new TestUdpClient(0)
+            {
+                CloseReceiveQueueException = new InvalidOperationException("receive queue stop failed"),
+            };
+
+            client.Start();
+            client.Close();
+
+            Assert.IsFalse(client.IsAccept);
+            Assert.AreEqual(1, client.ErrorCount);
+            StringAssert.Contains(client.LastError?.Message, "UdpClient close receive queue failed.");
+            Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+            Assert.AreEqual("receive queue stop failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_CloseAsync_WhenCloseEventFails_ShouldReportCloseFinalizationError()
+        {
+            var client = new TestUdpClient(0)
+            {
+                CloseEventException = new InvalidOperationException("close callback failed"),
+            };
+
+            client.Start();
+            client.Close();
+
+            Assert.IsFalse(client.IsAccept);
+            Assert.AreEqual(1, client.ErrorCount);
+            StringAssert.Contains(client.LastError?.Message, "UdpClient close finalization failed.");
+            Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+            Assert.AreEqual("close callback failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_Dispose_WhenReceiveQueueDisposeFails_ShouldReportAndThrow()
+        {
+            var client = new TestUdpClient(0)
+            {
+                DisposeReceiveQueueException = new InvalidOperationException("receive queue dispose failed"),
+            };
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => client.Dispose());
+
+            Assert.IsTrue(client.IsDisposed);
+            Assert.IsFalse(client.IsAccept);
+            Assert.AreEqual("UdpClient dispose receive queue failed.", exception.Message);
+            Assert.AreEqual(1, client.ErrorCount);
+            Assert.AreEqual("UdpClient dispose receive queue failed.", client.LastError?.Message);
+            Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+            Assert.AreEqual("receive queue dispose failed", client.LastError?.InnerException?.Message);
         }
 
         [TestMethod]

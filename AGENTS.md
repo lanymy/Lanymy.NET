@@ -45,6 +45,7 @@
 - 第二步：优先保持现有职责边界，避免把构建逻辑、跨框架兼容逻辑、模块聚合逻辑和具体功能实现混到一起。
 - 第三步：尽量局部修复，避免无必要的大范围重写。
 - 若改动涉及公共 API、打包行为或目标框架，应先评估影响面再修改。
+- 若改动涉及功能行为，默认需要同步在 `src/UnitTests/Lanymy.Common.AllTests` 补齐对应测试；这里的“功能回归”默认同时包含功能正确性、性能验证和稳定性验证；详细规则见 [ai_docs/conventions/Testing-Convention.md](./ai_docs/conventions/Testing-Convention.md)。
 
 ## 6. 推荐阅读与专项文档
 
@@ -53,6 +54,7 @@
 - 若要了解模块地图与入口关系，优先读 [ai_docs/agents/AGENTS-INDEX.md](./ai_docs/agents/AGENTS-INDEX.md)。
 - 若要理解当前仓库整体定位与主结构，优先读 [ai_docs/agents/AGENTS-Lanymy.Common.md](./ai_docs/agents/AGENTS-Lanymy.Common.md)。
 - 若要继续深挖实现与分层，进入 [ai_docs/architecture/README.md](./ai_docs/architecture/README.md)。
+- 若要确认功能修改后的测试补齐约束，读 [ai_docs/conventions/Testing-Convention.md](./ai_docs/conventions/Testing-Convention.md)。
 
 ## 7. 通用修改前后检查
 
@@ -63,6 +65,7 @@
   - 检查相关文件诊断
   - 如涉及构建或打包，至少确认受影响项目的构建状态
   - 如涉及专项域，再按对应专项文档中的检查项补充验证
+  - 如涉及功能修改，默认应同步补齐 `Lanymy.Common.AllTests` 对应测试；完整回归由用户手动执行，并据此确认功能、性能和稳定性
 
 ## 8. 如果需要继续扩展本文件
 

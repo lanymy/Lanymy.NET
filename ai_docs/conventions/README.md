@@ -10,3 +10,4 @@
 | [FileHeader-Convention.md](./FileHeader-Convention.md) | C# 文件头注释约定 |
 | [Naming-Convention.md](./Naming-Convention.md) | 命名约定 |
 | [MultiTargeting-Convention.md](./MultiTargeting-Convention.md) | 多目标框架相关约定 |
+| [Testing-Convention.md](./Testing-Convention.md) | 功能修改与 `Lanymy.Common.AllTests` 测试补齐协作约定 |
