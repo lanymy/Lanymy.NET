@@ -138,92 +138,98 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
+            var exceptions = new List<Exception>();
+            var currentChannel = _CurrentChannel;
+            var currentCancellationTokenSource = _CurrentCancellationTokenSource;
+            var currentWorkTaskList = _CurrentWorkTaskList.ToArray();
 
-
-            if (!_IsInternalChannel)
+            if (!_IsInternalChannel && !currentChannel.IfIsNull())
             {
-
-                _CurrentChannel.Writer.Complete();
+                currentChannel.Writer.TryComplete();
 
             }
 
-
-
-            if (_CurrentCancellationTokenSource.IfIsNullOrEmpty())
-            {
-                return;
-            }
-
-
-            _CurrentCancellationTokenSource.Cancel();
 
 
             try
             {
-                if (_CurrentWorkTaskList.Count > 0)
+                if (!currentCancellationTokenSource.IfIsNullOrEmpty())
                 {
-                    await Task.WhenAll(_CurrentWorkTaskList.ToArray());
+                    currentCancellationTokenSource.Cancel();
+                }
+            }
+            catch (Exception ex)
+            {
+                exceptions.Add(ex);
+            }
+
+            try
+            {
+                if (currentWorkTaskList.Length > 0)
+                {
+                    await Task.WhenAll(currentWorkTaskList);
                 }
             }
             catch (OperationCanceledException)
             {
                 // ignored
             }
-
-            foreach (var task in _CurrentWorkTaskList)
+            catch (Exception ex)
             {
-                task.Dispose();
+                exceptions.Add(ex);
+            }
+            finally
+            {
+                foreach (var task in currentWorkTaskList)
+                {
+                    task.Dispose();
+                }
+
+                if (ReferenceEquals(_CurrentCancellationTokenSource, currentCancellationTokenSource))
+                {
+                    _CurrentCancellationTokenSource = null;
+                }
+
+                currentCancellationTokenSource?.Dispose();
+                _CurrentWorkTaskList.Clear();
             }
 
-
-            if (!_CurrentCancellationTokenSource.IfIsNullOrEmpty())
+            try
             {
-                _CurrentCancellationTokenSource.Dispose();
-                _CurrentCancellationTokenSource = null;
+                await OnStopAndReadQueueAllDataActionAsync();
+            }
+            catch (Exception ex)
+            {
+                exceptions.Add(ex);
             }
 
-
-            _CurrentWorkTaskList.Clear();
-
-
-
-            //if (_IsReadQueueAllData)
-            //{
-
-            //    _IsReadQueueAllData = false;
-
-            //    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
-            //    {
-            //        _CurrentReadQueueAllDataList.Add(item);
-            //    }
-
-            //}
-
-
-            //if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
-            //{
-
-            //    var list = new List<TDataModel>();
-
-            //    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
-            //    {
-            //        list.Add(item);
-            //    }
-
-            //    _CurrentStopAndReadQueueAllDataAction(list);
-
-            //    list.Clear();
-
-            //}
-
-            await OnStopAndReadQueueAllDataActionAsync();
-
-            if (!_IsInternalChannel)
+            if (!_IsInternalChannel && !currentChannel.IfIsNull())
             {
+                try
+                {
+                    await currentChannel.Reader.Completion;
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(ex);
+                }
+                finally
+                {
+                    if (ReferenceEquals(_CurrentChannel, currentChannel))
+                    {
+                        _CurrentChannel = null;
+                    }
+                }
+            }
 
-                await _CurrentChannel.Reader.Completion;
-                _CurrentChannel = null;
+            if (exceptions.Count == 1)
+            {
+                throw exceptions[0];
+            }
 
+            if (exceptions.Count > 1)
+            {
+                throw new AggregateException(exceptions);
             }
 
 

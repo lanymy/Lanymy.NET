@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 
@@ -21,12 +23,14 @@ namespace Lanymy.Common.Instruments.Common
 
 
         protected readonly object _Locker = new object();
+        protected readonly SemaphoreSlim _LifecycleSemaphore = new(1, 1);
 
         private bool _IsRunning = false;
+        private bool _IsDisposed = false;
 
         public bool IsRunning
         {
-            get { return _IsRunning; }
+            get { return Volatile.Read(ref _IsRunning); }
             //private set
             protected set
             {
@@ -65,35 +69,59 @@ namespace Lanymy.Common.Instruments.Common
 
         public async Task StartAsync()
         {
-
-            if (IsRunning)
+            await _LifecycleSemaphore.WaitAsync();
+            try
             {
-                return;
+                ThrowIfDisposed();
+
+                if (IsRunning)
+                {
+                    return;
+                }
+
+                IsRunning = true;
+
+                try
+                {
+                    await OnStartAsync();
+                }
+                catch
+                {
+                    IsRunning = false;
+                    throw;
+                }
+
             }
-
-            IsRunning = true;
-
-
-            await OnStartAsync();
-
+            finally
+            {
+                _LifecycleSemaphore.Release();
+            }
 
         }
 
 
         public async Task StopAsync()
         {
-
-
-            if (!IsRunning)
+            await _LifecycleSemaphore.WaitAsync();
+            try
             {
-                return;
+
+                if (!IsRunning)
+                {
+                    return;
+                }
+
+                IsRunning = false;
+
+                await OnStopAsync();
+
             }
-
-            IsRunning = false;
-
-            await OnStopAsync();
-
+            finally
+            {
+                _LifecycleSemaphore.Release();
+            }
         }
+
 
 
         protected abstract Task OnStartAsync();
@@ -107,9 +135,70 @@ namespace Lanymy.Common.Instruments.Common
 
         public async ValueTask DisposeAsync()
         {
+            await _LifecycleSemaphore.WaitAsync();
+            try
+            {
+                if (_IsDisposed)
+                {
+                    return;
+                }
 
-            await OnDisposeAsync();
+                Exception stopException = null;
+                Exception disposeException = null;
 
+                if (IsRunning)
+                {
+                    IsRunning = false;
+
+                    try
+                    {
+                        await OnStopAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        stopException = ex;
+                    }
+                }
+
+                try
+                {
+                    await OnDisposeAsync();
+                }
+                catch (Exception ex)
+                {
+                    disposeException = ex;
+                }
+
+                _IsDisposed = true;
+
+                if (stopException != null && disposeException != null)
+                {
+                    throw new AggregateException(stopException, disposeException);
+                }
+
+                if (stopException != null)
+                {
+                    ExceptionDispatchInfo.Capture(stopException).Throw();
+                }
+
+                if (disposeException != null)
+                {
+                    ExceptionDispatchInfo.Capture(disposeException).Throw();
+                }
+            }
+            finally
+            {
+                _LifecycleSemaphore.Release();
+            }
+
+        }
+
+        protected virtual void ThrowIfDisposed()
+        {
+            if (_IsDisposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
 

@@ -212,6 +212,10 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
+            Exception timeTriggerStopException = null;
+            var currentTimeTriggerTask = _TimeTriggerTask;
+            var currentTimeTriggerTaskCancellationTokenSource = _TimeTriggerTasktCancellationTokenSource;
+
             if (_TimeTriggerTasktCancellationTokenSource.IfIsNullOrEmpty())
             {
                 try
@@ -226,33 +230,46 @@ namespace Lanymy.Common.Instruments
             }
 
 
-            _TimeTriggerTasktCancellationTokenSource.Cancel();
-
-
-            if (!_TimeTriggerTask.IfIsNullOrEmpty())
+            try
             {
-                try
-                {
-                    await _TimeTriggerTask;
-                }
-                catch (OperationCanceledException)
-                {
-                    // ignored
-                }
+                currentTimeTriggerTaskCancellationTokenSource.Cancel();
             }
-
-            if (!_TimeTriggerTask.IfIsNullOrEmpty())
+            catch (Exception ex)
             {
-                _TimeTriggerTask.Dispose();
-                _TimeTriggerTask = null;
+                timeTriggerStopException = ex;
             }
 
 
-
-            if (!_TimeTriggerTasktCancellationTokenSource.IfIsNullOrEmpty())
+            try
             {
-                _TimeTriggerTasktCancellationTokenSource.Dispose();
-                _TimeTriggerTasktCancellationTokenSource = null;
+                if (!currentTimeTriggerTask.IfIsNullOrEmpty())
+                {
+                    await currentTimeTriggerTask;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignored
+            }
+            catch (Exception ex)
+            {
+                timeTriggerStopException = ex;
+            }
+            finally
+            {
+                if (ReferenceEquals(_TimeTriggerTask, currentTimeTriggerTask))
+                {
+                    _TimeTriggerTask = null;
+                }
+
+                currentTimeTriggerTask?.Dispose();
+
+                if (ReferenceEquals(_TimeTriggerTasktCancellationTokenSource, currentTimeTriggerTaskCancellationTokenSource))
+                {
+                    _TimeTriggerTasktCancellationTokenSource = null;
+                }
+
+                currentTimeTriggerTaskCancellationTokenSource?.Dispose();
             }
 
             try
@@ -262,6 +279,11 @@ namespace Lanymy.Common.Instruments
             finally
             {
                 FlushCachedDataOnStop();
+            }
+
+            if (timeTriggerStopException != null)
+            {
+                throw timeTriggerStopException;
             }
 
         }

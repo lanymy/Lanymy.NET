@@ -13,6 +13,7 @@
 | [debugs](./debugs/) | 调试文档与问题归档 | [README.md](./debugs/README.md) |
 | [design](./design/) | 设计与资源说明 | [README.md](./design/README.md) |
 | [skills](./skills/) | Skills 设计与预留目录 | [README.md](./skills/README.md) |
+| [tasks](./tasks/) | 任务清单与回归验证入口 | [README.md](./tasks/README.md) |
 
 ## 阅读引导
 
@@ -25,6 +26,7 @@
 - **理解 Helpers / Instruments 两大能力面**：读 [architecture/helpers/README.md](./architecture/helpers/README.md) 与 [architecture/instruments/README.md](./architecture/instruments/README.md)。
 - **了解测试现状**：读 [architecture/testing/README.md](./architecture/testing/README.md)。
 - **确认功能修改后的测试补齐规则**：读 [conventions/Testing-Convention.md](./conventions/Testing-Convention.md)。
+- **查看当前任务与回归验证清单**：读 [tasks/active-regression-backlog.md](./tasks/active-regression-backlog.md)。
 - **查看问题复验与修复过程**：读 [debugs/review_round_01.md](./debugs/review_round_01.md) 与 [debugs/fixed_issues_summary.md](./debugs/fixed_issues_summary.md)。
 - **查看第二轮系统性体检**：读 [debugs/review_round_02.md](./debugs/review_round_02.md) 与 [debugs/remediation_roadmap.md](./debugs/remediation_roadmap.md)。
 
@@ -91,6 +93,11 @@ ai_docs/
 │   └── remediation_roadmap.md
 ├── design/
 │   └── README.md
+├── tasks/
+│   ├── README.md
+│   ├── active-regression-backlog.md
+│   └── archive/
+│       └── README.md
 └── skills/
     └── README.md
 ```
@@ -102,6 +109,7 @@ ai_docs/
 - `architecture/` 用于沉淀按主题组织的技术分析。
 - `conventions/` 用于沉淀可长期复用的编码和协作约定。
 - `debugs/` 用于归档调试分析；如后续出现专题问题，可在其下增建子目录。
+- `tasks/` 用于维护当前任务清单、优先级和回归验证状态。
 - 当 `architecture/` 或 `debugs/` 下新增稳定专题文档时，应同步更新本页导航和目录结构，避免“文档已存在但入口失效”。
 - `design/` 与 `skills/` 当前以预留为主，后续按需扩展。
 - 各子目录必须以 `README.md` 作为本层索引入口。

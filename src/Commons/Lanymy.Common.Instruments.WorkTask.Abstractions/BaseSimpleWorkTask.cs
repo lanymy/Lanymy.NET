@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -57,6 +57,16 @@ namespace Lanymy.Common.Instruments
         {
         }
 
+        protected virtual Task DelayAsync(CancellationToken token)
+        {
+            if (_SleepIntervalMilliseconds <= 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            return Task.Delay(_SleepIntervalMilliseconds, token);
+        }
+
         private void TryOnWorkError(CancellationToken token, Exception ex)
         {
             try
@@ -92,17 +102,13 @@ namespace Lanymy.Common.Instruments
 
                     if (_SleepIntervalMilliseconds > 0)
                     {
-                        await Task.Delay(_SleepIntervalMilliseconds);
+                        await DelayAsync(token);
                     }
 
                 }
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
-            }
-            catch
-            {
-
             }
 
         }
@@ -132,33 +138,59 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
+            Exception stopException = null;
+            var currentTask = _CurrentTask;
+            var currentCancellationTokenSource = _CurrentCancellationTokenSource;
 
-            if (!_CurrentCancellationTokenSource.IfIsNull())
+            if (currentCancellationTokenSource.IfIsNull())
             {
-                _CurrentCancellationTokenSource.Cancel();
+                return;
             }
 
-
-            if (!_CurrentTask.IfIsNullOrEmpty())
+            try
             {
-                try
-                {
-                    await _CurrentTask;
-                }
-                catch (OperationCanceledException)
-                {
-                    // ignored
-                }
-
-                _CurrentTask.Dispose();
-                _CurrentTask = null;
-
+                currentCancellationTokenSource.Cancel();
+            }
+            catch (Exception ex)
+            {
+                stopException = ex;
             }
 
-            if (!_CurrentCancellationTokenSource.IfIsNull())
+            try
             {
-                _CurrentCancellationTokenSource.Dispose();
-                _CurrentCancellationTokenSource = null;
+                if (!currentTask.IfIsNullOrEmpty())
+                {
+                    await currentTask;
+                }
+            }
+            catch (OperationCanceledException) when (currentCancellationTokenSource.IsCancellationRequested)
+            {
+                // ignored
+            }
+            catch (Exception ex)
+            {
+                stopException = ex;
+            }
+            finally
+            {
+                if (ReferenceEquals(_CurrentTask, currentTask))
+                {
+                    _CurrentTask = null;
+                }
+
+                currentTask?.Dispose();
+
+                if (ReferenceEquals(_CurrentCancellationTokenSource, currentCancellationTokenSource))
+                {
+                    _CurrentCancellationTokenSource = null;
+                }
+
+                currentCancellationTokenSource?.Dispose();
+            }
+
+            if (stopException != null)
+            {
+                throw stopException;
             }
 
         }

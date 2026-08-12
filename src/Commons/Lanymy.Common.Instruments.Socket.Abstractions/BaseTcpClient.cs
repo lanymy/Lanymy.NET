@@ -192,13 +192,57 @@ namespace Lanymy.Common.Instruments
         {
             ReportError(ex);
 
-
-            Close();
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient close after error failed.", closeException));
+            }
         }
 
         protected virtual void OnCloseError(Exception ex)
         {
             ReportError(ex);
+        }
+
+        protected virtual async Task StopAndDisposeSendQueueAsync(WorkTaskQueue<byte[]> currentSendWorkTaskQueue, string stopErrorMessage, string disposeErrorMessage)
+        {
+            if (currentSendWorkTaskQueue.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                await currentSendWorkTaskQueue.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException(stopErrorMessage, ex));
+            }
+
+            try
+            {
+                currentSendWorkTaskQueue.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException(disposeErrorMessage, ex));
+            }
+        }
+
+        protected virtual void WaitSynchronously(Func<Task> taskFactory)
+        {
+            TaskHelper.SyncWait(taskFactory);
+        }
+
+        protected virtual Exception TryWaitSynchronously(Func<Task> taskFactory)
+        {
+            return TaskHelper.TrySyncWait(taskFactory);
+        }
+
+        protected virtual Exception TryCloseSynchronously()
+        {
+            return TryWaitSynchronously(CloseAsync);
         }
 
         #endregion
@@ -248,7 +292,7 @@ namespace Lanymy.Common.Instruments
                 var currentNetworkStream = new NetworkStream(currentSocket);
                 _CurrentNetworkStream = currentNetworkStream;
 
-                TaskHelper.SyncWait(currentSendWorkTaskQueue.StartAsync());
+                WaitSynchronously(() => currentSendWorkTaskQueue.StartAsync());
                 sendWorkTaskQueueStarted = true;
 
                 OnConnection();
@@ -378,13 +422,10 @@ namespace Lanymy.Common.Instruments
 
         public void Send(byte[] sendDataBytes)
         {
-            try
+            var sendException = TryWaitSynchronously(() => SendAsync(sendDataBytes));
+            if (sendException != null)
             {
-                TaskHelper.SyncWait(SendAsync(sendDataBytes));
-            }
-            catch (Exception ex)
-            {
-                OnError(ex);
+                OnError(sendException);
             }
         }
 
@@ -410,7 +451,11 @@ namespace Lanymy.Common.Instruments
                 {
                     if (sendWorkTaskQueueStarted)
                     {
-                        TaskHelper.SyncWait(currentSendWorkTaskQueue.StopAsync());
+                        var stopException = TryWaitSynchronously(() => currentSendWorkTaskQueue.StopAsync());
+                        if (stopException != null)
+                        {
+                            throw stopException;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -510,17 +555,11 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-
-                if (!currentSendWorkTaskQueue.IfIsNull())
-                {
-                    await currentSendWorkTaskQueue.StopAsync();
-                    currentSendWorkTaskQueue.Dispose();
-                }
-
+                await StopAndDisposeSendQueueAsync(currentSendWorkTaskQueue, "TcpClient close send queue failed.", "TcpClient dispose send queue failed.");
             }
             catch (Exception ex)
             {
-                OnCloseError(new InvalidOperationException("TcpClient close send queue failed.", ex));
+                OnCloseError(new InvalidOperationException("TcpClient close unexpected send queue cleanup failed.", ex));
             }
 
             lock (_CloseLocker)
@@ -595,8 +634,11 @@ namespace Lanymy.Common.Instruments
 
         public void Close()
         {
-
-            TaskHelper.SyncWait(CloseAsync());
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient sync close failed.", closeException));
+            }
 
         }
 
@@ -609,14 +651,116 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
-            if (_IsDisposed)
+            WorkTaskQueue<byte[]> currentSendWorkTaskQueue = null;
+            NetworkStream currentNetworkStream = null;
+            System.Net.Sockets.Socket currentSocket = null;
+            var wasRunning = false;
+            Exception closeException = null;
+
+            lock (_CloseLocker)
             {
-                return;
+                if (_IsDisposed)
+                {
+                    return;
+                }
+
+                wasRunning = _IsRunning;
+                _IsDisposed = true;
+                _IsFirstStart = false;
+
+                if (!wasRunning)
+                {
+                    currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
+                    currentNetworkStream = _CurrentNetworkStream;
+                    currentSocket = CurrentSocket;
+                }
             }
 
-            _IsDisposed = true;
+            try
+            {
+                closeException = TryCloseSynchronously();
+                if (closeException != null)
+                {
+                    OnCloseError(new InvalidOperationException("TcpClient dispose close failed.", closeException));
+                }
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+                OnCloseError(new InvalidOperationException("TcpClient dispose close failed.", ex));
+            }
 
-            Close();
+            if (wasRunning)
+            {
+                if (closeException == null || _IsRunning)
+                {
+                    return;
+                }
+
+                lock (_CloseLocker)
+                {
+                    currentSendWorkTaskQueue ??= _CurrentSendWorkTaskQueue;
+                    currentNetworkStream ??= _CurrentNetworkStream;
+                    currentSocket ??= CurrentSocket;
+                }
+            }
+
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_CurrentSendWorkTaskQueue, currentSendWorkTaskQueue))
+                {
+                    _CurrentSendWorkTaskQueue = null;
+                }
+
+                if (ReferenceEquals(_CurrentNetworkStream, currentNetworkStream))
+                {
+                    _CurrentNetworkStream = null;
+                }
+
+                if (ReferenceEquals(CurrentSocket, currentSocket))
+                {
+                    CurrentSocket = null;
+                }
+
+                _IsRunning = false;
+            }
+
+            try
+            {
+                currentSendWorkTaskQueue?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient dispose send queue failed.", ex));
+            }
+
+            try
+            {
+                currentNetworkStream?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient dispose network stream failed.", ex));
+            }
+
+            try
+            {
+                currentSocket?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient dispose socket failed.", ex));
+            }
+
+            try
+            {
+                _CurrentBuffer.Clear();
+                _CurrentCache.Clear();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpClient dispose finalization failed.", ex));
+            }
 
         }
 

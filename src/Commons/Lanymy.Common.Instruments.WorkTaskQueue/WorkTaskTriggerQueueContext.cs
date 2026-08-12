@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
@@ -18,7 +19,7 @@ namespace Lanymy.Common.Instruments
 
         public readonly ushort WorkTaskCount;
 
-        private readonly List<WorkTaskTriggerQueue<TDataModel>> _WorkTaskQueueList = new List<WorkTaskTriggerQueue<TDataModel>>();
+        private readonly List<BaseWorkTask> _WorkTaskQueueList = new List<BaseWorkTask>();
 
         private readonly Action<List<TDataModel>> _WorkTriggerAction;
 
@@ -68,27 +69,144 @@ namespace Lanymy.Common.Instruments
 
 
 
-        protected override async Task OnStartAsync()
+        protected virtual BaseWorkTask CreateWorkTaskQueue(Channel<TDataModel> channel, ushort workTaskIndex)
         {
+            return new WorkTaskTriggerQueue<TDataModel>(channel, _WorkTriggerAction, OnActionTriggerCount, OnActionTriggerTimeSpan);
+        }
 
+        protected virtual List<Exception> CompleteChannel(Channel<TDataModel> channel)
+        {
+            var exceptions = new List<Exception>();
 
-
-            if (StateType == DynamicAsyncQueueStateTypeEnum.Stop)
+            if (channel.IfIsNull())
             {
+                return exceptions;
+            }
 
+            try
+            {
+                channel.Writer.TryComplete();
+            }
+            catch (Exception ex)
+            {
+                exceptions.Add(new InvalidOperationException("WorkTaskTriggerQueueContext complete channel failed.", ex));
+            }
 
-                _CurrentChannel = CreateChannel();
+            return exceptions;
+        }
 
-                for (var i = 0; i < WorkTaskCount; i++)
+        protected virtual async Task<List<Exception>> CleanupWorkTaskQueueListAsync(IEnumerable<BaseWorkTask> workTaskQueueList)
+        {
+            var exceptions = new List<Exception>();
+
+            foreach (var workTaskQueueModel in workTaskQueueList)
+            {
+                if (workTaskQueueModel.IfIsNull())
                 {
-                    _WorkTaskQueueList.Add(new WorkTaskTriggerQueue<TDataModel>(_CurrentChannel, _WorkTriggerAction, OnActionTriggerCount, OnActionTriggerTimeSpan));
+                    continue;
                 }
 
-                var list = _WorkTaskQueueList.Select(o => o.StartAsync()).ToList();
-                await Task.WhenAll(list.ToArray());
+                try
+                {
+                    await workTaskQueueModel.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(new InvalidOperationException("WorkTaskTriggerQueueContext stop child work task failed.", ex));
+                }
 
+                try
+                {
+                    workTaskQueueModel.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(new InvalidOperationException("WorkTaskTriggerQueueContext dispose child work task failed.", ex));
+                }
+            }
 
-                StateType = DynamicAsyncQueueStateTypeEnum.Start;
+            return exceptions;
+        }
+
+        protected virtual async Task<List<Exception>> CleanupChannelAsync(Channel<TDataModel> channel)
+        {
+            var exceptions = new List<Exception>();
+
+            if (channel.IfIsNull())
+            {
+                return exceptions;
+            }
+
+            try
+            {
+                DrainRemainingChannelData(channel);
+            }
+            catch (Exception ex)
+            {
+                exceptions.Add(new InvalidOperationException("WorkTaskTriggerQueueContext drain remaining channel data failed.", ex));
+            }
+
+            try
+            {
+                await channel.Reader.Completion;
+            }
+            catch (Exception ex)
+            {
+                exceptions.Add(new InvalidOperationException("WorkTaskTriggerQueueContext await channel completion failed.", ex));
+            }
+
+            return exceptions;
+        }
+
+        private static void ThrowCollectedExceptions(List<Exception> exceptions)
+        {
+            if (exceptions.IfIsNullOrEmpty())
+            {
+                return;
+            }
+
+            if (exceptions.Count == 1)
+            {
+                ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+            }
+
+            throw new AggregateException(exceptions);
+        }
+
+        protected override async Task OnStartAsync()
+        {
+            if (StateType == DynamicAsyncQueueStateTypeEnum.Stop)
+            {
+                var currentChannel = CreateChannel();
+                var currentWorkTaskQueueList = new List<BaseWorkTask>();
+
+                try
+                {
+                    for (ushort i = 0; i < WorkTaskCount; i++)
+                    {
+                        currentWorkTaskQueueList.Add(CreateWorkTaskQueue(currentChannel, i));
+                    }
+
+                    var list = currentWorkTaskQueueList.Select(o => o.StartAsync()).ToList();
+                    await Task.WhenAll(list.ToArray());
+
+                    _CurrentChannel = currentChannel;
+                    _WorkTaskQueueList.AddRange(currentWorkTaskQueueList);
+                    StateType = DynamicAsyncQueueStateTypeEnum.Start;
+                }
+                catch (Exception ex)
+                {
+                    var exceptions = new List<Exception> { ex };
+                    exceptions.AddRange(CompleteChannel(currentChannel));
+                    exceptions.AddRange(await CleanupWorkTaskQueueListAsync(currentWorkTaskQueueList));
+                    exceptions.AddRange(await CleanupChannelAsync(currentChannel));
+
+                    _WorkTaskQueueList.Clear();
+                    _CurrentChannel = null;
+                    StateType = DynamicAsyncQueueStateTypeEnum.Stop;
+
+                    ThrowCollectedExceptions(exceptions);
+                }
 
             }
 
@@ -98,51 +216,44 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
-
             if (StateType == DynamicAsyncQueueStateTypeEnum.Start)
             {
-
                 StateType = DynamicAsyncQueueStateTypeEnum.Cancel;
+                var currentChannel = _CurrentChannel;
+                var currentWorkTaskQueueList = _WorkTaskQueueList.ToArray();
+                var exceptions = new List<Exception>();
 
-                _CurrentChannel.Writer.TryComplete();
-
-                foreach (var workTaskQueueModel in _WorkTaskQueueList)
+                try
                 {
-                    await workTaskQueueModel.StopAsync();
-                    workTaskQueueModel.Dispose();
+                    exceptions.AddRange(CompleteChannel(currentChannel));
+                    exceptions.AddRange(await CleanupWorkTaskQueueListAsync(currentWorkTaskQueueList));
+                    exceptions.AddRange(await CleanupChannelAsync(currentChannel));
+                }
+                finally
+                {
+                    _WorkTaskQueueList.Clear();
+
+                    if (ReferenceEquals(_CurrentChannel, currentChannel))
+                    {
+                        _CurrentChannel = null;
+                    }
+
+                    StateType = DynamicAsyncQueueStateTypeEnum.Stop;
                 }
 
-                //if (_IsReadQueueAllData)
-                //{
-
-                //    _IsReadQueueAllData = false;
-
-                //    await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
-                //    {
-                //        _CurrentReadQueueAllDataList.Add(item);
-                //    }
-
-                //}
-
-                DrainRemainingChannelData();
-                await _CurrentChannel.Reader.Completion;
-
-                _WorkTaskQueueList.Clear();
-
-                _CurrentChannel = null;
-
-                StateType = DynamicAsyncQueueStateTypeEnum.Stop;
-
-
+                ThrowCollectedExceptions(exceptions);
             }
-
-            //await Task.CompletedTask;
 
         }
 
-        private void DrainRemainingChannelData()
+        private static void DrainRemainingChannelData(Channel<TDataModel> channel)
         {
-            while (_CurrentChannel.Reader.TryRead(out _))
+            if (channel.IfIsNull())
+            {
+                return;
+            }
+
+            while (channel.Reader.TryRead(out _))
             {
             }
         }

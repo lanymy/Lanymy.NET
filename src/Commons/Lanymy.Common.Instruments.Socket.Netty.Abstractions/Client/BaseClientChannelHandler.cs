@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Net;
 using DotNetty.Buffers;
@@ -20,13 +20,15 @@ namespace Lanymy.Common.Instruments.Client
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
 
-        protected readonly Action _OnConnectToServerAction;
+        protected readonly Action<long> _OnConnectToServerAction;
+        protected readonly long _CurrentReconnectGeneration;
 
         //protected BaseClientChannelHandler(TChannelContext channelContext, Action connectToServerAction) : base(channelContext)
         protected BaseClientChannelHandler(TClientChannelContext channelContext) : base(channelContext)
         {
             //_OnConnectToServerAction = connectToServerAction;
-            channelContext.CurrentConnectToServerAction.TryGetTarget(out _OnConnectToServerAction);
+            _CurrentReconnectGeneration = channelContext.CurrentReconnectGeneration;
+            _OnConnectToServerAction = channelContext.CurrentConnectToServerAction;
         }
 
 
@@ -40,7 +42,7 @@ namespace Lanymy.Common.Instruments.Client
 
             if (!_OnConnectToServerAction.IfIsNull())
             {
-                _OnConnectToServerAction();
+                _OnConnectToServerAction(_CurrentReconnectGeneration);
             }
 
         }

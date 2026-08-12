@@ -48,9 +48,19 @@ namespace Lanymy.Common.Instruments
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
             _CurrentFixedHeaderPackageFilter = fixedHeaderPackageFilter;
 
-            _ReceiveWorkTaskQueue = new WorkTaskQueue<UdpSourceDataModel>(OnReceiveWorkTaskQueue, null);
-            _SendWorkTaskQueue = new WorkTaskQueue<SendUdpDataModel>(OnSendWorkTaskQueueAsync, null);
+            _ReceiveWorkTaskQueue = CreateReceiveWorkTaskQueue();
+            _SendWorkTaskQueue = CreateSendWorkTaskQueue();
 
+        }
+
+        protected virtual WorkTaskQueue<UdpSourceDataModel> CreateReceiveWorkTaskQueue()
+        {
+            return new WorkTaskQueue<UdpSourceDataModel>(OnReceiveWorkTaskQueue, null);
+        }
+
+        protected virtual WorkTaskQueue<SendUdpDataModel> CreateSendWorkTaskQueue()
+        {
+            return new WorkTaskQueue<SendUdpDataModel>(OnSendWorkTaskQueueAsync, null);
         }
 
 
@@ -134,6 +144,21 @@ namespace Lanymy.Common.Instruments
             ReportError(null, ex);
         }
 
+        protected virtual void WaitSynchronously(Func<Task> taskFactory)
+        {
+            TaskHelper.SyncWait(taskFactory);
+        }
+
+        protected virtual Exception TryWaitSynchronously(Func<Task> taskFactory)
+        {
+            return TaskHelper.TrySyncWait(taskFactory);
+        }
+
+        protected virtual Exception TryCloseSynchronously()
+        {
+            return TryWaitSynchronously(CloseAsync);
+        }
+
         protected async Task OnSendWorkTaskQueueAsync(SendUdpDataModel sendUdpDataModel)
         {
 
@@ -175,7 +200,7 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-                TaskHelper.SyncWait(receiveWorkTaskQueue.StartAsync());
+                WaitSynchronously(() => receiveWorkTaskQueue.StartAsync());
                 receiveWorkTaskQueueStarted = true;
 
                 if (!CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, null))
@@ -205,7 +230,7 @@ namespace Lanymy.Common.Instruments
                     return;
                 }
 
-                TaskHelper.SyncWait(sendWorkTaskQueue.StartAsync());
+                WaitSynchronously(() => sendWorkTaskQueue.StartAsync());
                 sendWorkTaskQueueStarted = true;
 
                 if (!CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient))
@@ -292,6 +317,11 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void ResetStartState(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue, UdpClient currentUdpClient, bool receiveWorkTaskQueueStarted, bool sendWorkTaskQueueStarted)
         {
+            var receiveQueueStopFailed = false;
+            var sendQueueStopFailed = false;
+            WorkTaskQueue<UdpSourceDataModel> failedReceiveWorkTaskQueue = null;
+            WorkTaskQueue<SendUdpDataModel> failedSendWorkTaskQueue = null;
+
             lock (_CloseLocker)
             {
                 if (ReferenceEquals(_CurrentUdpClient, currentUdpClient))
@@ -307,30 +337,68 @@ namespace Lanymy.Common.Instruments
                 currentUdpClient?.Close();
                 currentUdpClient?.Dispose();
             }
-            catch
+            catch (Exception ex)
             {
+                OnCloseError(new InvalidOperationException("UdpClient reset start udp client failed.", ex));
             }
 
             try
             {
                 if (sendWorkTaskQueueStarted && !sendWorkTaskQueue.IfIsNull())
                 {
-                    TaskHelper.SyncWait(sendWorkTaskQueue.StopAsync());
+                    WaitSynchronously(() => sendWorkTaskQueue.StopAsync());
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                sendQueueStopFailed = true;
+                OnCloseError(new InvalidOperationException("UdpClient reset start send queue failed.", ex));
             }
 
             try
             {
                 if (receiveWorkTaskQueueStarted && !receiveWorkTaskQueue.IfIsNull())
                 {
-                    TaskHelper.SyncWait(receiveWorkTaskQueue.StopAsync());
+                    WaitSynchronously(() => receiveWorkTaskQueue.StopAsync());
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                receiveQueueStopFailed = true;
+                OnCloseError(new InvalidOperationException("UdpClient reset start receive queue failed.", ex));
+            }
+
+            lock (_CloseLocker)
+            {
+                if (sendQueueStopFailed && ReferenceEquals(_SendWorkTaskQueue, sendWorkTaskQueue))
+                {
+                    failedSendWorkTaskQueue = _SendWorkTaskQueue;
+                    _SendWorkTaskQueue = CreateSendWorkTaskQueue();
+                }
+
+                if (receiveQueueStopFailed && ReferenceEquals(_ReceiveWorkTaskQueue, receiveWorkTaskQueue))
+                {
+                    failedReceiveWorkTaskQueue = _ReceiveWorkTaskQueue;
+                    _ReceiveWorkTaskQueue = CreateReceiveWorkTaskQueue();
+                }
+            }
+
+            try
+            {
+                DisposeSendWorkTaskQueue(failedSendWorkTaskQueue);
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("UdpClient dispose send queue after reset start failure failed.", ex));
+            }
+
+            try
+            {
+                DisposeReceiveWorkTaskQueue(failedReceiveWorkTaskQueue);
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("UdpClient dispose receive queue after reset start failure failed.", ex));
             }
         }
 
@@ -470,8 +538,9 @@ namespace Lanymy.Common.Instruments
             {
                 return TrySendAsync(sendUdpDataModel).GetAwaiter().GetResult();
             }
-            catch
+            catch (Exception ex)
             {
+                ReportError(sendUdpDataModel?.RemoteIpEndPoint, ex);
                 return false;
             }
         }
@@ -511,8 +580,11 @@ namespace Lanymy.Common.Instruments
 
         public void Close()
         {
-
-            TaskHelper.SyncWait(CloseAsync());
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnCloseError(new InvalidOperationException("UdpClient sync close failed.", closeException));
+            }
 
         }
 
@@ -527,6 +599,10 @@ namespace Lanymy.Common.Instruments
             WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue = null;
             WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue = null;
             UdpClient currentUdpClient = null;
+            var receiveQueueStopFailed = false;
+            var sendQueueStopFailed = false;
+            WorkTaskQueue<UdpSourceDataModel> failedReceiveWorkTaskQueue = null;
+            WorkTaskQueue<SendUdpDataModel> failedSendWorkTaskQueue = null;
 
             lock (_CloseLocker)
             {
@@ -554,6 +630,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
+                receiveQueueStopFailed = true;
                 OnCloseError(new InvalidOperationException("UdpClient close receive queue failed.", ex));
             }
 
@@ -563,17 +640,47 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
+                sendQueueStopFailed = true;
                 OnCloseError(new InvalidOperationException("UdpClient close send queue failed.", ex));
             }
 
             lock (_CloseLocker)
             {
+                if (receiveQueueStopFailed && ReferenceEquals(_ReceiveWorkTaskQueue, receiveWorkTaskQueue))
+                {
+                    failedReceiveWorkTaskQueue = _ReceiveWorkTaskQueue;
+                    _ReceiveWorkTaskQueue = CreateReceiveWorkTaskQueue();
+                }
+
+                if (sendQueueStopFailed && ReferenceEquals(_SendWorkTaskQueue, sendWorkTaskQueue))
+                {
+                    failedSendWorkTaskQueue = _SendWorkTaskQueue;
+                    _SendWorkTaskQueue = CreateSendWorkTaskQueue();
+                }
+
                 if (ReferenceEquals(_CurrentUdpClient, currentUdpClient))
                 {
                     _CurrentUdpClient = null;
                 }
             }
 
+            try
+            {
+                DisposeReceiveWorkTaskQueue(failedReceiveWorkTaskQueue);
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("UdpClient dispose receive queue after close failure failed.", ex));
+            }
+
+            try
+            {
+                DisposeSendWorkTaskQueue(failedSendWorkTaskQueue);
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("UdpClient dispose send queue after close failure failed.", ex));
+            }
 
             try
             {
@@ -660,13 +767,12 @@ namespace Lanymy.Common.Instruments
 
             var disposeExceptions = new List<Exception>();
 
-            try
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
             {
-                Close();
-            }
-            catch (Exception ex)
-            {
-                disposeExceptions.Add(ex);
+                var disposeCloseException = new InvalidOperationException("UdpClient dispose close failed.", closeException);
+                OnCloseError(disposeCloseException);
+                disposeExceptions.Add(disposeCloseException);
             }
 
             lock (_CloseLocker)

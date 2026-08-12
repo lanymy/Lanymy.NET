@@ -24,7 +24,7 @@ namespace Lanymy.Common.AllTests
             }
         }
 
-        private sealed class TestFixedHeaderPackageFilter : BaseFixedHeaderPackageFilter<object, TestSendPackage, TestSessionToken>
+        private class TestFixedHeaderPackageFilter : BaseFixedHeaderPackageFilter<object, TestSendPackage, TestSessionToken>
         {
             private readonly byte[] _packageBytes;
             private readonly bool _checkPackageResult;
@@ -71,6 +71,23 @@ namespace Lanymy.Common.AllTests
             public override byte[] GetPackageBytes(BufferModel buffer, CacheModel cache)
             {
                 return _packageBytes;
+            }
+        }
+
+        private sealed class SinglePackageFixedHeaderPackageFilter : TestFixedHeaderPackageFilter
+        {
+            private int _GetPackageCallCount;
+
+            public SinglePackageFixedHeaderPackageFilter(byte[] packageBytes = null)
+                : base(packageBytes ?? new byte[] { 0x01 })
+            {
+            }
+
+            public override byte[] GetPackageBytes(BufferModel buffer, CacheModel cache)
+            {
+                return Interlocked.Increment(ref _GetPackageCallCount) == 1
+                    ? base.GetPackageBytes(buffer, cache)
+                    : null;
             }
         }
 
@@ -147,6 +164,31 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingCloseTcpServerClient : TestTcpServerClient
+        {
+            public void MarkRunningForTest()
+            {
+                _IsRunning = true;
+            }
+
+            public bool HasHeartTimerForTest()
+            {
+                return _CurrentHeartTimerWorkTask != null;
+            }
+
+            public bool HasSendQueueForTest()
+            {
+                return _CurrentSendWorkTaskQueue != null;
+            }
+
+            public override Task CloseAsync()
+            {
+                CloseAsyncCallCount++;
+                _IsRunning = false;
+                throw new InvalidOperationException("child close failed");
+            }
+        }
+
         private sealed class ThrowingStartSendWorkTaskQueue : WorkTaskQueue<byte[]>
         {
             private readonly Exception _Exception;
@@ -174,6 +216,11 @@ namespace Lanymy.Common.AllTests
             public Exception LastError { get; private set; }
             public ITcpServerClient LastErrorClient { get; private set; }
             public Exception AcceptException { get; set; }
+            public Exception StartReceiveCallbackException { get; set; }
+            public Exception ReceiveDataCallbackException { get; set; }
+            public Exception HeartCallbackException { get; set; }
+            public Exception ReceivePackageException { get; set; }
+            public Exception CanSendDataException { get; set; }
             public bool CanSendDataResult { get; set; }
             public bool ThrowOnBindAndListen { get; set; }
             public int BindAndListenCallCount { get; private set; }
@@ -194,6 +241,11 @@ namespace Lanymy.Common.AllTests
             protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
             {
                 HeartCallbackCount++;
+
+                if (HeartCallbackException != null)
+                {
+                    throw HeartCallbackException;
+                }
             }
 
             protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
@@ -204,16 +256,31 @@ namespace Lanymy.Common.AllTests
             protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
             {
                 StartReceiveCallbackCount++;
+
+                if (StartReceiveCallbackException != null)
+                {
+                    throw StartReceiveCallbackException;
+                }
             }
 
             protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
             {
                 ReceiveDataCallbackCount++;
+
+                if (ReceiveDataCallbackException != null)
+                {
+                    throw ReceiveDataCallbackException;
+                }
             }
 
             protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
             {
                 ReceivePackageCallbackCount++;
+
+                if (ReceivePackageException != null)
+                {
+                    throw ReceivePackageException;
+                }
             }
 
             protected override TestSessionToken CreateSessionToken(string ip, int port)
@@ -223,6 +290,11 @@ namespace Lanymy.Common.AllTests
 
             protected override bool CanSendData(ISessionToken sessionToken)
             {
+                if (CanSendDataException != null)
+                {
+                    throw CanSendDataException;
+                }
+
                 return CanSendDataResult;
             }
 
@@ -350,6 +422,95 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingSyncCloseTcpServer : BaseTcpServer<TestTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            public int CloseAsyncCallCount { get; private set; }
+            public int ServerErrorCount { get; private set; }
+            public Exception LastServerError { get; private set; }
+
+            public ThrowingSyncCloseTcpServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override TestTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                throw new NotSupportedException();
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+                LastServerError = ex;
+            }
+
+            public override Task CloseAsync()
+            {
+                CloseAsyncCallCount++;
+                _IsRunning = false;
+                throw new InvalidOperationException("tcp server close failed");
+            }
+
+            public void AttachTrackedClientForTest(ITcpServerClient client)
+            {
+                AttachTcpServerClientEventHandlers(client);
+                _TcpServerClientDic[client.CurrentSessionToken.SessionID] = client;
+            }
+
+            public bool HasTrackedClient(Guid sessionId)
+            {
+                return _TcpServerClientDic.ContainsKey(sessionId);
+            }
+
+            public void SetAcceptContextForTest(Socket currentSocket, bool isRunning)
+            {
+                CurrentSocket = currentSocket;
+                _IsRunning = isRunning;
+            }
+        }
+
         private sealed class StartReceiveSendQueueFailureTcpServerClient : BaseTcpServerClient
         {
             public StartReceiveSendQueueFailureTcpServerClient(Socket socket)
@@ -372,6 +533,368 @@ namespace Lanymy.Common.AllTests
 
             protected override void OnReceiveDataEvent(BufferModel buffer, CacheModel cache)
             {
+            }
+        }
+
+        private sealed class AcceptedTcpServerClient : BaseTcpServerClient
+        {
+            public AcceptedTcpServerClient(Socket socket, bool disableSendQueue = false)
+                : base(socket, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1)
+            {
+                if (disableSendQueue)
+                {
+                    _CurrentSendWorkTaskQueue = null;
+                }
+            }
+
+            protected override void OnStartReceiveEvent()
+            {
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnServerClientErrorEvent(Exception ex)
+            {
+            }
+
+            protected override void OnReceiveDataEvent(BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            public bool HasHeartTimerForTest()
+            {
+                return _CurrentHeartTimerWorkTask != null;
+            }
+
+            public bool HasSendQueueForTest()
+            {
+                return _CurrentSendWorkTaskQueue != null;
+            }
+        }
+
+        private sealed class IncompleteStartReceiveAcceptServer : BaseTcpServer<AcceptedTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            private readonly TaskCompletionSource<bool> _AcceptSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private int _CreateCallCount;
+
+            public int AcceptCallbackCount { get; private set; }
+            public int ServerErrorCount { get; private set; }
+            public Exception LastServerError { get; private set; }
+            public AcceptedTcpServerClient FirstAcceptedClient { get; private set; }
+            public int TrackedClientCount => _TcpServerClientDic.Count;
+
+            public IncompleteStartReceiveAcceptServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override AcceptedTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                if (Interlocked.Increment(ref _CreateCallCount) == 1)
+                {
+                    var failedClient = new AcceptedTcpServerClient(client, disableSendQueue: true);
+                    FirstAcceptedClient = failedClient;
+                    return failedClient;
+                }
+
+                return new AcceptedTcpServerClient(client);
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+                AcceptCallbackCount++;
+                _AcceptSignal.TrySetResult(true);
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+                LastServerError = ex;
+            }
+
+            public Task WaitForAcceptAsync()
+            {
+                return _AcceptSignal.Task;
+            }
+        }
+
+        private sealed class ThrowingCloseFinalizationTcpServer : BaseTcpServer<TestTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            public int ServerErrorCount { get; private set; }
+            public Exception LastServerError { get; private set; }
+
+            public ThrowingCloseFinalizationTcpServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override TestTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                throw new NotSupportedException();
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+                throw new InvalidOperationException("server close finalization failed");
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+                LastServerError = ex;
+            }
+
+            public void AttachTrackedClientForTest(ITcpServerClient client)
+            {
+                AttachTcpServerClientEventHandlers(client);
+                _TcpServerClientDic[client.CurrentSessionToken.SessionID] = client;
+            }
+
+            public bool HasTrackedClient(Guid sessionId)
+            {
+                return _TcpServerClientDic.ContainsKey(sessionId);
+            }
+
+            public void SetAcceptContextForTest(Socket currentSocket, bool isRunning)
+            {
+                CurrentSocket = currentSocket;
+                _IsRunning = isRunning;
+            }
+        }
+
+        private sealed class ThrowingErrorCallbackTcpServer : BaseTcpServer<TestTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            public int ServerErrorCount { get; private set; }
+            public Exception LastServerError { get; private set; }
+
+            public ThrowingErrorCallbackTcpServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override TestTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                throw new NotSupportedException();
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+                throw new InvalidOperationException("error callback failed");
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+                LastServerError = ex;
+            }
+
+            public void TrackClient(TestTcpServerClient client)
+            {
+                _TcpServerClientDic[client.CurrentSessionToken.SessionID] = client;
+            }
+
+            public bool HasTrackedClient(Guid sessionId)
+            {
+                return _TcpServerClientDic.ContainsKey(sessionId);
+            }
+        }
+
+        private sealed class ThrowingCloseCallbackTcpServer : BaseTcpServer<TestTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            public int ErrorCallbackCount { get; private set; }
+            public Exception LastError { get; private set; }
+            public int ServerErrorCount { get; private set; }
+
+            public ThrowingCloseCallbackTcpServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override TestTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                throw new NotSupportedException();
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+                throw new InvalidOperationException("close callback failed");
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+                ErrorCallbackCount++;
+                LastError = ex;
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+            }
+
+            public void AttachTrackedClientForTest(ITcpServerClient client)
+            {
+                AttachTcpServerClientEventHandlers(client);
+                _TcpServerClientDic[client.CurrentSessionToken.SessionID] = client;
+            }
+
+            public bool HasTrackedClient(Guid sessionId)
+            {
+                return _TcpServerClientDic.ContainsKey(sessionId);
+            }
+
+            public void TriggerServerClientCloseForTest(ITcpServerClient client)
+            {
+                OnServerClientCloseEvent(client);
             }
         }
 
@@ -450,15 +973,197 @@ namespace Lanymy.Common.AllTests
             public int TrackedClientCount => _TcpServerClientDic.Count;
         }
 
+        private sealed class ThrowingCreateClientAcceptServer : BaseTcpServer<AcceptedTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            private readonly TaskCompletionSource<bool> _ServerErrorSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource<bool> _AcceptSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private int _CreateCallCount;
+
+            public int AcceptCallbackCount { get; private set; }
+            public int ServerErrorCount { get; private set; }
+            public Exception LastServerError { get; private set; }
+
+            public ThrowingCreateClientAcceptServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override AcceptedTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                if (Interlocked.Increment(ref _CreateCallCount) == 1)
+                {
+                    throw new InvalidOperationException("create client failed");
+                }
+
+                return new AcceptedTcpServerClient(client);
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+                AcceptCallbackCount++;
+                _AcceptSignal.TrySetResult(true);
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+                LastServerError = ex;
+                _ServerErrorSignal.TrySetResult(true);
+            }
+
+            public Task WaitForServerErrorAsync()
+            {
+                return _ServerErrorSignal.Task;
+            }
+
+            public Task WaitForAcceptAsync()
+            {
+                return _AcceptSignal.Task;
+            }
+        }
+
+        private sealed class ThrowingSessionTokenAcceptServer : BaseTcpServer<AcceptedTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        {
+            private readonly TaskCompletionSource<bool> _ServerErrorSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource<bool> _AcceptSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private int _CreateSessionTokenCallCount;
+
+            public int AcceptCallbackCount { get; private set; }
+            public int ServerErrorCount { get; private set; }
+            public Exception LastServerError { get; private set; }
+            public AcceptedTcpServerClient FirstAcceptedClient { get; private set; }
+
+            public ThrowingSessionTokenAcceptServer()
+                : base(new TestFixedHeaderPackageFilter(), port: 0, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, intervalHeartTotalMilliseconds: 1, heartTimeOutCount: 1)
+            {
+            }
+
+            protected override AcceptedTcpServerClient CreateTcpServerClient(Socket client)
+            {
+                var tcpServerClient = new AcceptedTcpServerClient(client);
+                FirstAcceptedClient ??= tcpServerClient;
+                return tcpServerClient;
+            }
+
+            protected override void OnServerClientHeartCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientCloseCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient)
+            {
+            }
+
+            protected override void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override void OnServerReceivePackageEvent(object package, ISessionToken sessionToken)
+            {
+            }
+
+            protected override TestSessionToken CreateSessionToken(string ip, int port)
+            {
+                if (Interlocked.Increment(ref _CreateSessionTokenCallCount) == 1)
+                {
+                    throw new InvalidOperationException("create session token failed");
+                }
+
+                return new TestSessionToken(ip, port);
+            }
+
+            protected override bool CanSendData(ISessionToken sessionToken)
+            {
+                return true;
+            }
+
+            protected override void OnServerCloseEvent()
+            {
+            }
+
+            protected override void OnAcceptEvent(ITcpServerClient client)
+            {
+                AcceptCallbackCount++;
+                _AcceptSignal.TrySetResult(true);
+            }
+
+            protected override void OnServerClientErrorCallBackEvent(ITcpServerClient client, Exception ex)
+            {
+            }
+
+            protected override void OnServerErrorEvent(Exception ex)
+            {
+                ServerErrorCount++;
+                LastServerError = ex;
+                _ServerErrorSignal.TrySetResult(true);
+            }
+
+            public Task WaitForServerErrorAsync()
+            {
+                return _ServerErrorSignal.Task;
+            }
+
+            public Task WaitForAcceptAsync()
+            {
+                return _AcceptSignal.Task;
+            }
+        }
+
         [TestMethod]
         public void OnServerClientHeartEvent_WithTimedOutSession_ShouldCloseClient()
         {
             var server = new TestTcpServer(new TestFixedHeaderPackageFilter());
             var client = new TestTcpServerClient();
             var currentTotalMilliseconds = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
+            while (currentTotalMilliseconds <= 10)
+            {
+                Thread.SpinWait(1000);
+                currentTotalMilliseconds = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
+            }
             var sessionToken = new TestSessionToken("127.0.0.1", 9527)
             {
-                LastReceiveDateTimeTotalMillisecondsFromInstantiation = currentTotalMilliseconds > 10 ? currentTotalMilliseconds - 10 : 0,
+                LastReceiveDateTimeTotalMillisecondsFromInstantiation = currentTotalMilliseconds - 10,
             };
 
             client.CurrentSessionToken = sessionToken;
@@ -468,8 +1173,66 @@ namespace Lanymy.Common.AllTests
 
             Assert.AreEqual(1, server.ErrorCallbackCount);
             Assert.AreEqual("心跳超时断开连接", server.LastError.Message);
+            Assert.AreEqual(0, server.HeartCallbackCount);
             Assert.AreEqual(1, client.CloseAsyncCallCount);
             Assert.IsFalse(server.HasTrackedClient(sessionToken.SessionID));
+        }
+
+        [TestMethod]
+        public void OnServerClientHeartEvent_WhenHeartSendThrows_ShouldCloseClientWithoutInvokingHeartCallback()
+        {
+            var server = new TestTcpServer(new TestFixedHeaderPackageFilter())
+            {
+                CanSendDataResult = true,
+            };
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527)
+                {
+                    LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now),
+                },
+                SendException = new InvalidOperationException("heart send failed"),
+            };
+
+            server.TrackClient(client);
+
+            server.TriggerHeart(client);
+
+            Assert.AreEqual(1, server.ErrorCallbackCount);
+            Assert.AreEqual("heart send failed", server.LastError.Message);
+            Assert.AreEqual(0, server.HeartCallbackCount);
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+            Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+        }
+
+        [TestMethod]
+        public void OnServerClientHeartEvent_WhenHeartCallbackThrows_ShouldReportErrorWithoutClosingClient()
+        {
+            var server = new TestTcpServer(new TestFixedHeaderPackageFilter())
+            {
+                CanSendDataResult = true,
+                HeartCallbackException = new InvalidOperationException("heart callback failed"),
+            };
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527)
+                {
+                    LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now),
+                },
+            };
+
+            server.TrackClient(client);
+
+            server.TriggerHeart(client);
+
+            Assert.AreEqual(1, client.SendCallCount);
+            Assert.AreEqual(1, server.HeartCallbackCount);
+            Assert.AreEqual(1, server.ErrorCallbackCount);
+            Assert.AreEqual("TcpServer heart callback failed.", server.LastError.Message);
+            Assert.IsNotNull(server.LastError.InnerException);
+            Assert.AreEqual("heart callback failed", server.LastError.InnerException.Message);
+            Assert.AreEqual(0, client.CloseAsyncCallCount);
+            Assert.IsTrue(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
         }
 
         [TestMethod]
@@ -553,6 +1316,39 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public async Task BaseTcpServer_CloseAsync_WhenOnServerCloseEventThrows_ShouldStillClearTrackedClients()
+        {
+            var server = new ThrowingCloseFinalizationTcpServer();
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            using var listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                server.SetAcceptContextForTest(listenSocket, true);
+                server.AttachTrackedClientForTest(client);
+
+                await server.CloseAsync();
+
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentSocket);
+                Assert.AreEqual(1, client.CloseAsyncCallCount);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+                Assert.AreEqual(1, server.ServerErrorCount);
+                Assert.AreEqual("TcpServer close finalization failed.", server.LastServerError.Message);
+                Assert.IsNotNull(server.LastServerError.InnerException);
+                Assert.AreEqual("server close finalization failed", server.LastServerError.InnerException.Message);
+            }
+            finally
+            {
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
         public async Task BaseTcpServer_CloseAsync_WhenClientCloseRaisesCloseEvent_ShouldNotReenterClose()
         {
             var server = new TestTcpServer(new TestFixedHeaderPackageFilter(), port: 0);
@@ -578,6 +1374,157 @@ namespace Lanymy.Common.AllTests
             {
                 server.Dispose();
             }
+        }
+
+        [TestMethod]
+        public void BaseTcpServer_Close_WhenCloseAsyncThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var server = new ThrowingSyncCloseTcpServer();
+
+            server.Close();
+
+            Assert.AreEqual(1, server.CloseAsyncCallCount);
+            Assert.AreEqual(1, server.ServerErrorCount);
+            Assert.AreEqual("TcpServer sync close failed.", server.LastServerError.Message);
+            Assert.IsNotNull(server.LastServerError.InnerException);
+            Assert.AreEqual("tcp server close failed", server.LastServerError.InnerException.Message);
+        }
+
+        [TestMethod]
+        public void BaseTcpServer_Dispose_WhenCloseThrows_ShouldStillReleaseTrackedResources()
+        {
+            var server = new ThrowingSyncCloseTcpServer();
+            var client = new ThrowingCloseTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+            var listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                client.MarkRunningForTest();
+                server.SetAcceptContextForTest(listenSocket, true);
+                server.AttachTrackedClientForTest(client);
+
+                server.Dispose();
+
+                Assert.AreEqual(1, server.CloseAsyncCallCount);
+                Assert.IsTrue(server.IsDisposed);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentSocket);
+                Assert.IsTrue(listenSocket.SafeHandle.IsClosed);
+                Assert.AreEqual(1, client.CloseAsyncCallCount);
+                Assert.IsTrue(client.IsDisposed);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsFalse(client.HasHeartTimerForTest());
+                Assert.IsFalse(client.HasSendQueueForTest());
+                Assert.IsTrue(client.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+                Assert.AreEqual(1, server.ServerErrorCount);
+                Assert.AreEqual("TcpServer dispose close failed.", server.LastServerError.Message);
+                Assert.IsNotNull(server.LastServerError.InnerException);
+                Assert.AreEqual("tcp server close failed", server.LastServerError.InnerException.Message);
+            }
+            finally
+            {
+                client.Dispose();
+                listenSocket.Dispose();
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseTcpServer_CloseAsync_WhenChildCloseThrows_ShouldStillDisposeFailedChild()
+        {
+            var server = new TestTcpServer(new TestFixedHeaderPackageFilter(), port: 0);
+            var client = new ThrowingCloseTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            using var listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                client.MarkRunningForTest();
+                server.SetAcceptContextForTest(listenSocket, true);
+                server.AttachTrackedClientForTest(client);
+
+                await server.CloseAsync();
+
+                Assert.AreEqual(2, client.CloseAsyncCallCount);
+                Assert.IsTrue(client.IsDisposed);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsFalse(client.HasHeartTimerForTest());
+                Assert.IsFalse(client.HasSendQueueForTest());
+                Assert.IsTrue(client.CurrentSocket.SafeHandle.IsClosed);
+                Assert.AreEqual(1, server.ErrorCallbackCount);
+                Assert.AreEqual("TcpServer close child client failed.", server.LastError.Message);
+                Assert.IsNotNull(server.LastError.InnerException);
+                Assert.AreEqual("child close failed", server.LastError.InnerException.Message);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentSocket);
+            }
+            finally
+            {
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void BaseTcpServer_OnServerClientCloseEvent_WhenCloseCallbackThrows_ShouldStillCloseClient()
+        {
+            var server = new ThrowingCloseCallbackTcpServer();
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            try
+            {
+                server.AttachTrackedClientForTest(client);
+
+                server.TriggerServerClientCloseForTest(client);
+
+                Assert.AreEqual(1, server.ErrorCallbackCount);
+                Assert.AreEqual("TcpServer close callback failed.", server.LastError.Message);
+                Assert.IsNotNull(server.LastError.InnerException);
+                Assert.AreEqual("close callback failed", server.LastError.InnerException.Message);
+                Assert.AreEqual(1, client.CloseAsyncCallCount);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+                Assert.AreEqual(0, server.ServerErrorCount);
+            }
+            finally
+            {
+                client.Dispose();
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void BaseTcpServer_OnServerClientStartReceiveEvent_WhenCallbackThrows_ShouldReportErrorWithoutClosingClient()
+        {
+            var server = new TestTcpServer(new TestFixedHeaderPackageFilter(), port: 0)
+            {
+                StartReceiveCallbackException = new InvalidOperationException("start receive callback failed"),
+            };
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            server.TrackClient(client);
+
+            server.TriggerServerClientStartReceiveForTest(client);
+
+            Assert.AreEqual(1, server.StartReceiveCallbackCount);
+            Assert.AreEqual(1, server.ErrorCallbackCount);
+            Assert.AreEqual("TcpServer start receive callback failed.", server.LastError.Message);
+            Assert.IsNotNull(server.LastError.InnerException);
+            Assert.AreEqual("start receive callback failed", server.LastError.InnerException.Message);
+            Assert.AreEqual(0, client.CloseAsyncCallCount);
+            Assert.IsTrue(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
         }
 
         [TestMethod]
@@ -634,6 +1581,57 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseTcpServer_OnServerClientReceiveDataEvent_WhenCallbackThrows_ShouldReportErrorAndContinuePackageLoop()
+        {
+            var server = new TestTcpServer(new SinglePackageFixedHeaderPackageFilter(), port: 0)
+            {
+                ReceiveDataCallbackException = new InvalidOperationException("receive callback failed"),
+            };
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            server.TrackClient(client);
+
+            server.TriggerServerClientReceiveDataForTest(client, new BufferModel(), new CacheModel());
+
+            Assert.AreEqual(1, server.ReceiveDataCallbackCount);
+            Assert.AreEqual(1, server.ReceivePackageCallbackCount);
+            Assert.AreEqual(1, server.ErrorCallbackCount);
+            Assert.AreEqual("TcpServer receive data callback failed.", server.LastError.Message);
+            Assert.IsNotNull(server.LastError.InnerException);
+            Assert.AreEqual("receive callback failed", server.LastError.InnerException.Message);
+            Assert.AreEqual(0, client.CloseAsyncCallCount);
+            Assert.IsTrue(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+        }
+
+        [TestMethod]
+        public void BaseTcpServer_OnServerReceivePackage_WhenCallbackThrows_ShouldReportErrorWithoutClosingClient()
+        {
+            var server = new TestTcpServer(new SinglePackageFixedHeaderPackageFilter(), port: 0)
+            {
+                ReceivePackageException = new InvalidOperationException("receive package callback failed"),
+            };
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            server.TrackClient(client);
+
+            server.TriggerReceiveLoop(client, new BufferModel(), new CacheModel());
+
+            Assert.AreEqual(1, server.ReceivePackageCallbackCount);
+            Assert.AreEqual(1, server.ErrorCallbackCount);
+            Assert.AreEqual("TcpServer receive package callback failed.", server.LastError.Message);
+            Assert.IsNotNull(server.LastError.InnerException);
+            Assert.AreEqual("receive package callback failed", server.LastError.InnerException.Message);
+            Assert.AreEqual(0, client.CloseAsyncCallCount);
+            Assert.IsTrue(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+        }
+
+        [TestMethod]
         public void SendDataBytes_WhenClientIsNotManaged_ShouldIgnoreSend()
         {
             var server = new TestTcpServer(new TestFixedHeaderPackageFilter())
@@ -650,6 +1648,31 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual(0, client.SendCallCount);
             Assert.AreEqual(0, server.ErrorCallbackCount);
             Assert.AreEqual(0, client.CloseAsyncCallCount);
+        }
+
+        [TestMethod]
+        public void SendDataBytes_WhenCanSendDataThrows_ShouldReportErrorWithoutClosingClient()
+        {
+            var server = new TestTcpServer(new TestFixedHeaderPackageFilter())
+            {
+                CanSendDataException = new InvalidOperationException("can send data failed"),
+            };
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+
+            server.TrackClient(client);
+
+            server.SendDataBytes(client, new byte[] { 0x01 });
+
+            Assert.AreEqual(0, client.SendCallCount);
+            Assert.AreEqual(1, server.ErrorCallbackCount);
+            Assert.AreEqual("TcpServer can send data check failed.", server.LastError.Message);
+            Assert.IsNotNull(server.LastError.InnerException);
+            Assert.AreEqual("can send data failed", server.LastError.InnerException.Message);
+            Assert.AreEqual(0, client.CloseAsyncCallCount);
+            Assert.IsTrue(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
         }
 
         [TestMethod]
@@ -791,6 +1814,77 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void SendDataBytes_WhenChildCloseThrows_ShouldReportCloseFailureWithoutEscalatingToCaller()
+        {
+            var server = new TestTcpServer(new TestFixedHeaderPackageFilter())
+            {
+                CanSendDataResult = true,
+            };
+            var client = new ThrowingCloseTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+                SendException = new InvalidOperationException("send failed"),
+            };
+
+            try
+            {
+                client.MarkRunningForTest();
+                server.TrackClient(client);
+
+                server.SendDataBytes(client, new byte[] { 0x01 });
+
+                Assert.AreEqual(1, client.SendCallCount);
+                Assert.AreEqual(2, client.CloseAsyncCallCount);
+                Assert.AreEqual(2, server.ErrorCallbackCount);
+                Assert.AreEqual("TcpServer close child client failed.", server.LastError.Message);
+                Assert.IsNotNull(server.LastError.InnerException);
+                Assert.AreEqual("child close failed", server.LastError.InnerException.Message);
+                Assert.IsTrue(client.IsDisposed);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsFalse(client.HasHeartTimerForTest());
+                Assert.IsFalse(client.HasSendQueueForTest());
+                Assert.IsTrue(client.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+            }
+            finally
+            {
+                client.Dispose();
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void SendDataBytes_WhenErrorCallbackThrows_ShouldStillCloseClientAndReportServerError()
+        {
+            var server = new ThrowingErrorCallbackTcpServer();
+            var client = new TestTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+                SendException = new InvalidOperationException("send failed"),
+            };
+
+            try
+            {
+                server.TrackClient(client);
+
+                server.SendDataBytes(client, new byte[] { 0x01 });
+
+                Assert.AreEqual(1, client.SendCallCount);
+                Assert.AreEqual(1, client.CloseAsyncCallCount);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+                Assert.AreEqual(1, server.ServerErrorCount);
+                Assert.AreEqual("TcpServer report child client error failed.", server.LastServerError.Message);
+                Assert.IsNotNull(server.LastServerError.InnerException);
+                Assert.AreEqual("error callback failed", server.LastServerError.InnerException.Message);
+            }
+            finally
+            {
+                client.Dispose();
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void SendPackage_WhenEncodeThrows_ShouldReportErrorWithoutClosingClient()
         {
             var server = new TestTcpServer(new TestFixedHeaderPackageFilter(throwOnEncode: true))
@@ -838,6 +1932,156 @@ namespace Lanymy.Common.AllTests
                 Assert.AreEqual(1, server.ErrorCallbackCount);
                 Assert.AreEqual(0, server.AcceptCallbackCount);
                 Assert.AreEqual(0, server.TrackedClientCount);
+            }
+            finally
+            {
+                await server.CloseAsync();
+            }
+        }
+
+        [TestMethod]
+        public async Task BeginAcceptAsync_WhenCreateTcpServerClientThrows_ShouldReportErrorWithoutStoppingServer()
+        {
+            var server = new ThrowingCreateClientAcceptServer();
+
+            try
+            {
+                server.Start();
+                var port = ((IPEndPoint)server.CurrentSocket.LocalEndPoint).Port;
+
+                using var firstClient = new TcpClient();
+                await firstClient.ConnectAsync(IPAddress.Loopback, port);
+
+                var errorTask = server.WaitForServerErrorAsync();
+                var errorCompletedTask = await Task.WhenAny(errorTask, Task.Delay(TimeSpan.FromSeconds(3)));
+
+                Assert.AreSame(errorTask, errorCompletedTask);
+                await errorTask;
+
+                Assert.IsTrue(server.IsRunning);
+                Assert.IsNotNull(server.CurrentSocket);
+                Assert.AreEqual(1, server.ServerErrorCount);
+                Assert.AreEqual("TcpServer create accepted client failed.", server.LastServerError.Message);
+                Assert.IsNotNull(server.LastServerError.InnerException);
+                Assert.AreEqual("create client failed", server.LastServerError.InnerException.Message);
+
+                using var secondClient = new TcpClient();
+                await secondClient.ConnectAsync(IPAddress.Loopback, port);
+
+                var acceptTask = server.WaitForAcceptAsync();
+                var acceptCompletedTask = await Task.WhenAny(acceptTask, Task.Delay(TimeSpan.FromSeconds(3)));
+
+                Assert.AreSame(acceptTask, acceptCompletedTask);
+                await acceptTask;
+
+                Assert.AreEqual(1, server.AcceptCallbackCount);
+                Assert.IsTrue(server.IsRunning);
+            }
+            finally
+            {
+                await server.CloseAsync();
+            }
+        }
+
+        [TestMethod]
+        public async Task BeginAcceptAsync_WhenCreateSessionTokenThrows_ShouldDisposeAcceptedClientAndKeepServerRunning()
+        {
+            var server = new ThrowingSessionTokenAcceptServer();
+
+            try
+            {
+                server.Start();
+                var port = ((IPEndPoint)server.CurrentSocket.LocalEndPoint).Port;
+
+                using var firstClient = new TcpClient();
+                await firstClient.ConnectAsync(IPAddress.Loopback, port);
+
+                var errorTask = server.WaitForServerErrorAsync();
+                var errorCompletedTask = await Task.WhenAny(errorTask, Task.Delay(TimeSpan.FromSeconds(3)));
+
+                Assert.AreSame(errorTask, errorCompletedTask);
+                await errorTask;
+
+                var failedClient = server.FirstAcceptedClient;
+                Assert.IsNotNull(failedClient);
+
+                var waitDeadline = DateTime.UtcNow.AddSeconds(3);
+                while (!failedClient.IsDisposed && DateTime.UtcNow < waitDeadline)
+                {
+                    await Task.Delay(10);
+                }
+
+                Assert.IsTrue(server.IsRunning);
+                Assert.IsNotNull(server.CurrentSocket);
+                Assert.AreEqual(1, server.ServerErrorCount);
+                Assert.AreEqual("TcpServer initialize accepted client failed.", server.LastServerError.Message);
+                Assert.IsNotNull(server.LastServerError.InnerException);
+                Assert.AreEqual("create session token failed", server.LastServerError.InnerException.Message);
+                Assert.IsTrue(failedClient.IsDisposed);
+                Assert.IsFalse(failedClient.HasHeartTimerForTest());
+                Assert.IsFalse(failedClient.HasSendQueueForTest());
+                Assert.IsTrue(failedClient.CurrentSocket.SafeHandle.IsClosed);
+
+                using var secondClient = new TcpClient();
+                await secondClient.ConnectAsync(IPAddress.Loopback, port);
+
+                var acceptTask = server.WaitForAcceptAsync();
+                var acceptCompletedTask = await Task.WhenAny(acceptTask, Task.Delay(TimeSpan.FromSeconds(3)));
+
+                Assert.AreSame(acceptTask, acceptCompletedTask);
+                await acceptTask;
+
+                Assert.AreEqual(1, server.AcceptCallbackCount);
+                Assert.IsTrue(server.IsRunning);
+            }
+            finally
+            {
+                await server.CloseAsync();
+            }
+        }
+
+        [TestMethod]
+        public async Task BeginAcceptAsync_WhenStartReceiveReturnsNotRunning_ShouldDisposeAcceptedClientAndKeepServerRunning()
+        {
+            var server = new IncompleteStartReceiveAcceptServer();
+
+            try
+            {
+                server.Start();
+                var port = ((IPEndPoint)server.CurrentSocket.LocalEndPoint).Port;
+
+                using var firstClient = new TcpClient();
+                await firstClient.ConnectAsync(IPAddress.Loopback, port);
+
+                var waitDeadline = DateTime.UtcNow.AddSeconds(3);
+                while ((server.FirstAcceptedClient == null || !server.FirstAcceptedClient.IsDisposed || server.TrackedClientCount != 0) && DateTime.UtcNow < waitDeadline)
+                {
+                    await Task.Delay(10);
+                }
+
+                var failedClient = server.FirstAcceptedClient;
+                Assert.IsNotNull(failedClient);
+                Assert.IsTrue(failedClient.IsDisposed);
+                Assert.IsFalse(failedClient.IsRunning);
+                Assert.IsFalse(failedClient.HasHeartTimerForTest());
+                Assert.IsTrue(failedClient.CurrentSocket.SafeHandle.IsClosed);
+                Assert.AreEqual(0, server.TrackedClientCount);
+                Assert.AreEqual(0, server.AcceptCallbackCount);
+                Assert.AreEqual(0, server.ServerErrorCount);
+                Assert.IsTrue(server.IsRunning);
+                Assert.IsNotNull(server.CurrentSocket);
+
+                using var secondClient = new TcpClient();
+                await secondClient.ConnectAsync(IPAddress.Loopback, port);
+
+                var acceptTask = server.WaitForAcceptAsync();
+                var acceptCompletedTask = await Task.WhenAny(acceptTask, Task.Delay(TimeSpan.FromSeconds(3)));
+
+                Assert.AreSame(acceptTask, acceptCompletedTask);
+                await acceptTask;
+
+                Assert.AreEqual(1, server.AcceptCallbackCount);
+                Assert.IsTrue(server.IsRunning);
             }
             finally
             {

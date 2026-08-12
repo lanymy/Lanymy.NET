@@ -65,7 +65,7 @@ namespace Lanymy.Common.AllTests
             }
         }
 
-        private sealed class TestUdpClient : BaseUdpClient<TestSessionToken, TestFixedHeaderPackageFilter, TestUdpPackage, TestUdpPackage>
+        private class TestUdpClient : BaseUdpClient<TestSessionToken, TestFixedHeaderPackageFilter, TestUdpPackage, TestUdpPackage>
         {
             private int _receivedPackageCount;
 
@@ -160,6 +160,16 @@ namespace Lanymy.Common.AllTests
                 return CanContinueReceive(currentUdpClient, receiveWorkTaskQueue);
             }
 
+            public object GetReceiveWorkTaskQueueForTest()
+            {
+                return _ReceiveWorkTaskQueue;
+            }
+
+            public object GetSendWorkTaskQueueForTest()
+            {
+                return _SendWorkTaskQueue;
+            }
+
             protected override async Task StopReceiveWorkTaskQueueAsync(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue)
             {
                 if (CloseReceiveQueueException != null)
@@ -211,6 +221,70 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class RollbackFailureUdpClient : TestUdpClient
+        {
+            public Exception CanContinueStartException { get; set; }
+            public Exception ResetStartReceiveQueueException { get; set; }
+
+            public RollbackFailureUdpClient(int port)
+                : base(port)
+            {
+            }
+
+            protected override bool CanContinueStart(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue, UdpClient currentUdpClient)
+            {
+                if (currentUdpClient != null && CanContinueStartException != null)
+                {
+                    throw CanContinueStartException;
+                }
+
+                return base.CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient);
+            }
+
+            protected override WorkTaskQueue<UdpSourceDataModel> CreateReceiveWorkTaskQueue()
+            {
+                return new WorkTaskQueue<UdpSourceDataModel>(
+                    data => TriggerReceiveData(data.RemoteIPEndPoint, data.SourceDataBytes),
+                    _ =>
+                    {
+                        if (ResetStartReceiveQueueException != null)
+                        {
+                            throw ResetStartReceiveQueueException;
+                        }
+                    },
+                    taskSleepMilliseconds: 1);
+            }
+        }
+
+        private sealed class ThrowingSyncSendUdpClient : TestUdpClient
+        {
+            public ThrowingSyncSendUdpClient(int port)
+                : base(port)
+            {
+            }
+
+            protected override Task<bool> TrySendAsync(SendUdpDataModel sendUdpDataModel)
+            {
+                throw new InvalidOperationException("udp sync send failed");
+            }
+        }
+
+        private sealed class ThrowingSyncCloseUdpClient : TestUdpClient
+        {
+            public int CloseAsyncCallCount { get; private set; }
+
+            public ThrowingSyncCloseUdpClient(int port)
+                : base(port)
+            {
+            }
+
+            public override Task CloseAsync()
+            {
+                CloseAsyncCallCount++;
+                throw new InvalidOperationException("udp close failed");
+            }
+        }
+
         [TestMethod]
         public void BaseUdpClient_Start_WhenBindFails_ShouldRollbackRunningState()
         {
@@ -223,6 +297,44 @@ namespace Lanymy.Common.AllTests
             Assert.IsFalse(client.IsAccept);
 
             client.Close();
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_Start_WhenResetStartReceiveQueueFails_ShouldReportErrorReplaceQueueAndAllowRetry()
+        {
+            var client = new RollbackFailureUdpClient(0)
+            {
+                CanContinueStartException = new InvalidOperationException("start continuation failed"),
+                ResetStartReceiveQueueException = new InvalidOperationException("receive queue rollback stop failed"),
+            };
+
+            try
+            {
+                var receiveQueueBeforeStart = client.GetReceiveWorkTaskQueueForTest();
+                var sendQueueBeforeStart = client.GetSendWorkTaskQueueForTest();
+
+                var exception = Assert.ThrowsExactly<InvalidOperationException>(() => client.Start());
+
+                Assert.AreEqual("start continuation failed", exception.Message);
+                Assert.IsFalse(client.IsAccept);
+                Assert.AreEqual(1, client.ErrorCount);
+                Assert.AreEqual("UdpClient reset start receive queue failed.", client.LastError?.Message);
+                Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+                Assert.AreEqual("receive queue rollback stop failed", client.LastError?.InnerException?.Message);
+                Assert.AreNotSame(receiveQueueBeforeStart, client.GetReceiveWorkTaskQueueForTest());
+                Assert.AreSame(sendQueueBeforeStart, client.GetSendWorkTaskQueueForTest());
+
+                client.CanContinueStartException = null;
+                client.ResetStartReceiveQueueException = null;
+
+                client.Start();
+
+                Assert.IsTrue(client.IsAccept);
+            }
+            finally
+            {
+                client.Dispose();
+            }
         }
 
         [TestMethod]
@@ -306,6 +418,27 @@ namespace Lanymy.Common.AllTests
             finally
             {
                 client.Close();
+            }
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_Send_WhenTrySendAsyncThrowsSynchronously_ShouldReportErrorWithoutEscalating()
+        {
+            var client = new ThrowingSyncSendUdpClient(0);
+
+            try
+            {
+                client.Start();
+
+                var result = client.Send(new SendUdpDataModel(new IPEndPoint(IPAddress.Loopback, 9527), new byte[] { 1, 2, 3, 4 }));
+
+                Assert.IsFalse(result);
+                Assert.AreEqual(1, client.ErrorCount);
+                Assert.AreEqual("udp sync send failed", client.LastError?.Message);
+            }
+            finally
+            {
+                client.Dispose();
             }
         }
 
@@ -494,6 +627,56 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseUdpClient_Close_WhenCloseAsyncThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var client = new ThrowingSyncCloseUdpClient(0);
+
+            client.Close();
+
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+            Assert.AreEqual(1, client.ErrorCount);
+            Assert.AreEqual("UdpClient sync close failed.", client.LastError?.Message);
+            Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+            Assert.AreEqual("udp close failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_CloseAsync_WhenQueueStopFails_ShouldReplaceFailedQueuesBeforeRestart()
+        {
+            var client = new TestUdpClient(0)
+            {
+                CloseReceiveQueueException = new InvalidOperationException("receive queue stop failed"),
+                CloseSendQueueException = new InvalidOperationException("send queue stop failed"),
+            };
+
+            try
+            {
+                client.Start();
+
+                var receiveQueueBeforeClose = client.GetReceiveWorkTaskQueueForTest();
+                var sendQueueBeforeClose = client.GetSendWorkTaskQueueForTest();
+
+                client.Close();
+
+                Assert.IsFalse(client.IsAccept);
+                Assert.AreNotSame(receiveQueueBeforeClose, client.GetReceiveWorkTaskQueueForTest());
+                Assert.AreNotSame(sendQueueBeforeClose, client.GetSendWorkTaskQueueForTest());
+
+                client.CloseReceiveQueueException = null;
+                client.CloseSendQueueException = null;
+
+                client.Start();
+
+                Assert.IsTrue(client.IsAccept);
+                Assert.IsTrue(client.Send(new SendUdpDataModel(new IPEndPoint(IPAddress.Loopback, 9527), new byte[] { 1, 2, 3, 4 })));
+            }
+            finally
+            {
+                client.Dispose();
+            }
+        }
+
+        [TestMethod]
         public void BaseUdpClient_CloseAsync_WhenCloseEventFails_ShouldReportCloseFinalizationError()
         {
             var client = new TestUdpClient(0)
@@ -528,6 +711,23 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual("UdpClient dispose receive queue failed.", client.LastError?.Message);
             Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
             Assert.AreEqual("receive queue dispose failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_Dispose_WhenCloseThrows_ShouldReportAndThrowWrappedCloseError()
+        {
+            var client = new ThrowingSyncCloseUdpClient(0);
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => client.Dispose());
+
+            Assert.IsTrue(client.IsDisposed);
+            Assert.IsFalse(client.IsAccept);
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+            Assert.AreEqual("UdpClient dispose close failed.", exception.Message);
+            Assert.AreEqual(1, client.ErrorCount);
+            Assert.AreEqual("UdpClient dispose close failed.", client.LastError?.Message);
+            Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+            Assert.AreEqual("udp close failed", client.LastError?.InnerException?.Message);
         }
 
         [TestMethod]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using Lanymy.Common.Instruments.Common;
@@ -16,7 +16,9 @@ namespace Lanymy.Common.Instruments.Client
     {
 
 
-        public WeakReference<Action> CurrentConnectToServerAction;
+        public Action<long> CurrentConnectToServerAction { get; set; }
+
+        public long CurrentReconnectGeneration { get; set; }
 
 
         protected BaseClientChannelContext(TClientChannelOptions channelOptions) : base(channelOptions)

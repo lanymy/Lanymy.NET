@@ -11,6 +11,7 @@ namespace Lanymy.Common.Instruments
         protected readonly object _Locker = new object();
 
         private bool _IsRunning = false;
+        private bool _IsDisposed = false;
 
         public bool IsRunning
         {
@@ -32,6 +33,11 @@ namespace Lanymy.Common.Instruments
             }
         }
 
+        public bool IsDisposed
+        {
+            get { return _IsDisposed; }
+        }
+
 
         protected BaseWorkTask()
         {
@@ -43,12 +49,15 @@ namespace Lanymy.Common.Instruments
         public async Task StartAsync()
         {
 
-            if (IsRunning)
+            lock (_Locker)
             {
-                return;
-            }
+                if (_IsDisposed || _IsRunning)
+                {
+                    return;
+                }
 
-            IsRunning = true;
+                _IsRunning = true;
+            }
 
             try
             {
@@ -56,7 +65,10 @@ namespace Lanymy.Common.Instruments
             }
             catch
             {
-                IsRunning = false;
+                lock (_Locker)
+                {
+                    _IsRunning = false;
+                }
                 throw;
             }
 
@@ -106,26 +118,21 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
+            lock (_Locker)
+            {
+                if (_IsDisposed)
+                {
+                    return;
+                }
+
+                _IsDisposed = true;
+            }
+
             Exception stopException = null;
             Exception disposeException = null;
 
-            try
-            {
-                TaskHelper.SyncWait(StopAsync());
-            }
-            catch (Exception ex)
-            {
-                stopException = ex;
-            }
-
-            try
-            {
-                TaskHelper.SyncWait(OnDisposeAsync());
-            }
-            catch (Exception ex)
-            {
-                disposeException = ex;
-            }
+            stopException = TaskHelper.TrySyncWait(StopAsync);
+            disposeException = TaskHelper.TrySyncWait(OnDisposeAsync);
 
             if (stopException != null && disposeException != null)
             {

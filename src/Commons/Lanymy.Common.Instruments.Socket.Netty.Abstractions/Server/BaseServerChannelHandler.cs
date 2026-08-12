@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using DotNetty.Transport.Channels;
 using Lanymy.Common.Instruments.Common;
 
@@ -45,7 +46,9 @@ namespace Lanymy.Common.Instruments.Server
         /// <param name="context"></param>
         protected override void OnChannelInactive(IChannelHandlerContext context)
         {
-            _CurrentChannelDictionary.TryRemove(_CurrentChannelSession.SessionID, out _);
+            // Only clear the session slot when this handler still owns it.
+            ((ICollection<KeyValuePair<Guid, IChannelClientHandler<TChannelSession>>>)_CurrentChannelDictionary)
+                .Remove(new KeyValuePair<Guid, IChannelClientHandler<TChannelSession>>(_CurrentChannelSession.SessionID, this));
         }
 
 

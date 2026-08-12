@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Timeout;
@@ -52,8 +53,40 @@ namespace Lanymy.Common.Instruments.Common
 
         protected override void InitChannel(ISocketChannel channel)
         {
+            try
+            {
+                InitializeChannel(channel);
+            }
+            catch (Exception ex)
+            {
+                HandleInitChannelException(channel, ex);
+            }
+        }
 
-            channel.Pipeline
+        protected virtual void InitializeChannel(ISocketChannel channel)
+        {
+            var pipeline = GetChannelPipeline(channel);
+
+            ConfigureBasePipeline(pipeline);
+
+            var channelHandler = EnsureChannelHandlerCreated(GetChannelHandler());
+
+            AddTerminalChannelHandlers(pipeline, channelHandler);
+        }
+
+        protected virtual IChannelPipeline GetChannelPipeline(ISocketChannel channel)
+        {
+            if (channel == null)
+            {
+                throw new InvalidOperationException("NettyChannelInitializer channel is null.");
+            }
+
+            return channel.Pipeline;
+        }
+
+        protected virtual void ConfigureBasePipeline(IChannelPipeline pipeline)
+        {
+            pipeline
 
 #if DEBUG
                 .AddLast(new LoggingHandler("SRV-CONN"))
@@ -64,21 +97,94 @@ namespace Lanymy.Common.Instruments.Common
 
                 //.AddLast(new LengthFieldBasedFrameDecoder(ushort.MaxValue, 6, 1, 2, 0))
                 .AddLast(new LengthFieldBasedFrameDecoder(ushort.MaxValue, _CurrentChannelOptions.LengthFieldOffset, _CurrentChannelOptions.LengthFieldLength, _CurrentChannelOptions.LengthAdjustment, _CurrentChannelOptions.InitialBytesToStrip));
+        }
 
-            //var channelHandler = Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext) as IChannelHandler;
-            var channelHandler = GetChannelHandler();
+        protected virtual TChannelHandler EnsureChannelHandlerCreated(TChannelHandler channelHandler)
+        {
+            if (channelHandler == null)
+            {
+                throw new InvalidOperationException("NettyChannelInitializer create channel handler returned null.");
+            }
 
+            return channelHandler;
+        }
+
+        protected virtual void AddTerminalChannelHandlers(IChannelPipeline pipeline, TChannelHandler channelHandler)
+        {
             if (_CurrentChannelOptions.IsUseSingleThreadEventLoop)
             {
-                channel.Pipeline.AddLast(new SingleThreadEventLoop(), channelHandler);
+                pipeline.AddLast(new SingleThreadEventLoop(), channelHandler);
             }
             else
             {
-                channel.Pipeline.AddLast(channelHandler);
+                pipeline.AddLast(channelHandler);
+            }
+        }
+
+        protected virtual void HandleInitChannelException(ISocketChannel channel, Exception exception)
+        {
+            var wrappedException = new InvalidOperationException("NettyChannelInitializer init channel failed.", exception);
+            TryCloseChannelAfterInitFailure(channel);
+            throw wrappedException;
+        }
+
+        protected virtual void TryCloseChannelAfterInitFailure(ISocketChannel channel)
+        {
+            if (!CanCloseChannelAfterInitFailure(channel))
+            {
+                return;
             }
 
+            _ = SafeCloseChannelAfterInitFailureAsync(channel);
+        }
 
+        protected virtual bool CanCloseChannelAfterInitFailure(ISocketChannel channel)
+        {
+            return channel != null;
+        }
 
+        protected virtual Task ExecuteCloseChannelAfterInitFailureAsync(ISocketChannel channel)
+        {
+            return channel.CloseAsync();
+        }
+
+        protected virtual async Task SafeCloseChannelAfterInitFailureAsync(ISocketChannel channel)
+        {
+            try
+            {
+                await ExecuteCloseChannelAfterInitFailureAsync(channel);
+            }
+            catch (Exception ex) when (CanIgnoreInitChannelCloseException(ex, channel))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnInitChannelError(new InvalidOperationException("NettyChannelInitializer close channel after init failed.", ex));
+            }
+        }
+
+        protected virtual bool CanIgnoreInitChannelCloseException(Exception exception, ISocketChannel channel)
+        {
+            if (exception is OperationCanceledException)
+            {
+                return true;
+            }
+
+            if (exception is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (exception is InvalidOperationException && (channel == null || !channel.Open))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual void OnInitChannelError(Exception exception)
+        {
         }
 
 

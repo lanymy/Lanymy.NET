@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
 
@@ -13,6 +14,7 @@ namespace Lanymy.Common.Instruments
     {
 
         protected Task _CurrentTask;
+        protected CancellationTokenSource _CurrentCancellationTokenSource;
         protected readonly ConcurrentQueue<TData> _CurrentCacheConcurrentQueue = new ConcurrentQueue<TData>();
         private readonly Action<TData> _WorkAction;
         private readonly int _SleepIntervalMilliseconds;
@@ -53,6 +55,16 @@ namespace Lanymy.Common.Instruments
         {
         }
 
+        protected virtual Task DelayAsync(CancellationToken token)
+        {
+            if (_SleepIntervalMilliseconds <= 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            return Task.Delay(_SleepIntervalMilliseconds, token);
+        }
+
         private void TryOnWorkError(TData data, Exception ex)
         {
             try
@@ -64,13 +76,26 @@ namespace Lanymy.Common.Instruments
             }
         }
 
+        protected virtual void ClearCurrentCacheConcurrentQueue()
+        {
+#if NET48
+            TData data;
 
-        private async Task OnTaskAsync()
+            while (_CurrentCacheConcurrentQueue.TryDequeue(out data))
+            {
+            }
+#else
+            _CurrentCacheConcurrentQueue.Clear();
+#endif
+        }
+
+
+        private async Task OnTaskAsync(CancellationToken token)
         {
 
             TData data;
 
-            while (IsRunning)
+            while (!token.IsCancellationRequested && IsRunning)
             {
 
                 while (_CurrentCacheConcurrentQueue.TryDequeue(out data))
@@ -89,7 +114,7 @@ namespace Lanymy.Common.Instruments
 
                 if (_SleepIntervalMilliseconds > 0)
                 {
-                    await Task.Delay(_SleepIntervalMilliseconds);
+                    await DelayAsync(token);
                 }
 
             }
@@ -108,10 +133,16 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStartAsync()
         {
+            if (_CurrentCancellationTokenSource.IfIsNull())
+            {
+                _CurrentCancellationTokenSource = new CancellationTokenSource();
+            }
+
+            var token = _CurrentCancellationTokenSource.Token;
 
             _CurrentTask = Task.Factory.StartNew(
-                OnTaskAsync,
-                default,
+                () => OnTaskAsync(token),
+                token,
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default).Unwrap();
 
@@ -121,26 +152,56 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
+            Exception stopException = null;
+            var currentTask = _CurrentTask;
+            var currentCancellationTokenSource = _CurrentCancellationTokenSource;
 
-            if (!_CurrentTask.IfIsNullOrEmpty())
+            try
             {
-                await _CurrentTask;
-
-                _CurrentTask.Dispose();
-                _CurrentTask = null;
-
+                currentCancellationTokenSource?.Cancel();
+            }
+            catch (Exception ex)
+            {
+                stopException = ex;
             }
 
-
-#if NET48
-            TData item;
-            while (_CurrentCacheConcurrentQueue.TryDequeue(out item))
+            try
             {
-                // 持续出队直到队列为空
+                if (!currentTask.IfIsNullOrEmpty())
+                {
+                    await currentTask;
+                }
             }
-#else
-                    _CurrentCacheConcurrentQueue.Clear();
-#endif
+            catch (OperationCanceledException) when (currentCancellationTokenSource != null && currentCancellationTokenSource.IsCancellationRequested)
+            {
+                // ignored
+            }
+            catch (Exception ex)
+            {
+                stopException = ex;
+            }
+            finally
+            {
+                if (ReferenceEquals(_CurrentTask, currentTask))
+                {
+                    _CurrentTask = null;
+                }
+
+                currentTask?.Dispose();
+
+                if (ReferenceEquals(_CurrentCancellationTokenSource, currentCancellationTokenSource))
+                {
+                    _CurrentCancellationTokenSource = null;
+                }
+
+                currentCancellationTokenSource?.Dispose();
+                ClearCurrentCacheConcurrentQueue();
+            }
+
+            if (stopException != null)
+            {
+                throw stopException;
+            }
 
         }
 

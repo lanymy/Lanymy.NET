@@ -10,6 +10,27 @@
   - 演示/协议示例层 `Socket.ImplementDemo`
 - 从当前代码看，它承载的是 TCP/UDP 通信框架、会话态、粘包拆包、心跳与发送队列等一整套机制。
 
+## 当前文档导航
+
+- 总览入口：
+  - [Socket.md](./Socket.md)
+- 抽象层职责与接口面：
+  - [Socket.Abstractions.md](./Socket.Abstractions.md)
+- 类型关系与数据流：
+  - [Socket-Relations.md](./Socket-Relations.md)
+- 生命周期与关闭链约束：
+  - [Socket-Lifecycle.md](./Socket-Lifecycle.md)
+- 异常分支与失败收口：
+  - [Socket-Exception-Sequences.md](./Socket-Exception-Sequences.md)
+
+当前更推荐的阅读顺序是：
+
+1. 先看本页，确认模块边界和分层。
+2. 再看 `Socket.Abstractions`，确认接口与抽象职责。
+3. 再看 `Socket-Relations`，理解 server / client / udp 之间的数据流。
+4. 最后看 `Socket-Lifecycle`，确认启动、关闭、同步桥接、回调隔离这些硬约束。
+5. 如果要排查失败路径，再看 `Socket-Exception-Sequences`。
+
 ## 当前代码入口
 
 - 抽象层代表文件
@@ -42,6 +63,16 @@
   形成收、发、心跳三条运行链。
 - `BaseFixedHeaderPackageFilter` 通过 `BufferModel + CacheModel` 处理半包、粘包与递归拆包。
 
+## 当前接口语义摘要
+
+- `ITcp` / `ITcpClient` / `ITcpServer` / `ITcpServerClient` 当前都同时保留了同步入口和异步关闭/发送入口。
+- 这些接口本身更像“调用面”，真正的生命周期契约主要由抽象基类实现保证，包括：
+  - 同步桥接异常不直接裸抛调用方
+  - 启动失败要回滚
+  - 关闭失败后仍要继续做 fallback 释放
+  - 业务事件回调不能反向打断核心 socket 生命周期
+- 这一层详细语义已经补充到 [Socket.Abstractions.md](./Socket.Abstractions.md) 和 [Socket-Lifecycle.md](./Socket-Lifecycle.md)。
+
 ## Demo 层体现出的使用方式
 
 - `LanymyFixedHeaderPackageFilter`
@@ -68,5 +99,5 @@
 
 ## 后续建议
 
-- 下一轮很适合补一份“Socket 抽象层关系图”。
+- 下一轮很适合补一份“Socket 时序图文档”，把启动、接入、收包、心跳、关闭画成阶段图。
 - 也可以单独再拆一篇 “Socket Demo 协议实现说明”，把 `ImplementDemo` 与真正可复用基础层明确分开。

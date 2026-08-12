@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using DotNetty.Handlers.Logging;
 using DotNetty.Transport.Bootstrapping;
@@ -24,6 +24,7 @@ namespace Lanymy.Common.Instruments.Server
     {
 
         protected IEventLoopGroup _CurrentWorkerGroup;
+        protected ServerBootstrap _CurrentBootstrap;
 
         protected BaseNettySocketServer(TServerChannelContext serverChannelContext) : base(serverChannelContext)
         {
@@ -31,82 +32,253 @@ namespace Lanymy.Common.Instruments.Server
 
         protected override async Task OnStartAsync()
         {
+            var currentBossGroup = default(IEventLoopGroup);
+            var currentWorkerGroup = default(IEventLoopGroup);
+            var currentBootstrap = default(ServerBootstrap);
+            var currentChannelHost = default(IChannel);
 
             try
             {
+                currentBossGroup = CreateBossGroup();
+                _CurrentBossGroup = currentBossGroup;
 
-                _CurrentBossGroup = new MultithreadEventLoopGroup(1);
-                _CurrentWorkerGroup = new MultithreadEventLoopGroup();
+                currentWorkerGroup = CreateWorkerGroup();
+                _CurrentWorkerGroup = currentWorkerGroup;
 
-                var bootstrap = new ServerBootstrap();
-                bootstrap.Group(_CurrentBossGroup, _CurrentWorkerGroup);
+                currentBootstrap = CreateBootstrap(currentBossGroup, currentWorkerGroup);
+                _CurrentBootstrap = currentBootstrap;
 
-                bootstrap.Channel<TcpServerSocketChannel>();
-                bootstrap
+                currentChannelHost = await BindServerAsync(currentBootstrap);
+                _CurrentChannelHost = currentChannelHost;
+            }
+            catch (Exception ex)
+            {
+                await RollbackStartStateAsync(currentBossGroup, currentWorkerGroup, currentBootstrap, currentChannelHost);
+                throw new InvalidOperationException("NettySocketServer start failed.", ex);
+            }
+        }
 
-                    .Option(ChannelOption.SoBacklog, _CurrentChannelOptions.Backlog)
+        protected virtual IEventLoopGroup CreateBossGroup()
+        {
+            return new MultithreadEventLoopGroup(1);
+        }
 
-                    .ChildOption(ChannelOption.SoKeepalive, false)
-                    .ChildOption(ChannelOption.TcpNodelay, true)
-                    .ChildOption(ChannelOption.ConnectTimeout, TimeSpan.FromMilliseconds(30 * 1000))
-                    .ChildOption(ChannelOption.SoSndbuf, _CurrentChannelOptions.SendBufferSize)
-                    .ChildOption(ChannelOption.SoRcvbuf, _CurrentChannelOptions.ReceiveBufferSize)
+        protected virtual IEventLoopGroup CreateWorkerGroup()
+        {
+            return new MultithreadEventLoopGroup();
+        }
+
+        protected virtual ServerBootstrap CreateBootstrap(IEventLoopGroup currentBossGroup, IEventLoopGroup currentWorkerGroup)
+        {
+            var bootstrap = new ServerBootstrap();
+            bootstrap.Group(currentBossGroup, currentWorkerGroup);
+
+            bootstrap.Channel<TcpServerSocketChannel>();
+            bootstrap
+
+                .Option(ChannelOption.SoBacklog, _CurrentChannelOptions.Backlog)
+
+                .ChildOption(ChannelOption.SoKeepalive, false)
+                .ChildOption(ChannelOption.TcpNodelay, true)
+                .ChildOption(ChannelOption.ConnectTimeout, TimeSpan.FromMilliseconds(30 * 1000))
+                .ChildOption(ChannelOption.SoSndbuf, _CurrentChannelOptions.SendBufferSize)
+                .ChildOption(ChannelOption.SoRcvbuf, _CurrentChannelOptions.ReceiveBufferSize)
 
 
 #if DEBUG
 
-                    .Handler(new LoggingHandler("SRV-LSTN"))
+                .Handler(new LoggingHandler("SRV-LSTN"))
 
 #endif
 
-                    .ChildHandler(Activator.CreateInstance(typeof(TServerChannelInitializer), _CurrentChannelContext) as IChannelHandler);
+                .ChildHandler(Activator.CreateInstance(typeof(TServerChannelInitializer), _CurrentChannelContext) as IChannelHandler);
 
-                _CurrentChannelHost = await bootstrap.BindAsync(_CurrentChannelOptions.Port);
-
-
-                //await _CurrentServerChannel.CloseAsync();
-
-            }
-            catch
-            {
-                _CurrentChannelHost = null;
-            }
-
-
+            return bootstrap;
         }
 
+        protected virtual Task<IChannel> BindServerAsync(ServerBootstrap bootstrap)
+        {
+            return bootstrap.BindAsync(_CurrentChannelOptions.Port);
+        }
+
+        protected virtual Task CloseChannelAsync(IChannel currentChannelHost)
+        {
+            if (currentChannelHost.IfIsNull())
+            {
+                return Task.CompletedTask;
+            }
+
+            return currentChannelHost.CloseAsync();
+        }
+
+        protected virtual Task ShutdownGroupAsync(IEventLoopGroup currentEventLoopGroup)
+        {
+            if (currentEventLoopGroup.IfIsNull())
+            {
+                return Task.CompletedTask;
+            }
+
+            return currentEventLoopGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+        }
+
+        protected virtual async Task RollbackStartStateAsync(IEventLoopGroup currentBossGroup, IEventLoopGroup currentWorkerGroup, ServerBootstrap currentBootstrap, IChannel currentChannelHost)
+        {
+            try
+            {
+                await CloseChannelAsync(currentChannelHost);
+            }
+            catch (Exception ex)
+            {
+                OnStartError(new InvalidOperationException("NettySocketServer reset start close channel failed.", ex));
+            }
+
+            try
+            {
+                await ShutdownGroupAsync(currentBossGroup);
+            }
+            catch (Exception ex)
+            {
+                OnStartError(new InvalidOperationException("NettySocketServer reset start shutdown boss group failed.", ex));
+            }
+
+            try
+            {
+                await ShutdownGroupAsync(currentWorkerGroup);
+            }
+            catch (Exception ex)
+            {
+                OnStartError(new InvalidOperationException("NettySocketServer reset start shutdown worker group failed.", ex));
+            }
+
+            try
+            {
+                ResetStartState(currentBossGroup, currentWorkerGroup, currentBootstrap, currentChannelHost);
+            }
+            catch (Exception ex)
+            {
+                OnStartError(new InvalidOperationException("NettySocketServer reset start finalization failed.", ex));
+            }
+        }
+
+        protected virtual void ResetStartState(IEventLoopGroup currentBossGroup, IEventLoopGroup currentWorkerGroup, ServerBootstrap currentBootstrap, IChannel currentChannelHost)
+        {
+            lock (_Locker)
+            {
+                IsRunning = false;
+
+                if (ReferenceEquals(_CurrentBossGroup, currentBossGroup))
+                {
+                    _CurrentBossGroup = null;
+                }
+
+                if (ReferenceEquals(_CurrentWorkerGroup, currentWorkerGroup))
+                {
+                    _CurrentWorkerGroup = null;
+                }
+
+                if (ReferenceEquals(_CurrentBootstrap, currentBootstrap))
+                {
+                    _CurrentBootstrap = null;
+                }
+
+                if (ReferenceEquals(_CurrentChannelHost, currentChannelHost))
+                {
+                    _CurrentChannelHost = null;
+                }
+            }
+        }
+
+        protected virtual void OnStartError(Exception ex)
+        {
+        }
+
+        protected virtual void ResetStopState(IChannel currentChannelHost, IEventLoopGroup currentBossGroup, IEventLoopGroup currentWorkerGroup, ServerBootstrap currentBootstrap)
+        {
+            lock (_Locker)
+            {
+                if (ReferenceEquals(_CurrentChannelHost, currentChannelHost))
+                {
+                    _CurrentChannelHost = null;
+                }
+
+                if (ReferenceEquals(_CurrentBossGroup, currentBossGroup))
+                {
+                    _CurrentBossGroup = null;
+                }
+
+                if (ReferenceEquals(_CurrentWorkerGroup, currentWorkerGroup))
+                {
+                    _CurrentWorkerGroup = null;
+                }
+
+                if (ReferenceEquals(_CurrentBootstrap, currentBootstrap))
+                {
+                    _CurrentBootstrap = null;
+                }
+            }
+        }
+
+        protected virtual void OnStopError(Exception ex)
+        {
+        }
+
+        protected virtual void CleanupTrackedChannelHandlers()
+        {
+            _CurrentChannelContext.CurrentChannelDictionary.Clear();
+        }
 
 
         protected override async Task OnStopAsync()
         {
+            var currentChannelHost = _CurrentChannelHost;
+            var currentBossGroup = _CurrentBossGroup;
+            var currentWorkerGroup = _CurrentWorkerGroup;
+            var currentBootstrap = _CurrentBootstrap;
 
             try
             {
-                if (!_CurrentChannelHost.IfIsNull())
-                {
-                    await _CurrentChannelHost.CloseAsync();
-                }
+                await CloseChannelAsync(currentChannelHost);
             }
-            finally
+            catch (Exception ex)
             {
-                await Task.WhenAll
-                (
-                    _CurrentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1)),
-                    _CurrentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1))
-                );
+                OnStopError(new InvalidOperationException("NettySocketServer stop close channel failed.", ex));
             }
 
             try
             {
-                _CurrentChannelHost = null;
-                _CurrentBossGroup = null;
-                _CurrentWorkerGroup = null;
+                await ShutdownGroupAsync(currentBossGroup);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                OnStopError(new InvalidOperationException("NettySocketServer stop shutdown boss group failed.", ex));
             }
 
+            try
+            {
+                await ShutdownGroupAsync(currentWorkerGroup);
+            }
+            catch (Exception ex)
+            {
+                OnStopError(new InvalidOperationException("NettySocketServer stop shutdown worker group failed.", ex));
+            }
+
+            try
+            {
+                ResetStopState(currentChannelHost, currentBossGroup, currentWorkerGroup, currentBootstrap);
+            }
+            catch (Exception ex)
+            {
+                OnStopError(new InvalidOperationException("NettySocketServer stop finalization failed.", ex));
+            }
+
+            try
+            {
+                CleanupTrackedChannelHandlers();
+            }
+            catch (Exception ex)
+            {
+                OnStopError(new InvalidOperationException("NettySocketServer stop clear tracked handlers failed.", ex));
+            }
         }
 
 

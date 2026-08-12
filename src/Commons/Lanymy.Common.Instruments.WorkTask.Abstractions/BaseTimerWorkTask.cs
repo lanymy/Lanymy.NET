@@ -110,33 +110,59 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStopAsync()
         {
+            Exception stopException = null;
+            var currentTask = _CurrentTask;
+            var currentCancellationTokenSource = _CurrentCancellationTokenSource;
 
-
-            if (_CurrentCancellationTokenSource.IfIsNullOrEmpty())
+            if (currentCancellationTokenSource.IfIsNullOrEmpty())
             {
                 return;
             }
 
-
-            _CurrentCancellationTokenSource.Cancel();
-
+            try
+            {
+                currentCancellationTokenSource.Cancel();
+            }
+            catch (Exception ex)
+            {
+                stopException = ex;
+            }
 
             try
             {
-                await _CurrentTask;
+                if (!currentTask.IfIsNullOrEmpty())
+                {
+                    await currentTask;
+                }
             }
             catch (OperationCanceledException)
             {
                 // ignored
             }
-
-            _CurrentTask.Dispose();
-            _CurrentTask = null;
-
-            if (!_CurrentCancellationTokenSource.IfIsNullOrEmpty())
+            catch (Exception ex)
             {
-                _CurrentCancellationTokenSource.Dispose();
-                _CurrentCancellationTokenSource = null;
+                stopException = ex;
+            }
+            finally
+            {
+                if (ReferenceEquals(_CurrentTask, currentTask))
+                {
+                    _CurrentTask = null;
+                }
+
+                currentTask?.Dispose();
+
+                if (ReferenceEquals(_CurrentCancellationTokenSource, currentCancellationTokenSource))
+                {
+                    _CurrentCancellationTokenSource = null;
+                }
+
+                currentCancellationTokenSource?.Dispose();
+            }
+
+            if (stopException != null)
+            {
+                throw stopException;
             }
 
 

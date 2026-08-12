@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -91,6 +92,80 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingStopSendWorkTaskQueue : WorkTaskQueue<byte[]>
+        {
+            private readonly Exception _stopException;
+
+            public ThrowingStopSendWorkTaskQueue(Exception stopException)
+                : base(_ => { }, null, taskSleepMilliseconds: 1)
+            {
+                _stopException = stopException;
+            }
+
+            public bool DisposeCalled { get; private set; }
+
+            public void MarkRunningForTest()
+            {
+                IsRunning = true;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                throw _stopException;
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                DisposeCalled = true;
+                await base.OnDisposeAsync();
+            }
+        }
+
+        private sealed class ThrowingStartSendWorkTaskQueue : WorkTaskQueue<byte[]>
+        {
+            private readonly Exception _startException;
+
+            public ThrowingStartSendWorkTaskQueue(Exception startException)
+                : base(_ => { }, null, taskSleepMilliseconds: 1)
+            {
+                _startException = startException;
+            }
+
+            protected override Task OnStartAsync()
+            {
+                throw _startException;
+            }
+        }
+
+        private sealed class ThrowingStopTimerWorkTask : TimerWorkTask
+        {
+            private readonly Exception _stopException;
+
+            public ThrowingStopTimerWorkTask(Exception stopException)
+                : base(() => null, taskSleepMilliseconds: 1)
+            {
+                _stopException = stopException;
+            }
+
+            public bool DisposeCalled { get; private set; }
+
+            public void MarkRunningForTest()
+            {
+                IsRunning = true;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                throw _stopException;
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                DisposeCalled = true;
+                await Task.CompletedTask;
+            }
+        }
+
         private sealed class TestTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
         {
             private readonly byte[] _startupPayload;
@@ -133,6 +208,50 @@ namespace Lanymy.Common.AllTests
                 : base(new TestFixedHeaderPackageFilter(), serverIP, port, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
             {
                 _startupPayload = startupPayload;
+            }
+
+            protected override void OnConnectionEvent()
+            {
+                Send(_startupPayload);
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnReceivePackageEvent(object package)
+            {
+            }
+
+            protected override void OnErrorEvent(Exception ex)
+            {
+                ErrorCount++;
+                LastError = ex;
+            }
+        }
+
+        private sealed class RetryableStartQueueTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
+        {
+            private readonly byte[] _startupPayload;
+            private int _CreateSendQueueCallCount;
+
+            public Exception LastError { get; private set; }
+            public int ErrorCount { get; private set; }
+
+            public RetryableStartQueueTcpClient(string serverIP, int port, byte[] startupPayload)
+                : base(new TestFixedHeaderPackageFilter(), serverIP, port, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
+            {
+                _startupPayload = startupPayload;
+            }
+
+            protected override WorkTaskQueue<byte[]> CreateSendWorkTaskQueue()
+            {
+                if (Interlocked.Increment(ref _CreateSendQueueCallCount) == 1)
+                {
+                    return new ThrowingStartSendWorkTaskQueue(new InvalidOperationException("send queue start failed"));
+                }
+
+                return base.CreateSendWorkTaskQueue();
             }
 
             protected override void OnConnectionEvent()
@@ -243,8 +362,57 @@ namespace Lanymy.Common.AllTests
         {
             public int CloseAsyncCallCount { get; private set; }
             public Exception LastError { get; private set; }
+            public List<Exception> Errors { get; } = new List<Exception>();
+            public bool ThrowOnCloseAsync { get; set; }
 
             public ThrowingSendTcpClient()
+                : base(new TestFixedHeaderPackageFilter(), IPAddress.Loopback.ToString(), 9527, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
+            {
+            }
+
+            protected override void OnConnectionEvent()
+            {
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnReceivePackageEvent(object package)
+            {
+            }
+
+            protected override void OnErrorEvent(Exception ex)
+            {
+                Errors.Add(ex);
+                LastError = ex;
+            }
+
+            public override Task CloseAsync()
+            {
+                CloseAsyncCallCount++;
+                if (ThrowOnCloseAsync)
+                {
+                    _IsRunning = false;
+                    throw new InvalidOperationException("tcp client close failed");
+                }
+
+                return Task.CompletedTask;
+            }
+
+            public void ConfigureSendQueueFailure(Exception exception)
+            {
+                _IsRunning = true;
+                _CurrentSendWorkTaskQueue = new ThrowingSendWorkTaskQueue(exception);
+            }
+        }
+
+        private sealed class ThrowingSyncSendTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
+        {
+            public int CloseAsyncCallCount { get; private set; }
+            public Exception LastError { get; private set; }
+
+            public ThrowingSyncSendTcpClient()
                 : base(new TestFixedHeaderPackageFilter(), IPAddress.Loopback.ToString(), 9527, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
             {
             }
@@ -266,16 +434,15 @@ namespace Lanymy.Common.AllTests
                 LastError = ex;
             }
 
+            public override Task SendAsync(byte[] sendDataBytes)
+            {
+                throw new InvalidOperationException("sync send failed");
+            }
+
             public override Task CloseAsync()
             {
                 CloseAsyncCallCount++;
                 return Task.CompletedTask;
-            }
-
-            public void ConfigureSendQueueFailure(Exception exception)
-            {
-                _IsRunning = true;
-                _CurrentSendWorkTaskQueue = new ThrowingSendWorkTaskQueue(exception);
             }
         }
 
@@ -374,6 +541,7 @@ namespace Lanymy.Common.AllTests
         {
             public Exception LastError { get; private set; }
             public Exception OnCloseEventException { get; set; }
+            public List<Exception> Errors { get; } = new List<Exception>();
 
             public CloseFinalizationTcpClient()
                 : base(new TestFixedHeaderPackageFilter(), IPAddress.Loopback.ToString(), 9527, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
@@ -398,12 +566,70 @@ namespace Lanymy.Common.AllTests
 
             protected override void OnErrorEvent(Exception ex)
             {
+                Errors.Add(ex);
                 LastError = ex;
             }
 
             public void PrepareCloseStateForTest()
             {
                 _IsRunning = true;
+            }
+
+            public bool HasSendQueueForTest()
+            {
+                return _CurrentSendWorkTaskQueue != null;
+            }
+
+            public void ReplaceSendQueueForTest(WorkTaskQueue<byte[]> sendQueue)
+            {
+                _CurrentSendWorkTaskQueue = sendQueue;
+            }
+        }
+
+        private sealed class ThrowingCloseDisposeTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
+        {
+            public int CloseAsyncCallCount { get; private set; }
+            public Exception LastError { get; private set; }
+            public List<Exception> Errors { get; } = new List<Exception>();
+
+            public ThrowingCloseDisposeTcpClient()
+                : base(new TestFixedHeaderPackageFilter(), IPAddress.Loopback.ToString(), 9527, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
+            {
+            }
+
+            protected override void OnConnectionEvent()
+            {
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnReceivePackageEvent(object package)
+            {
+            }
+
+            protected override void OnErrorEvent(Exception ex)
+            {
+                Errors.Add(ex);
+                LastError = ex;
+            }
+
+            public override Task CloseAsync()
+            {
+                CloseAsyncCallCount++;
+                _IsRunning = false;
+                throw new InvalidOperationException("tcp client close failed");
+            }
+
+            public void PrepareRunningDisposeStateForTest()
+            {
+                _IsRunning = true;
+            }
+
+            public bool HasSendQueueForTest()
+            {
+                return _CurrentSendWorkTaskQueue != null;
             }
         }
 
@@ -576,8 +802,57 @@ namespace Lanymy.Common.AllTests
         {
             public int CloseAsyncCallCount { get; private set; }
             public Exception LastError { get; private set; }
+            public List<Exception> Errors { get; } = new List<Exception>();
+            public bool ThrowOnCloseAsync { get; set; }
 
             public ThrowingSendTcpServerClient()
+                : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1000)
+            {
+            }
+
+            protected override void OnStartReceiveEvent()
+            {
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnServerClientErrorEvent(Exception ex)
+            {
+                Errors.Add(ex);
+                LastError = ex;
+            }
+
+            protected override void OnReceiveDataEvent(BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            public override Task CloseAsync()
+            {
+                CloseAsyncCallCount++;
+                if (ThrowOnCloseAsync)
+                {
+                    _IsRunning = false;
+                    throw new InvalidOperationException("tcp server client close failed");
+                }
+
+                return Task.CompletedTask;
+            }
+
+            public void ConfigureSendQueueFailure(Exception exception)
+            {
+                _IsRunning = true;
+                _CurrentSendWorkTaskQueue = new ThrowingSendWorkTaskQueue(exception);
+            }
+        }
+
+        private sealed class ThrowingSyncSendTcpServerClient : BaseTcpServerClient
+        {
+            public int CloseAsyncCallCount { get; private set; }
+            public Exception LastError { get; private set; }
+
+            public ThrowingSyncSendTcpServerClient()
                 : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1000)
             {
             }
@@ -599,16 +874,15 @@ namespace Lanymy.Common.AllTests
             {
             }
 
+            public override Task SendAsync(byte[] sendDataBytes)
+            {
+                throw new InvalidOperationException("sync send failed");
+            }
+
             public override Task CloseAsync()
             {
                 CloseAsyncCallCount++;
                 return Task.CompletedTask;
-            }
-
-            public void ConfigureSendQueueFailure(Exception exception)
-            {
-                _IsRunning = true;
-                _CurrentSendWorkTaskQueue = new ThrowingSendWorkTaskQueue(exception);
             }
         }
 
@@ -673,6 +947,7 @@ namespace Lanymy.Common.AllTests
             public Exception CloseEventException { get; set; }
             public Exception OnCloseEventException { get; set; }
             public int ExternalCloseEventCallCount { get; private set; }
+            public List<Exception> Errors { get; } = new List<Exception>();
 
             public CloseFinalizationTcpServerClient()
                 : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1000)
@@ -693,6 +968,7 @@ namespace Lanymy.Common.AllTests
 
             protected override void OnServerClientErrorEvent(Exception ex)
             {
+                Errors.Add(ex);
                 LastError = ex;
             }
 
@@ -715,6 +991,26 @@ namespace Lanymy.Common.AllTests
                 var closeEventField = typeof(BaseTcpServerClient).GetField("CloseEvent", BindingFlags.Instance | BindingFlags.NonPublic);
                 Assert.IsNotNull(closeEventField);
                 return closeEventField.GetValue(this) != null;
+            }
+
+            public bool HasHeartTimerForTest()
+            {
+                return _CurrentHeartTimerWorkTask != null;
+            }
+
+            public bool HasSendQueueForTest()
+            {
+                return _CurrentSendWorkTaskQueue != null;
+            }
+
+            public void ReplaceHeartTimerForTest(TimerWorkTask heartTimer)
+            {
+                _CurrentHeartTimerWorkTask = heartTimer;
+            }
+
+            public void ReplaceSendQueueForTest(WorkTaskQueue<byte[]> sendQueue)
+            {
+                _CurrentSendWorkTaskQueue = sendQueue;
             }
 
             private void OnExternalCloseEvent(ITcpServerClient tcpServerClient)
@@ -821,6 +1117,44 @@ namespace Lanymy.Common.AllTests
             Assert.AreSame(readTask, completedTask);
             Assert.AreEqual(1, await readTask);
             CollectionAssert.AreEqual(new byte[] { 0x6B }, buffer);
+            Assert.IsTrue(client.IsRunning);
+            Assert.AreEqual(1, client.ErrorCount);
+
+            await client.CloseAsync();
+        }
+
+        [TestMethod]
+        public async Task BaseTcpClient_Start_WhenSendQueueStartSyncBridgeFails_ShouldRollbackAndAllowRetry()
+        {
+            using var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+            var client = new RetryableStartQueueTcpClient(IPAddress.Loopback.ToString(), port, new byte[] { 0x7C });
+
+            var firstAcceptTask = listener.AcceptSocketAsync();
+            client.Start();
+
+            using (var firstServerSocket = await firstAcceptTask)
+            {
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsNotNull(client.LastError);
+                Assert.AreEqual("send queue start failed", client.LastError.Message);
+                Assert.AreEqual(1, client.ErrorCount);
+            }
+
+            var secondAcceptTask = listener.AcceptSocketAsync();
+            client.Start();
+
+            using var secondServerSocket = await secondAcceptTask;
+            using var secondServerStream = new NetworkStream(secondServerSocket, ownsSocket: false);
+            var buffer = new byte[1];
+            var readTask = secondServerStream.ReadAsync(buffer, 0, buffer.Length);
+            var completedTask = await Task.WhenAny(readTask, Task.Delay(TimeSpan.FromSeconds(3)));
+
+            Assert.AreSame(readTask, completedTask);
+            Assert.AreEqual(1, await readTask);
+            CollectionAssert.AreEqual(new byte[] { 0x7C }, buffer);
             Assert.IsTrue(client.IsRunning);
             Assert.AreEqual(1, client.ErrorCount);
 
@@ -947,6 +1281,103 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseTcpClient_Dispose_WhenNeverStarted_ShouldReleaseSocketAndSendQueue()
+        {
+            var client = new CloseFinalizationTcpClient();
+            var socket = client.CurrentSocket;
+
+            client.Dispose();
+
+            Assert.IsTrue(client.IsDisposed);
+            Assert.IsFalse(client.IsRunning);
+            Assert.IsNull(client.CurrentSocket);
+            Assert.IsFalse(client.HasSendQueueForTest());
+            Assert.IsTrue(socket.SafeHandle.IsClosed);
+        }
+
+        [TestMethod]
+        public async Task BaseTcpClient_CloseAsync_WhenSendQueueStopThrows_ShouldStillDisposeQueueAndCloseSocket()
+        {
+            var client = new CloseFinalizationTcpClient();
+            var socket = client.CurrentSocket;
+            var sendQueue = new ThrowingStopSendWorkTaskQueue(new InvalidOperationException("client queue stop failed"));
+            sendQueue.MarkRunningForTest();
+            client.ReplaceSendQueueForTest(sendQueue);
+            client.PrepareCloseStateForTest();
+
+            await client.CloseAsync();
+
+            Assert.IsTrue(sendQueue.DisposeCalled);
+            Assert.IsFalse(client.IsRunning);
+            Assert.IsFalse(client.HasSendQueueForTest());
+            Assert.IsNull(client.CurrentSocket);
+            Assert.IsTrue(socket.SafeHandle.IsClosed);
+            CollectionAssert.Contains(client.Errors.ConvertAll(ex => ex.Message), "TcpClient close send queue failed.");
+        }
+
+        [TestMethod]
+        public void BaseTcpClient_Dispose_WhenCloseThrows_ShouldStillReleaseResources()
+        {
+            var client = new ThrowingCloseDisposeTcpClient();
+            var socket = client.CurrentSocket;
+
+            client.PrepareRunningDisposeStateForTest();
+            client.Dispose();
+
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+            Assert.IsTrue(client.IsDisposed);
+            Assert.IsFalse(client.IsRunning);
+            Assert.IsFalse(client.HasSendQueueForTest());
+            Assert.IsNull(client.CurrentSocket);
+            Assert.IsTrue(socket.SafeHandle.IsClosed);
+            CollectionAssert.Contains(client.Errors.ConvertAll(ex => ex.Message), "TcpClient dispose close failed.");
+        }
+
+        [TestMethod]
+        public void BaseTcpServerClient_Dispose_WhenNeverStarted_ShouldReleaseSocketAndInternalResources()
+        {
+            var serverClient = new CloseFinalizationTcpServerClient();
+            var socket = serverClient.CurrentSocket;
+            serverClient.AttachCloseObserver();
+
+            serverClient.Dispose();
+
+            Assert.IsTrue(serverClient.IsDisposed);
+            Assert.IsFalse(serverClient.IsRunning);
+            Assert.AreEqual(0, serverClient.ExternalCloseEventCallCount);
+            Assert.IsFalse(serverClient.HasHeartTimerForTest());
+            Assert.IsFalse(serverClient.HasSendQueueForTest());
+            Assert.IsFalse(serverClient.HasCloseEventHandlerForTest());
+            Assert.IsTrue(socket.SafeHandle.IsClosed);
+        }
+
+        [TestMethod]
+        public async Task BaseTcpServerClient_CloseAsync_WhenHeartAndSendStopThrow_ShouldStillDisposeInternalResources()
+        {
+            var serverClient = new CloseFinalizationTcpServerClient();
+            var socket = serverClient.CurrentSocket;
+            var heartTimer = new ThrowingStopTimerWorkTask(new InvalidOperationException("heart timer stop failed"));
+            var sendQueue = new ThrowingStopSendWorkTaskQueue(new InvalidOperationException("send queue stop failed"));
+
+            heartTimer.MarkRunningForTest();
+            sendQueue.MarkRunningForTest();
+            serverClient.ReplaceHeartTimerForTest(heartTimer);
+            serverClient.ReplaceSendQueueForTest(sendQueue);
+            serverClient.PrepareCloseStateForTest();
+
+            await serverClient.CloseAsync();
+
+            Assert.IsTrue(heartTimer.DisposeCalled);
+            Assert.IsTrue(sendQueue.DisposeCalled);
+            Assert.IsFalse(serverClient.IsRunning);
+            Assert.IsFalse(serverClient.HasHeartTimerForTest());
+            Assert.IsFalse(serverClient.HasSendQueueForTest());
+            Assert.IsTrue(socket.SafeHandle.IsClosed);
+            CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient close heart timer failed.");
+            CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient close send queue failed.");
+        }
+
+        [TestMethod]
         public void BaseTcpServerClient_OnReceiveDataEventThrow_ShouldReportErrorWithoutClosing()
         {
             var serverClient = new ThrowingReceiveDataTcpServerClient();
@@ -972,6 +1403,37 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseTcpClient_Send_WhenSendAsyncThrowsSynchronously_ShouldReportErrorWithoutEscalating()
+        {
+            var client = new ThrowingSyncSendTcpClient();
+
+            client.Send(new byte[] { 0x2A });
+
+            Assert.IsNotNull(client.LastError);
+            Assert.AreEqual("sync send failed", client.LastError.Message);
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+        }
+
+        [TestMethod]
+        public async Task BaseTcpClient_SendAsync_WhenQueueAndCloseThrow_ShouldReportBothWithoutEscalating()
+        {
+            var client = new ThrowingSendTcpClient
+            {
+                ThrowOnCloseAsync = true,
+            };
+            client.ConfigureSendQueueFailure(new InvalidOperationException("send queue failed"));
+
+            await client.SendAsync(new byte[] { 0x2A });
+
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+            Assert.AreEqual(2, client.Errors.Count);
+            Assert.AreEqual("send queue failed", client.Errors[0].Message);
+            Assert.AreEqual("TcpClient close after error failed.", client.Errors[1].Message);
+            Assert.IsNotNull(client.Errors[1].InnerException);
+            Assert.AreEqual("tcp client close failed", client.Errors[1].InnerException.Message);
+        }
+
+        [TestMethod]
         public async Task BaseTcpServerClient_SendAsync_WhenQueueThrows_ShouldReportErrorAndClose()
         {
             var serverClient = new ThrowingSendTcpServerClient();
@@ -982,6 +1444,37 @@ namespace Lanymy.Common.AllTests
             Assert.IsNotNull(serverClient.LastError);
             Assert.AreEqual("send queue failed", serverClient.LastError.Message);
             Assert.AreEqual(1, serverClient.CloseAsyncCallCount);
+        }
+
+        [TestMethod]
+        public void BaseTcpServerClient_Send_WhenSendAsyncThrowsSynchronously_ShouldReportErrorWithoutEscalating()
+        {
+            var serverClient = new ThrowingSyncSendTcpServerClient();
+
+            serverClient.Send(new byte[] { 0x5A });
+
+            Assert.IsNotNull(serverClient.LastError);
+            Assert.AreEqual("sync send failed", serverClient.LastError.Message);
+            Assert.AreEqual(1, serverClient.CloseAsyncCallCount);
+        }
+
+        [TestMethod]
+        public async Task BaseTcpServerClient_SendAsync_WhenQueueAndCloseThrow_ShouldReportBothWithoutEscalating()
+        {
+            var serverClient = new ThrowingSendTcpServerClient
+            {
+                ThrowOnCloseAsync = true,
+            };
+            serverClient.ConfigureSendQueueFailure(new InvalidOperationException("send queue failed"));
+
+            await serverClient.SendAsync(new byte[] { 0x5A });
+
+            Assert.AreEqual(1, serverClient.CloseAsyncCallCount);
+            Assert.AreEqual(2, serverClient.Errors.Count);
+            Assert.AreEqual("send queue failed", serverClient.Errors[0].Message);
+            Assert.AreEqual("TcpServerClient close after error failed.", serverClient.Errors[1].Message);
+            Assert.IsNotNull(serverClient.Errors[1].InnerException);
+            Assert.AreEqual("tcp server client close failed", serverClient.Errors[1].InnerException.Message);
         }
 
         [TestMethod]
@@ -1046,6 +1539,31 @@ namespace Lanymy.Common.AllTests
             Assert.IsNotNull(client.LastError);
             Assert.AreEqual("TcpClient close finalization failed.", client.LastError.Message);
             Assert.IsFalse(client.IsRunning);
+        }
+
+        [TestMethod]
+        public void BaseTcpClient_Close_WhenCloseAsyncThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var client = new ThrowingCloseDisposeTcpClient();
+
+            client.Close();
+
+            Assert.AreEqual(1, client.CloseAsyncCallCount);
+            CollectionAssert.Contains(client.Errors.ConvertAll(ex => ex.Message), "TcpClient sync close failed.");
+        }
+
+        [TestMethod]
+        public void BaseTcpServerClient_Close_WhenCloseAsyncThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var serverClient = new ThrowingSendTcpServerClient
+            {
+                ThrowOnCloseAsync = true,
+            };
+
+            serverClient.Close();
+
+            Assert.AreEqual(1, serverClient.CloseAsyncCallCount);
+            CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient sync close failed.");
         }
 
         [TestMethod]

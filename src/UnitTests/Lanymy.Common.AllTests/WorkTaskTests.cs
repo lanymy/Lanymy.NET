@@ -98,6 +98,57 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        sealed class FaultingSimpleWorkTask : BaseSimpleWorkTask
+        {
+            private readonly TaskCompletionSource<bool> _delayEnteredSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public FaultingSimpleWorkTask()
+                : base(_ => { }, sleepIntervalMilliseconds: 10)
+            {
+            }
+
+            public bool HasTaskForTest => _CurrentTask != null;
+            public bool HasCancellationTokenSourceForTest => _CurrentCancellationTokenSource != null;
+            public Task WaitForDelayFaultAsync() => _delayEnteredSignal.Task;
+
+            protected override Task DelayAsync(CancellationToken token)
+            {
+                _delayEnteredSignal.TrySetResult(true);
+                throw new InvalidOperationException("simple worker failed");
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                await Task.CompletedTask;
+            }
+        }
+
+        sealed class FaultingSimpleWorkTaskQueue : BaseSimpleWorkTaskQueue<WorkTaskQueueDataModel>
+        {
+            private readonly TaskCompletionSource<bool> _delayEnteredSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public FaultingSimpleWorkTaskQueue()
+                : base(_ => { }, sleepIntervalMilliseconds: 10)
+            {
+            }
+
+            public bool HasTaskForTest => _CurrentTask != null;
+            public bool HasCancellationTokenSourceForTest => _CurrentCancellationTokenSource != null;
+            public int CachedCountForTest => _CurrentCacheConcurrentQueue.Count;
+            public Task WaitForDelayFaultAsync() => _delayEnteredSignal.Task;
+
+            protected override Task DelayAsync(CancellationToken token)
+            {
+                _delayEnteredSignal.TrySetResult(true);
+                throw new InvalidOperationException("simple queue worker failed");
+            }
+
+            protected override async Task OnDisposeAsync()
+            {
+                await Task.CompletedTask;
+            }
+        }
+
         class TestResilientTimerWorkTask : BaseTimerWorkTask
         {
             private readonly Func<TimerWorkTaskDataResult> _func;
@@ -167,6 +218,157 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        sealed class FaultingStopWorkTaskQueue : BaseWorkTaskQueue<WorkTaskQueueDataModel>
+        {
+            private readonly TaskCompletionSource<bool> _workerStartedSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public FaultingStopWorkTaskQueue()
+                : base(null, _ => { }, null, taskSleepMilliseconds: 10)
+            {
+            }
+
+            public bool HasChannelForTest => _CurrentChannel != null;
+            public bool HasCancellationTokenSourceForTest => _CurrentCancellationTokenSource != null;
+            public int WorkTaskCountForTest => _CurrentWorkTaskList.Count;
+            public Task WaitForWorkerFaultAsync() => _workerStartedSignal.Task;
+
+            protected override Task OnTaskAsync(CancellationToken token)
+            {
+                _workerStartedSignal.TrySetResult(true);
+                throw new InvalidOperationException("queue worker failed");
+            }
+        }
+
+        sealed class ThrowingStopReadWorkTaskQueue : BaseWorkTaskQueue<WorkTaskQueueDataModel>
+        {
+            public ThrowingStopReadWorkTaskQueue()
+                : base(null, _ => { }, _ => throw new InvalidOperationException("queue stop read failed"), taskSleepMilliseconds: 10)
+            {
+            }
+
+            public bool HasChannelForTest => _CurrentChannel != null;
+            public bool HasCancellationTokenSourceForTest => _CurrentCancellationTokenSource != null;
+            public int WorkTaskCountForTest => _CurrentWorkTaskList.Count;
+        }
+
+        sealed class FaultingStopTimerWorkTask : BaseTimerWorkTask
+        {
+            private readonly TaskCompletionSource<bool> _timerStartedSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public FaultingStopTimerWorkTask()
+                : base(() => null, taskSleepMilliseconds: 10)
+            {
+            }
+
+            public bool HasTaskForTest => _CurrentTask != null;
+            public bool HasCancellationTokenSourceForTest => _CurrentCancellationTokenSource != null;
+            public Task WaitForTimerFaultAsync() => _timerStartedSignal.Task;
+
+            protected override Task OnTaskAsync(CancellationToken token)
+            {
+                _timerStartedSignal.TrySetResult(true);
+                throw new InvalidOperationException("timer worker failed");
+            }
+
+            protected override Task OnDisposeAsync()
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        sealed class TestChannelWorkTask : BaseChannelWorkTask<WorkTaskQueueDataModel>
+        {
+            public TestChannelWorkTask(Channel<WorkTaskQueueDataModel> channel)
+                : base(channel, _ => { }, null, 1, 10, 1, BoundedChannelFullMode.Wait)
+            {
+            }
+
+            protected override Task OnStartAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                _CurrentChannel?.Writer.TryComplete();
+                _CurrentChannel = null;
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnDisposeAsync()
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        sealed class TrackingContextChildWorkTask : BaseWorkTask
+        {
+            public Exception StartException { get; set; }
+            public Exception StopException { get; set; }
+            public Exception DisposeException { get; set; }
+
+            public int StartCallCount { get; private set; }
+            public int StopCallCount { get; private set; }
+            public int DisposeCallCount { get; private set; }
+
+            protected override Task OnStartAsync()
+            {
+                StartCallCount++;
+
+                if (StartException != null)
+                {
+                    throw StartException;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                StopCallCount++;
+
+                if (StopException != null)
+                {
+                    throw StopException;
+                }
+
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnDisposeAsync()
+            {
+                DisposeCallCount++;
+
+                if (DisposeException != null)
+                {
+                    throw DisposeException;
+                }
+
+                return Task.CompletedTask;
+            }
+        }
+
+        sealed class TrackingWorkTaskTriggerQueueContext : WorkTaskTriggerQueueContext<WorkTaskQueueDataModel>
+        {
+            private readonly Func<ushort, TrackingContextChildWorkTask> _workTaskFactory;
+
+            public TrackingWorkTaskTriggerQueueContext(Func<ushort, TrackingContextChildWorkTask> workTaskFactory, ushort workTaskCount = 2)
+                : base(_ => { }, workTaskCount, actionTriggerCount: 1, actionTriggerTimeSpan: TimeSpan.FromSeconds(3))
+            {
+                _workTaskFactory = workTaskFactory;
+            }
+
+            public List<TrackingContextChildWorkTask> CreatedWorkTasks { get; } = new List<TrackingContextChildWorkTask>();
+            public bool HasChannelForTest => _CurrentChannel != null;
+
+            protected override BaseWorkTask CreateWorkTaskQueue(Channel<WorkTaskQueueDataModel> channel, ushort workTaskIndex)
+            {
+                var workTask = _workTaskFactory(workTaskIndex);
+                CreatedWorkTasks.Add(workTask);
+                return workTask;
+            }
+        }
+
         class TestStartFailWorkTask : BaseWorkTask
         {
             private readonly Exception _startException;
@@ -220,6 +422,31 @@ namespace Lanymy.Common.AllTests
             protected override Task OnDisposeAsync()
             {
                 _disposeAction();
+                return Task.CompletedTask;
+            }
+        }
+
+        class TestCountingWorkTask : BaseWorkTask
+        {
+            public int StartCallCount { get; private set; }
+            public int StopCallCount { get; private set; }
+            public int DisposeCallCount { get; private set; }
+
+            protected override Task OnStartAsync()
+            {
+                StartCallCount++;
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnStopAsync()
+            {
+                StopCallCount++;
+                return Task.CompletedTask;
+            }
+
+            protected override Task OnDisposeAsync()
+            {
+                DisposeCallCount++;
                 return Task.CompletedTask;
             }
         }
@@ -284,8 +511,8 @@ namespace Lanymy.Common.AllTests
                 },
                 dataList =>
                 {
-                    Assert.AreEqual(dataList[0].Index, 1);
-                    Assert.AreEqual(dataList.Count, 9);
+                    Assert.AreEqual(1, dataList[0].Index);
+                    Assert.AreEqual(9, dataList.Count);
                 }
             );
 
@@ -328,6 +555,25 @@ namespace Lanymy.Common.AllTests
 
             stopSignal.Set();
             await workTask.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task BaseSimpleWorkTask_StopAsync_WhenSleeping_ShouldCancelDelayPromptly()
+        {
+            using var firstRunSignal = new ManualResetEventSlim(false);
+
+            using var workTask = new TestSimpleWorkTask(_ => firstRunSignal.Set(), sleepIntervalMilliseconds: 5000);
+
+            await workTask.StartAsync();
+
+            Assert.IsTrue(firstRunSignal.Wait(TimeSpan.FromSeconds(2)));
+
+            var stopTask = workTask.StopAsync();
+            var completedTask = await Task.WhenAny(stopTask, Task.Delay(TimeSpan.FromMilliseconds(500)));
+
+            Assert.AreSame(stopTask, completedTask);
+            await stopTask;
+            Assert.IsFalse(workTask.IsRunning);
         }
 
         [TestMethod()]
@@ -375,6 +621,22 @@ namespace Lanymy.Common.AllTests
             Assert.IsTrue(Volatile.Read(ref executionCount) >= 2);
 
             await workTask.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task BaseSimpleWorkTask_StopAsync_WhenWorkerTaskFaults_ShouldStillReleaseInternalState()
+        {
+            using var workTask = new FaultingSimpleWorkTask();
+
+            await workTask.StartAsync();
+            await workTask.WaitForDelayFaultAsync();
+
+            var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => workTask.StopAsync());
+
+            Assert.AreEqual("simple worker failed", exception.Message);
+            Assert.IsFalse(workTask.IsRunning);
+            Assert.IsFalse(workTask.HasTaskForTest);
+            Assert.IsFalse(workTask.HasCancellationTokenSourceForTest);
         }
 
         [TestMethod()]
@@ -436,6 +698,47 @@ namespace Lanymy.Common.AllTests
             }
 
             await queue.StopAsync();
+        }
+
+        [TestMethod()]
+        public async Task BaseSimpleWorkTaskQueue_StopAsync_WhenSleeping_ShouldCancelDelayPromptly()
+        {
+            using var processedSignal = new ManualResetEventSlim(false);
+
+            using var queue = new TestResilientSimpleWorkTaskQueue(
+                data => processedSignal.Set(),
+                (_, _) => { },
+                sleepIntervalMilliseconds: 5000);
+
+            await queue.StartAsync();
+            queue.AddToQueue(new WorkTaskQueueDataModel { Index = 1 });
+
+            Assert.IsTrue(processedSignal.Wait(TimeSpan.FromSeconds(2)));
+
+            var stopTask = queue.StopAsync();
+            var completedTask = await Task.WhenAny(stopTask, Task.Delay(TimeSpan.FromMilliseconds(500)));
+
+            Assert.AreSame(stopTask, completedTask);
+            await stopTask;
+            Assert.IsFalse(queue.IsRunning);
+        }
+
+        [TestMethod()]
+        public async Task BaseSimpleWorkTaskQueue_StopAsync_WhenWorkerTaskFaults_ShouldStillReleaseInternalState()
+        {
+            using var queue = new FaultingSimpleWorkTaskQueue();
+
+            await queue.StartAsync();
+            queue.AddToQueue(new WorkTaskQueueDataModel { Index = 1 });
+            await queue.WaitForDelayFaultAsync();
+
+            var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => queue.StopAsync());
+
+            Assert.AreEqual("simple queue worker failed", exception.Message);
+            Assert.IsFalse(queue.IsRunning);
+            Assert.IsFalse(queue.HasTaskForTest);
+            Assert.IsFalse(queue.HasCancellationTokenSourceForTest);
+            Assert.AreEqual(0, queue.CachedCountForTest);
         }
 
         [TestMethod()]
@@ -510,6 +813,60 @@ namespace Lanymy.Common.AllTests
 
             Assert.AreEqual("stop failed", ex.Message);
             CollectionAssert.AreEqual(new List<string> { "stop", "dispose" }, order);
+        }
+
+        [TestMethod]
+        public async Task BaseWorkTask_StartAsync_AfterDispose_ShouldRemainStoppedAndNotInvokeStart()
+        {
+            var workTask = new TestCountingWorkTask();
+
+            workTask.Dispose();
+            await workTask.StartAsync();
+
+            Assert.IsTrue(workTask.IsDisposed);
+            Assert.IsFalse(workTask.IsRunning);
+            Assert.AreEqual(0, workTask.StartCallCount);
+            Assert.AreEqual(0, workTask.StopCallCount);
+            Assert.AreEqual(1, workTask.DisposeCallCount);
+        }
+
+        [TestMethod]
+        public async Task BaseWorkTask_Dispose_WhenCalledMultipleTimes_ShouldOnlyDisposeOnce()
+        {
+            var workTask = new TestCountingWorkTask();
+            await workTask.StartAsync();
+
+            workTask.Dispose();
+            workTask.Dispose();
+
+            Assert.IsTrue(workTask.IsDisposed);
+            Assert.IsFalse(workTask.IsRunning);
+            Assert.AreEqual(1, workTask.StartCallCount);
+            Assert.AreEqual(1, workTask.StopCallCount);
+            Assert.AreEqual(1, workTask.DisposeCallCount);
+        }
+
+        [TestMethod]
+        public async Task BaseChannelWorkTask_AddToQueueAsync_WhenChannelCompletesDuringStop_ShouldReturnWithoutEscalating()
+        {
+            var channel = Channel.CreateBounded<WorkTaskQueueDataModel>(new BoundedChannelOptions(1)
+            {
+                FullMode = BoundedChannelFullMode.Wait,
+            });
+
+            await channel.Writer.WriteAsync(new WorkTaskQueueDataModel { Index = 1 });
+
+            using var workTask = new TestChannelWorkTask(channel);
+            await workTask.StartAsync();
+
+            var enqueueTask = workTask.AddToQueueAsync(new WorkTaskQueueDataModel { Index = 2 });
+            await workTask.StopAsync();
+
+            var completedTask = await Task.WhenAny(enqueueTask, Task.Delay(TimeSpan.FromSeconds(2)));
+
+            Assert.AreSame(enqueueTask, completedTask);
+            await enqueueTask;
+            Assert.IsFalse(workTask.IsRunning);
         }
 
         [TestMethod()]
@@ -702,6 +1059,63 @@ namespace Lanymy.Common.AllTests
             await queue.StopAsync();
         }
 
+        [TestMethod]
+        public async Task WorkTaskTriggerQueueContext_StartAsync_WhenChildStartThrows_ShouldRollbackStateAndCleanupChildren()
+        {
+            var startedChild = new TrackingContextChildWorkTask();
+            var failedChild = new TrackingContextChildWorkTask
+            {
+                StartException = new InvalidOperationException("child start failed"),
+            };
+
+            using var context = new TrackingWorkTaskTriggerQueueContext(index => index == 0 ? startedChild : failedChild);
+
+            var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => context.StartAsync());
+
+            Assert.AreEqual("child start failed", exception.Message);
+            Assert.IsFalse(context.IsRunning);
+            Assert.AreEqual(DynamicAsyncQueueStateTypeEnum.Stop, context.StateType);
+            Assert.IsFalse(context.HasChannelForTest);
+            Assert.AreEqual(2, context.CreatedWorkTasks.Count);
+            Assert.AreEqual(1, startedChild.StartCallCount);
+            Assert.AreEqual(1, startedChild.StopCallCount);
+            Assert.AreEqual(1, startedChild.DisposeCallCount);
+            Assert.AreEqual(1, failedChild.StartCallCount);
+            Assert.AreEqual(0, failedChild.StopCallCount);
+            Assert.AreEqual(1, failedChild.DisposeCallCount);
+        }
+
+        [TestMethod]
+        public async Task WorkTaskTriggerQueueContext_StopAsync_WhenChildCleanupThrows_ShouldStillResetStateAndCleanupAllChildren()
+        {
+            var failingChild = new TrackingContextChildWorkTask
+            {
+                StopException = new InvalidOperationException("child stop failed"),
+                DisposeException = new InvalidOperationException("child dispose failed"),
+            };
+            var healthyChild = new TrackingContextChildWorkTask();
+
+            using var context = new TrackingWorkTaskTriggerQueueContext(index => index == 0 ? failingChild : healthyChild);
+            await context.StartAsync();
+
+            var exception = await Assert.ThrowsExactlyAsync<AggregateException>(() => context.StopAsync());
+
+            Assert.AreEqual(2, exception.InnerExceptions.Count);
+            Assert.AreEqual("WorkTaskTriggerQueueContext stop child work task failed.", exception.InnerExceptions[0].Message);
+            Assert.AreEqual("child stop failed", exception.InnerExceptions[0].InnerException?.Message);
+            Assert.AreEqual("WorkTaskTriggerQueueContext dispose child work task failed.", exception.InnerExceptions[1].Message);
+            Assert.AreEqual("child dispose failed", exception.InnerExceptions[1].InnerException?.Message);
+            Assert.IsFalse(context.IsRunning);
+            Assert.AreEqual(DynamicAsyncQueueStateTypeEnum.Stop, context.StateType);
+            Assert.IsFalse(context.HasChannelForTest);
+            Assert.AreEqual(1, failingChild.StartCallCount);
+            Assert.AreEqual(1, failingChild.StopCallCount);
+            Assert.AreEqual(1, failingChild.DisposeCallCount);
+            Assert.AreEqual(1, healthyChild.StartCallCount);
+            Assert.AreEqual(1, healthyChild.StopCallCount);
+            Assert.AreEqual(1, healthyChild.DisposeCallCount);
+        }
+
         [TestMethod()]
         public async Task WorkTaskTriggerQueueContext_StopAsync_WithPendingChannelData_ShouldNotHang()
         {
@@ -789,6 +1203,55 @@ namespace Lanymy.Common.AllTests
             }
 
             await queue.StopAsync();
+        }
+
+        [TestMethod]
+        public async Task BaseWorkTaskQueue_StopAsync_WhenWorkerTaskFaults_ShouldStillReleaseInternalState()
+        {
+            var queue = new FaultingStopWorkTaskQueue();
+
+            await queue.StartAsync();
+            await queue.WaitForWorkerFaultAsync();
+
+            var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => queue.StopAsync());
+
+            Assert.AreEqual("queue worker failed", exception.Message);
+            Assert.IsFalse(queue.IsRunning);
+            Assert.AreEqual(0, queue.WorkTaskCountForTest);
+            Assert.IsFalse(queue.HasCancellationTokenSourceForTest);
+            Assert.IsFalse(queue.HasChannelForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseWorkTaskQueue_StopAsync_WhenReadRemainingCallbackThrows_ShouldStillReleaseInternalState()
+        {
+            var queue = new ThrowingStopReadWorkTaskQueue();
+
+            await queue.StartAsync();
+
+            var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => queue.StopAsync());
+
+            Assert.AreEqual("queue stop read failed", exception.Message);
+            Assert.IsFalse(queue.IsRunning);
+            Assert.AreEqual(0, queue.WorkTaskCountForTest);
+            Assert.IsFalse(queue.HasCancellationTokenSourceForTest);
+            Assert.IsFalse(queue.HasChannelForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseTimerWorkTask_StopAsync_WhenWorkerTaskFaults_ShouldStillReleaseInternalState()
+        {
+            var workTask = new FaultingStopTimerWorkTask();
+
+            await workTask.StartAsync();
+            await workTask.WaitForTimerFaultAsync();
+
+            var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => workTask.StopAsync());
+
+            Assert.AreEqual("timer worker failed", exception.Message);
+            Assert.IsFalse(workTask.IsRunning);
+            Assert.IsFalse(workTask.HasTaskForTest);
+            Assert.IsFalse(workTask.HasCancellationTokenSourceForTest);
         }
 
 

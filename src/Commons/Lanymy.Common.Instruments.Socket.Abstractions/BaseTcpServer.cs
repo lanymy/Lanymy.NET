@@ -107,11 +107,144 @@ namespace Lanymy.Common.Instruments
 
                 return true;
             }
-            catch
+            catch (Exception ex)
+            {
+                ReportServerError(new InvalidOperationException("TcpServer initialize accepted client failed.", ex));
+                return false;
+            }
+
+        }
+
+        protected virtual void CleanupAcceptedClientInitializationFailure(ITcpServerClient tcpServerClient)
+        {
+            if (tcpServerClient.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                if (!tcpServerClient.CurrentSessionToken.IfIsNull())
+                {
+                    _TcpServerClientDic.TryRemove(tcpServerClient.CurrentSessionToken.SessionID, out _);
+                }
+            }
+            catch (Exception ex)
+            {
+                ReportServerError(new InvalidOperationException("TcpServer cleanup accepted client dictionary failed.", ex));
+            }
+
+            try
+            {
+                DetachTcpServerClientEventHandlers(tcpServerClient);
+            }
+            catch (Exception ex)
+            {
+                ReportServerError(new InvalidOperationException("TcpServer detach accepted client handlers failed.", ex));
+            }
+
+            try
+            {
+                tcpServerClient.Dispose();
+            }
+            catch (Exception ex)
+            {
+                ReportServerError(new InvalidOperationException("TcpServer dispose accepted client failed.", ex));
+            }
+        }
+
+        protected virtual void CleanupClosedTcpServerClientFailure(ITcpServerClient tcpServerClient)
+        {
+            if (tcpServerClient.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                tcpServerClient.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer dispose child client after close failure failed.", ex));
+            }
+        }
+
+        protected virtual void ReportChildClientCloseFailure(ITcpServerClient tcpServerClient, Exception ex)
+        {
+            if (tcpServerClient.IfIsNull() || ex.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                if (IsManagedTcpServerClient(tcpServerClient))
+                {
+                    OnServerClientErrorEvent(tcpServerClient, ex);
+                }
+                else
+                {
+                    OnServerClientErrorCallBackEvent(tcpServerClient, ex);
+                }
+            }
+            catch (Exception reportEx)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer report child close failure failed.", reportEx));
+            }
+        }
+
+        protected virtual void ReportManagedClientError(ITcpServerClient tcpServerClient, Exception ex)
+        {
+            if (tcpServerClient.IfIsNull() || ex.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                if (IsManagedTcpServerClient(tcpServerClient))
+                {
+                    OnServerClientErrorEvent(tcpServerClient, ex);
+                }
+                else
+                {
+                    OnServerClientErrorCallBackEvent(tcpServerClient, ex);
+                }
+            }
+            catch (Exception reportEx)
+            {
+                ReportServerError(new InvalidOperationException("TcpServer report child client error failed.", reportEx));
+            }
+        }
+
+        protected virtual void ReportManagedClientCallbackError(ITcpServerClient tcpServerClient, string message, Exception ex)
+        {
+            if (string.IsNullOrWhiteSpace(message) || ex.IfIsNull())
+            {
+                return;
+            }
+
+            ReportManagedClientError(tcpServerClient, new InvalidOperationException(message, ex));
+        }
+
+        protected virtual bool TryInvokeManagedClientCallback(ITcpServerClient tcpServerClient, Action callbackAction, string errorMessage)
+        {
+            if (!IsManagedTcpServerClient(tcpServerClient))
             {
                 return false;
             }
 
+            try
+            {
+                callbackAction?.Invoke();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ReportManagedClientCallbackError(tcpServerClient, errorMessage, ex);
+                return false;
+            }
         }
 
         protected virtual void OnAccept(ITcpServerClient client)
@@ -122,7 +255,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnServerClientErrorEvent(client, ex);
+                ReportManagedClientError(client, ex);
             }
         }
 
@@ -175,7 +308,7 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void HandleServerManagedClientError(ITcpServerClient client, Exception ex)
         {
-            OnServerClientErrorEvent(client, ex);
+            ReportManagedClientError(client, ex);
             CloseTcpServerClient(client);
         }
 
@@ -209,6 +342,18 @@ namespace Lanymy.Common.Instruments
             }
         }
 
+        protected virtual void ReportServerError(Exception ex)
+        {
+            try
+            {
+                OnServerErrorEvent(ex);
+            }
+            catch
+            {
+
+            }
+        }
+
 
         protected void CloseTcpServerClient(ITcpServerClient client)
         {
@@ -227,8 +372,28 @@ namespace Lanymy.Common.Instruments
 
             if (_TcpServerClientDic.TryRemove(sessionToken.SessionID, out var client))
             {
-                DetachTcpServerClientEventHandlers(client);
-                client.Close();
+                try
+                {
+                    DetachTcpServerClientEventHandlers(client);
+                }
+                catch (Exception ex)
+                {
+                    ReportServerError(new InvalidOperationException("TcpServer detach child client handlers failed.", ex));
+                }
+
+                try
+                {
+                    var closeException = TaskHelper.TrySyncWait(client.CloseAsync);
+                    if (closeException != null)
+                    {
+                        throw closeException;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportChildClientCloseFailure(client, new InvalidOperationException("TcpServer close child client failed.", ex));
+                    CleanupClosedTcpServerClientFailure(client);
+                }
             }
 
         }
@@ -408,24 +573,59 @@ namespace Lanymy.Common.Instruments
                         return;
                     }
 
-                    var tcpServerClient = CreateTcpServerClient(socket);
-                    AttachTcpServerClientEventHandlers(tcpServerClient);
+                    TTcpServerClient tcpServerClient = null;
+                    var handlersAttached = false;
+                    var clientInitialized = false;
 
-                    if (!TryInitializeAcceptedClient(tcpServerClient))
+                    try
                     {
-                        DetachTcpServerClientEventHandlers(tcpServerClient);
-                        socket.Dispose();
-                        continue;
-                    }
+                        tcpServerClient = CreateTcpServerClient(socket);
+                        AttachTcpServerClientEventHandlers(tcpServerClient);
+                        handlersAttached = true;
 
-                    await tcpServerClient.StartReceiveAsync();
-                    if (!tcpServerClient.IsRunning)
+                        if (!TryInitializeAcceptedClient(tcpServerClient))
+                        {
+                            CleanupAcceptedClientInitializationFailure(tcpServerClient);
+                            continue;
+                        }
+
+                        clientInitialized = true;
+
+                        await tcpServerClient.StartReceiveAsync();
+                        if (!tcpServerClient.IsRunning)
+                        {
+                            CleanupAcceptedClientInitializationFailure(tcpServerClient);
+                            continue;
+                        }
+
+                        OnAccept(tcpServerClient);
+                    }
+                    catch (Exception exception)
                     {
-                        DetachTcpServerClientEventHandlers(tcpServerClient);
-                        continue;
-                    }
+                        if (clientInitialized && tcpServerClient != null)
+                        {
+                            HandleServerManagedClientError(tcpServerClient, new InvalidOperationException("TcpServer accept client initialization failed.", exception));
+                            continue;
+                        }
 
-                    OnAccept(tcpServerClient);
+                        if (handlersAttached && tcpServerClient != null)
+                        {
+                            CleanupAcceptedClientInitializationFailure(tcpServerClient);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                socket.Dispose();
+                            }
+                            catch (Exception disposeException)
+                            {
+                                ReportServerError(new InvalidOperationException("TcpServer dispose failed accepted socket failed.", disposeException));
+                            }
+                        }
+
+                        ReportServerError(new InvalidOperationException("TcpServer create accepted client failed.", exception));
+                    }
                 }
             }
             catch (Exception exception)
@@ -490,7 +690,12 @@ namespace Lanymy.Common.Instruments
 
             }
 
-            OnServerClientHeartCallBackEvent(tcpServerClient);
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
+
+            TryInvokeManagedClientCallback(tcpServerClient, () => OnServerClientHeartCallBackEvent(tcpServerClient), "TcpServer heart callback failed.");
 
         }
 
@@ -503,19 +708,23 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
-            OnServerClientCloseCallBackEvent(tcpServerClient);
+            try
+            {
+                OnServerClientCloseCallBackEvent(tcpServerClient);
+            }
+            catch (Exception ex)
+            {
+                HandleServerManagedClientError(tcpServerClient, new InvalidOperationException("TcpServer close callback failed.", ex));
+                return;
+            }
+
             CloseTcpServerClient(tcpServerClient);
         }
 
         protected abstract void OnServerClientStartReceiveCallBackEvent(ITcpServerClient tcpServerClient);
         protected virtual void OnServerClientStartReceiveEvent(ITcpServerClient tcpServerClient)
         {
-            if (!IsManagedTcpServerClient(tcpServerClient))
-            {
-                return;
-            }
-
-            OnServerClientStartReceiveCallBackEvent(tcpServerClient);
+            TryInvokeManagedClientCallback(tcpServerClient, () => OnServerClientStartReceiveCallBackEvent(tcpServerClient), "TcpServer start receive callback failed.");
         }
 
         protected abstract void OnServerClientReceiveDataCallBackEvent(ITcpServerClient tcpServerClient, BufferModel buffer, CacheModel cache);
@@ -526,7 +735,12 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
-            OnServerClientReceiveDataCallBackEvent(tcpServerClient, buffer, cache);
+            TryInvokeManagedClientCallback(tcpServerClient, () => OnServerClientReceiveDataCallBackEvent(tcpServerClient, buffer, cache), "TcpServer receive data callback failed.");
+
+            if (!IsManagedTcpServerClient(tcpServerClient))
+            {
+                return;
+            }
 
             //while (true)
             //{
@@ -586,7 +800,14 @@ namespace Lanymy.Common.Instruments
                     return;
                 }
 
-                OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
+                try
+                {
+                    OnServerReceivePackage(_CurrentFixedHeaderPackageFilter.DecodePackage(packageBytes), tcpServerClient.CurrentSessionToken);
+                }
+                catch (Exception ex)
+                {
+                    ReportManagedClientCallbackError(tcpServerClient, "TcpServer receive package callback failed.", ex);
+                }
             }
 
         }
@@ -612,7 +833,18 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
-            if (!CanSendData(client.CurrentSessionToken))
+            bool canSendData;
+            try
+            {
+                canSendData = CanSendData(client.CurrentSessionToken);
+            }
+            catch (Exception ex)
+            {
+                ReportManagedClientCallbackError(client, "TcpServer can send data check failed.", ex);
+                return;
+            }
+
+            if (!canSendData)
             {
                 return;
             }
@@ -655,7 +887,7 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
-                OnServerClientErrorEvent(client, ex);
+                ReportManagedClientError(client, ex);
             }
         }
 
@@ -672,9 +904,18 @@ namespace Lanymy.Common.Instruments
 
         protected abstract void OnServerCloseEvent();
 
+        protected virtual Exception TryCloseSynchronously()
+        {
+            return TaskHelper.TrySyncWait(CloseAsync);
+        }
+
         protected virtual void OnServerClose()
         {
-            TaskHelper.SyncWait(CloseAsync());
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer sync close failed.", closeException));
+            }
         }
 
         protected virtual async Task OnServerCloseAsync()
@@ -721,34 +962,41 @@ namespace Lanymy.Common.Instruments
             }
 
 
-            try
+            if (!tcpServerClients.IfIsNullOrEmpty())
             {
-
-                if (!tcpServerClients.IfIsNullOrEmpty())
+                foreach (var tcpServerClient in tcpServerClients)
                 {
-                    foreach (var tcpServerClient in tcpServerClients)
+                    try
                     {
-                        try
-                        {
-                            DetachTcpServerClientEventHandlers(tcpServerClient);
-                            await tcpServerClient.CloseAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            OnServerClientErrorEvent(tcpServerClient, new InvalidOperationException("TcpServer close child client failed.", ex));
-                        }
-
+                        DetachTcpServerClientEventHandlers(tcpServerClient);
+                        await tcpServerClient.CloseAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportChildClientCloseFailure(tcpServerClient, new InvalidOperationException("TcpServer close child client failed.", ex));
+                        CleanupClosedTcpServerClientFailure(tcpServerClient);
                     }
                 }
+            }
 
+            try
+            {
                 OnServerCloseEvent();
-
-                _TcpServerClientDic.Clear();
-
             }
             catch (Exception ex)
             {
                 OnServerCloseError(new InvalidOperationException("TcpServer close finalization failed.", ex));
+            }
+            finally
+            {
+                try
+                {
+                    _TcpServerClientDic.Clear();
+                }
+                catch (Exception ex)
+                {
+                    OnServerCloseError(new InvalidOperationException("TcpServer clear client dictionary failed.", ex));
+                }
             }
 
         }
@@ -767,16 +1015,116 @@ namespace Lanymy.Common.Instruments
             await OnServerCloseAsync();
         }
 
+        protected virtual void CleanupDisposeFailureSocket(System.Net.Sockets.Socket currentSocket)
+        {
+            if (currentSocket.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                currentSocket.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer dispose listen socket failed.", ex));
+            }
+        }
+
+        protected virtual void CleanupDisposeFailureTcpServerClients(IEnumerable<ITcpServerClient> tcpServerClients)
+        {
+            if (tcpServerClients.IfIsNullOrEmpty())
+            {
+                return;
+            }
+
+            foreach (var tcpServerClient in tcpServerClients)
+            {
+                if (tcpServerClient.IfIsNull())
+                {
+                    continue;
+                }
+
+                try
+                {
+                    DetachTcpServerClientEventHandlers(tcpServerClient);
+                }
+                catch (Exception ex)
+                {
+                    OnServerCloseError(new InvalidOperationException("TcpServer detach child client handlers failed.", ex));
+                }
+
+                try
+                {
+                    tcpServerClient.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    OnServerCloseError(new InvalidOperationException("TcpServer dispose child client failed.", ex));
+                }
+            }
+        }
+
+        protected virtual void CleanupDisposeFailureTrackedClients()
+        {
+            try
+            {
+                _TcpServerClientDic.Clear();
+            }
+            catch (Exception ex)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer clear client dictionary failed.", ex));
+            }
+        }
+
         public void Dispose()
         {
+            System.Net.Sockets.Socket currentSocket = null;
+            List<ITcpServerClient> tcpServerClients = null;
+
             if (_IsDisposed)
             {
                 return;
             }
 
-            _IsDisposed = true;
+            lock (_CloseLocker)
+            {
+                if (_IsDisposed)
+                {
+                    return;
+                }
 
-            Close();
+                _IsDisposed = true;
+            }
+
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnServerCloseError(new InvalidOperationException("TcpServer dispose close failed.", closeException));
+            }
+
+            lock (_CloseLocker)
+            {
+                _IsRunning = false;
+
+                currentSocket = CurrentSocket;
+                CurrentSocket = null;
+
+                if (_TcpServerClientDic.Count > 0)
+                {
+                    tcpServerClients = _TcpServerClientDic.Values.ToList();
+                }
+            }
+
+            if (closeException == null && currentSocket.IfIsNull() && tcpServerClients.IfIsNullOrEmpty())
+            {
+                return;
+            }
+
+            CleanupDisposeFailureSocket(currentSocket);
+            CleanupDisposeFailureTcpServerClients(tcpServerClients);
+            CleanupDisposeFailureTrackedClients();
 
         }
 

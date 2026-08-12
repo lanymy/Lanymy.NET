@@ -6,7 +6,14 @@
 
 - [Socket.md](./Socket.md) 偏总体概览。
 - [Socket.Abstractions.md](./Socket.Abstractions.md) 偏抽象层职责说明。
+- [Socket-Lifecycle.md](./Socket-Lifecycle.md) 偏生命周期和关闭链约束。
 - 本页重点把这些类之间“谁依赖谁、数据怎么流动”串起来。
+
+## 配套阅读关系
+
+- 如果想先理解“接口对外承诺了什么”，先看 [Socket.Abstractions.md](./Socket.Abstractions.md)。
+- 如果想确认“这些链路在启动、关闭、异常时怎么收口”，再看 [Socket-Lifecycle.md](./Socket-Lifecycle.md)。
+- 本页更适合作为看源码前的结构索引和排查入口。
 
 ## 核心关系图
 

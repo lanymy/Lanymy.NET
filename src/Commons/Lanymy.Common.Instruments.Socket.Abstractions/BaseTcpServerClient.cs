@@ -196,7 +196,11 @@ namespace Lanymy.Common.Instruments
         {
             ReportServerClientError(ex);
 
-            Close();
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient close after error failed.", closeException));
+            }
 
 
         }
@@ -204,6 +208,73 @@ namespace Lanymy.Common.Instruments
         protected virtual void OnCloseError(Exception ex)
         {
             ReportServerClientError(ex);
+        }
+
+        protected virtual async Task StopAndDisposeHeartTimerAsync(TimerWorkTask currentHeartTimerWorkTask, string stopErrorMessage, string disposeErrorMessage)
+        {
+            if (currentHeartTimerWorkTask.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                await currentHeartTimerWorkTask.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException(stopErrorMessage, ex));
+            }
+
+            try
+            {
+                currentHeartTimerWorkTask.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException(disposeErrorMessage, ex));
+            }
+        }
+
+        protected virtual async Task StopAndDisposeSendQueueAsync(WorkTaskQueue<byte[]> currentSendWorkTaskQueue, string stopErrorMessage, string disposeErrorMessage)
+        {
+            if (currentSendWorkTaskQueue.IfIsNull())
+            {
+                return;
+            }
+
+            try
+            {
+                await currentSendWorkTaskQueue.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException(stopErrorMessage, ex));
+            }
+
+            try
+            {
+                currentSendWorkTaskQueue.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException(disposeErrorMessage, ex));
+            }
+        }
+
+        protected virtual void WaitSynchronously(Func<Task> taskFactory)
+        {
+            TaskHelper.SyncWait(taskFactory);
+        }
+
+        protected virtual Exception TryWaitSynchronously(Func<Task> taskFactory)
+        {
+            return TaskHelper.TrySyncWait(taskFactory);
+        }
+
+        protected virtual Exception TryCloseSynchronously()
+        {
+            return TryWaitSynchronously(CloseAsync);
         }
 
         protected virtual void ClearServerClientEvents()
@@ -332,26 +403,14 @@ namespace Lanymy.Common.Instruments
 
             if (heartTimerStarted && !_CurrentHeartTimerWorkTask.IfIsNull())
             {
-                try
-                {
-                    await _CurrentHeartTimerWorkTask.StopAsync();
-                }
-                catch (Exception ex)
-                {
-                    ReportServerClientError(new InvalidOperationException("TcpServerClient reset start heart timer failed.", ex));
-                }
+                await StopAndDisposeHeartTimerAsync(_CurrentHeartTimerWorkTask, "TcpServerClient reset start heart timer failed.", "TcpServerClient reset start dispose heart timer failed.");
+                _CurrentHeartTimerWorkTask = null;
             }
 
             if (sendWorkTaskQueueStarted && !_CurrentSendWorkTaskQueue.IfIsNull())
             {
-                try
-                {
-                    await _CurrentSendWorkTaskQueue.StopAsync();
-                }
-                catch (Exception ex)
-                {
-                    ReportServerClientError(new InvalidOperationException("TcpServerClient reset start send queue failed.", ex));
-                }
+                await StopAndDisposeSendQueueAsync(_CurrentSendWorkTaskQueue, "TcpServerClient reset start send queue failed.", "TcpServerClient reset start dispose send queue failed.");
+                _CurrentSendWorkTaskQueue = null;
             }
 
             var currentNetworkStream = _CurrentNetworkStream;
@@ -514,13 +573,10 @@ namespace Lanymy.Common.Instruments
 
         public virtual void Send(byte[] sendDataBytes)
         {
-            try
+            var sendException = TryWaitSynchronously(() => SendAsync(sendDataBytes));
+            if (sendException != null)
             {
-                TaskHelper.SyncWait(SendAsync(sendDataBytes));
-            }
-            catch (Exception ex)
-            {
-                OnServerClientError(ex);
+                OnServerClientError(sendException);
             }
         }
 
@@ -578,32 +634,20 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-
-                if (!currentHeartTimerWorkTask.IfIsNull())
-                {
-                    await currentHeartTimerWorkTask.StopAsync();
-                    currentHeartTimerWorkTask.Dispose();
-                }
-
+                await StopAndDisposeHeartTimerAsync(currentHeartTimerWorkTask, "TcpServerClient close heart timer failed.", "TcpServerClient dispose heart timer failed.");
             }
             catch (Exception ex)
             {
-                OnCloseError(new InvalidOperationException("TcpServerClient close heart timer failed.", ex));
+                OnCloseError(new InvalidOperationException("TcpServerClient close unexpected heart timer cleanup failed.", ex));
             }
 
             try
             {
-
-                if (!currentSendWorkTaskQueue.IfIsNull())
-                {
-                    await currentSendWorkTaskQueue.StopAsync();
-                    currentSendWorkTaskQueue.Dispose();
-                }
-
+                await StopAndDisposeSendQueueAsync(currentSendWorkTaskQueue, "TcpServerClient close send queue failed.", "TcpServerClient dispose send queue failed.");
             }
             catch (Exception ex)
             {
-                OnCloseError(new InvalidOperationException("TcpServerClient close send queue failed.", ex));
+                OnCloseError(new InvalidOperationException("TcpServerClient close unexpected send queue cleanup failed.", ex));
             }
 
             lock (_CloseLocker)
@@ -708,8 +752,11 @@ namespace Lanymy.Common.Instruments
 
         public void Close()
         {
-
-            TaskHelper.SyncWait(CloseAsync());
+            var closeException = TryCloseSynchronously();
+            if (closeException != null)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient sync close failed.", closeException));
+            }
 
         }
 
@@ -721,14 +768,131 @@ namespace Lanymy.Common.Instruments
 
         public void Dispose()
         {
-            if (_IsDisposed)
+            TimerWorkTask currentHeartTimerWorkTask = null;
+            WorkTaskQueue<byte[]> currentSendWorkTaskQueue = null;
+            NetworkStream currentNetworkStream = null;
+            System.Net.Sockets.Socket currentSocket = null;
+            var wasRunning = false;
+            Exception closeException = null;
+
+            lock (_CloseLocker)
             {
-                return;
+                if (_IsDisposed)
+                {
+                    return;
+                }
+
+                wasRunning = _IsRunning;
+                _IsDisposed = true;
+
+                if (!wasRunning)
+                {
+                    currentHeartTimerWorkTask = _CurrentHeartTimerWorkTask;
+                    currentSendWorkTaskQueue = _CurrentSendWorkTaskQueue;
+                    currentNetworkStream = _CurrentNetworkStream;
+                    currentSocket = CurrentSocket;
+                }
             }
 
-            _IsDisposed = true;
+            try
+            {
+                closeException = TryCloseSynchronously();
+                if (closeException != null)
+                {
+                    OnCloseError(new InvalidOperationException("TcpServerClient dispose close failed.", closeException));
+                }
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose close failed.", ex));
+            }
 
-            Close();
+            if (wasRunning)
+            {
+                if (closeException == null || _IsRunning)
+                {
+                    return;
+                }
+
+                lock (_CloseLocker)
+                {
+                    currentHeartTimerWorkTask ??= _CurrentHeartTimerWorkTask;
+                    currentSendWorkTaskQueue ??= _CurrentSendWorkTaskQueue;
+                    currentNetworkStream ??= _CurrentNetworkStream;
+                    currentSocket ??= CurrentSocket;
+                }
+            }
+
+            lock (_CloseLocker)
+            {
+                if (ReferenceEquals(_CurrentHeartTimerWorkTask, currentHeartTimerWorkTask))
+                {
+                    _CurrentHeartTimerWorkTask = null;
+                }
+
+                if (ReferenceEquals(_CurrentSendWorkTaskQueue, currentSendWorkTaskQueue))
+                {
+                    _CurrentSendWorkTaskQueue = null;
+                }
+
+                if (ReferenceEquals(_CurrentNetworkStream, currentNetworkStream))
+                {
+                    _CurrentNetworkStream = null;
+                }
+
+                _IsRunning = false;
+            }
+
+            try
+            {
+                currentHeartTimerWorkTask?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose heart timer failed.", ex));
+            }
+
+            try
+            {
+                currentSendWorkTaskQueue?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose send queue failed.", ex));
+            }
+
+            try
+            {
+                currentNetworkStream?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose network stream failed.", ex));
+            }
+
+            try
+            {
+                currentSocket?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose socket failed.", ex));
+            }
+
+            try
+            {
+                _CurrentBuffer.Clear();
+                _CurrentCache.Clear();
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("TcpServerClient dispose finalization failed.", ex));
+            }
+            finally
+            {
+                ClearServerClientEvents();
+            }
 
         }
 

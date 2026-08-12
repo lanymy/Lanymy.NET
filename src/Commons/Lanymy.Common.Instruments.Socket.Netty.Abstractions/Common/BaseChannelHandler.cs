@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using DotNetty.Buffers;
 using DotNetty.Common.Utilities;
 using DotNetty.Handlers.Timeout;
@@ -17,8 +19,13 @@ namespace Lanymy.Common.Instruments.Common
         where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
+        private const int CloseRequestStateNone = 0;
+        private const int CloseRequestStateDelayedScheduled = 1;
+        private const int CloseRequestStateRequested = 2;
 
         protected IChannelHandlerContext _CurrentChannelHandlerContext;
+
+        protected int _CurrentCloseRequestState = CloseRequestStateNone;
 
         protected TChannelSession _CurrentChannelSession = new();
 
@@ -49,9 +56,23 @@ namespace Lanymy.Common.Instruments.Common
         /// <param name="evt"></param>
         public override void UserEventTriggered(IChannelHandlerContext context, object evt)
         {
+            SafeHandleUserEventTriggered(context, evt);
 
-            OnUserEventTriggered(context, evt);
+        }
 
+        protected virtual void SafeHandleUserEventTriggered(IChannelHandlerContext context, object evt)
+        {
+            try
+            {
+                OnUserEventTriggered(context, evt);
+            }
+            catch (Exception ex) when (CanIgnoreHandlerCallbackException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler user event callback failed.", ex));
+            }
         }
 
         /// <summary>
@@ -146,8 +167,26 @@ namespace Lanymy.Common.Instruments.Common
             //    (_, _) => this
             //);
 
-            OnChannelActive(context);
+            SafeHandleChannelActive(context);
 
+        }
+
+        protected virtual void SafeHandleChannelActive(IChannelHandlerContext context)
+        {
+            try
+            {
+                OnChannelActive(context);
+            }
+            catch (Exception ex) when (CanIgnoreHandlerCallbackException(ex, context))
+            {
+                ResetCurrentChannelState();
+            }
+            catch (Exception ex)
+            {
+                ResetCurrentChannelState();
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler channel active callback failed.", ex));
+                OnContextClose(context);
+            }
         }
 
 
@@ -164,19 +203,25 @@ namespace Lanymy.Common.Instruments.Common
 
             base.ChannelInactive(context);
 
-            _CurrentChannelHandlerContext = null;
+            ResetCurrentChannelState();
 
-            //_CurrentChannelDictionary.TryRemove(_CurrentChannelSession.SessionID, out _);
+            SafeHandleChannelInactive(context);
 
-            if (_CurrentChannelSession.IsLogin)
+        }
+
+        protected virtual void SafeHandleChannelInactive(IChannelHandlerContext context)
+        {
+            try
             {
-
-                _CurrentChannelSession.IsLogin = false;
-
+                OnChannelInactive(context);
             }
-
-            OnChannelInactive(context);
-
+            catch (Exception ex) when (CanIgnoreHandlerCallbackException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler channel inactive callback failed.", ex));
+            }
         }
 
 
@@ -185,6 +230,18 @@ namespace Lanymy.Common.Instruments.Common
         /// </summary>
         /// <param name="context"></param>
         protected abstract void OnChannelInactive(IChannelHandlerContext context);
+
+        protected virtual void ResetCurrentChannelState()
+        {
+            _CurrentChannelHandlerContext = null;
+            Volatile.Write(ref _CurrentCloseRequestState, CloseRequestStateNone);
+            _CurrentChannelSession.RemoteIpEndPoint = null;
+
+            if (_CurrentChannelSession.IsLogin)
+            {
+                _CurrentChannelSession.IsLogin = false;
+            }
+        }
 
 
 
@@ -195,36 +252,61 @@ namespace Lanymy.Common.Instruments.Common
         /// <param name="message">接收到的客户端发送的内容</param>
         public override void ChannelRead(IChannelHandlerContext context, object message)
         {
+            SafeHandleChannelRead(context, message);
 
-            OnChannelRead(context, message);
+        }
 
+        protected virtual void SafeHandleChannelRead(IChannelHandlerContext context, object message)
+        {
+            try
+            {
+                OnChannelRead(context, message);
+            }
+            catch (Exception ex) when (CanIgnoreHandlerCallbackException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler read callback failed.", ex));
+            }
         }
 
 
         protected virtual void OnChannelRead(IChannelHandlerContext context, object message)
         {
-
-            if (message is not IByteBuffer buffer) return;
-
-            var packageDataBytesLength = buffer.ReadableBytes;
-
-            if (packageDataBytesLength > 0)
+            try
             {
+                if (message is not IByteBuffer buffer)
+                {
+                    return;
+                }
 
-                var packageDataBytes = _CurrenChannelContext.CurrentDataBytesArrayPool.Rent(packageDataBytesLength);
+                var packageDataBytesLength = buffer.ReadableBytes;
 
-                buffer.GetBytes(buffer.ReaderIndex, packageDataBytes, 0, packageDataBytesLength);
+                if (packageDataBytesLength > 0)
+                {
 
-                //OnChannelReadBytes(context, packageDataBytesLength, packageDataBytes);
-                //OnChannelReadBytes(context, packageDataBytes.AsSpan(0, packageDataBytesLength));
-                OnChannelReadBytes(context, new ReadOnlySpan<byte>(packageDataBytes, 0, packageDataBytesLength));
+                    var packageDataBytes = _CurrenChannelContext.CurrentDataBytesArrayPool.Rent(packageDataBytesLength);
 
-                _CurrenChannelContext.CurrentDataBytesArrayPool.Return(packageDataBytes);
+                    try
+                    {
+                        buffer.GetBytes(buffer.ReaderIndex, packageDataBytes, 0, packageDataBytesLength);
 
+                        //OnChannelReadBytes(context, packageDataBytesLength, packageDataBytes);
+                        //OnChannelReadBytes(context, packageDataBytes.AsSpan(0, packageDataBytesLength));
+                        OnChannelReadBytes(context, new ReadOnlySpan<byte>(packageDataBytes, 0, packageDataBytesLength));
+                    }
+                    finally
+                    {
+                        _CurrenChannelContext.CurrentDataBytesArrayPool.Return(packageDataBytes);
+                    }
+
+                }
             }
-
-
-            ReferenceCountUtil.Release(message);
+            finally
+            {
+                ReferenceCountUtil.Release(message);
+            }
 
         }
 
@@ -238,7 +320,50 @@ namespace Lanymy.Common.Instruments.Common
         /// 该次会话读取完成后回调函数
         /// </summary>
         /// <param name="context"></param>
-        public override void ChannelReadComplete(IChannelHandlerContext context) => context.Flush();//将WriteAsync写入的数据流缓存发送出去
+        public override void ChannelReadComplete(IChannelHandlerContext context)
+        {
+            SafeHandleChannelReadComplete(context);
+        }
+
+        protected virtual void SafeHandleChannelReadComplete(IChannelHandlerContext context)
+        {
+            try
+            {
+                ExecuteChannelReadComplete(context);
+            }
+            catch (Exception ex) when (CanIgnoreReadCompleteException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler flush read complete failed.", ex));
+            }
+        }
+
+        protected virtual void ExecuteChannelReadComplete(IChannelHandlerContext context)
+        {
+            if (context.IfIsNull())
+            {
+                return;
+            }
+
+            context.Flush();//将WriteAsync写入的数据流缓存发送出去
+        }
+
+        protected virtual bool CanIgnoreReadCompleteException(Exception exception, IChannelHandlerContext context)
+        {
+            if (exception is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// 异常捕获
@@ -247,7 +372,22 @@ namespace Lanymy.Common.Instruments.Common
         /// <param name="exception"></param>
         public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
         {
-            OnException(context, exception);
+            SafeHandleException(context, exception);
+        }
+
+        protected virtual void SafeHandleException(IChannelHandlerContext context, Exception exception)
+        {
+            try
+            {
+                OnException(context, exception);
+            }
+            catch (Exception ex) when (CanIgnoreHandlerCallbackException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler exception callback failed.", ex));
+            }
         }
 
 
@@ -257,6 +397,25 @@ namespace Lanymy.Common.Instruments.Common
 
             OnContextClose(context);
 
+        }
+
+        protected virtual bool CanIgnoreHandlerCallbackException(Exception exception, IChannelHandlerContext context)
+        {
+            if (exception is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual void OnHandlerError(Exception exception)
+        {
         }
 
 
@@ -271,16 +430,79 @@ namespace Lanymy.Common.Instruments.Common
         protected virtual void SendBytes(IChannelHandlerContext context, byte[] bytes)
         {
 
-            if (!context.IfIsNull() && !bytes.IfIsNullOrEmpty())
+            if (CanScheduleSend(context, bytes))
             {
-                context.Executor.ScheduleAsync(() =>
-                {
-                    var messageBytes = Unpooled.CopiedBuffer(bytes);
-                    context.WriteAndFlushAsync(messageBytes);
-
-                }, _CurrentSendDataIntervalMilliseconds);
+                _ = SafeScheduleSendBytesAsync(context, bytes);
             }
 
+        }
+
+        protected virtual bool CanScheduleSend(IChannelHandlerContext context, byte[] bytes)
+        {
+            return !context.IfIsNull() && !bytes.IfIsNullOrEmpty();
+        }
+
+        protected virtual Task ScheduleSendBytesAsync(IChannelHandlerContext context, byte[] bytes)
+        {
+            return context.Executor.ScheduleAsync(() => WriteBytesAsync(context, bytes), _CurrentSendDataIntervalMilliseconds);
+        }
+
+        protected virtual async Task SafeScheduleSendBytesAsync(IChannelHandlerContext context, byte[] bytes)
+        {
+            try
+            {
+                await ScheduleSendBytesAsync(context, bytes);
+            }
+            catch (Exception ex) when (CanIgnoreSendException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler schedule send failed.", ex));
+            }
+        }
+
+        protected virtual async Task WriteBytesAsync(IChannelHandlerContext context, byte[] bytes)
+        {
+            try
+            {
+                await ExecuteWriteAndFlushAsync(context, bytes);
+            }
+            catch (Exception ex) when (CanIgnoreSendException(ex, context))
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler write send failed.", ex));
+                return;
+            }
+        }
+
+        protected virtual Task ExecuteWriteAndFlushAsync(IChannelHandlerContext context, byte[] bytes)
+        {
+            var messageBytes = Unpooled.CopiedBuffer(bytes);
+            return context.WriteAndFlushAsync(messageBytes);
+        }
+
+        protected virtual bool CanIgnoreSendException(Exception exception, IChannelHandlerContext context)
+        {
+            if (exception is OperationCanceledException)
+            {
+                return true;
+            }
+
+            if (exception is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -289,8 +511,43 @@ namespace Lanymy.Common.Instruments.Common
         /// <param name="context"></param>
         protected virtual void OnContextClose(IChannelHandlerContext context)
         {
+            if (!CanCloseContext(context))
+            {
+                return;
+            }
 
-            context.CloseAsync();
+            if (!TryBeginCloseRequest())
+            {
+                return;
+            }
+
+            _ = SafeCloseContextAsync(context);
+        }
+
+        protected virtual bool CanCloseContext(IChannelHandlerContext context)
+        {
+            return !context.IfIsNull();
+        }
+
+        protected virtual Task ExecuteCloseContextAsync(IChannelHandlerContext context)
+        {
+            return context.CloseAsync();
+        }
+
+        protected virtual async Task SafeCloseContextAsync(IChannelHandlerContext context)
+        {
+            try
+            {
+                await ExecuteCloseContextAsync(context);
+            }
+            catch (Exception ex) when (CanIgnoreContextCloseException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                ReleaseCloseRequestAfterFailure();
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler close context failed.", ex));
+            }
 
         }
 
@@ -302,14 +559,100 @@ namespace Lanymy.Common.Instruments.Common
         /// <param name="delayMilliseconds">延迟执行的毫秒数</param>
         protected virtual void OnContextClose(IChannelHandlerContext context, int delayMilliseconds)
         {
-
-
-            context.Executor.ScheduleAsync(() =>
+            if (!CanScheduleContextClose(context))
             {
-                context.CloseAsync();
+                return;
+            }
+
+            if (!TryBeginDelayedCloseRequest())
+            {
+                return;
+            }
+
+            _ = SafeScheduleCloseContextAsync(context, delayMilliseconds);
+
+        }
+
+        protected virtual bool CanScheduleContextClose(IChannelHandlerContext context)
+        {
+            return !context.IfIsNull();
+        }
+
+        protected virtual Task ScheduleCloseContextAsync(IChannelHandlerContext context, int delayMilliseconds)
+        {
+            return context.Executor.ScheduleAsync(() =>
+            {
+                OnContextClose(context);
 
             }, TimeSpan.FromMilliseconds(delayMilliseconds));
+        }
 
+        protected virtual async Task SafeScheduleCloseContextAsync(IChannelHandlerContext context, int delayMilliseconds)
+        {
+            try
+            {
+                await ScheduleCloseContextAsync(context, delayMilliseconds);
+            }
+            catch (Exception ex) when (CanIgnoreContextCloseException(ex, context))
+            {
+            }
+            catch (Exception ex)
+            {
+                ReleaseDelayedCloseRequestAfterFailure();
+                OnHandlerError(new InvalidOperationException("NettyChannelHandler schedule close context failed.", ex));
+            }
+        }
+
+        protected virtual bool CanIgnoreContextCloseException(Exception exception, IChannelHandlerContext context)
+        {
+            if (exception is OperationCanceledException)
+            {
+                return true;
+            }
+
+            if (exception is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual bool TryBeginCloseRequest()
+        {
+            while (true)
+            {
+                var currentState = Volatile.Read(ref _CurrentCloseRequestState);
+                if (currentState == CloseRequestStateRequested)
+                {
+                    return false;
+                }
+
+                if (Interlocked.CompareExchange(ref _CurrentCloseRequestState, CloseRequestStateRequested, currentState) == currentState)
+                {
+                    return true;
+                }
+            }
+        }
+
+        protected virtual bool TryBeginDelayedCloseRequest()
+        {
+            return Interlocked.CompareExchange(ref _CurrentCloseRequestState, CloseRequestStateDelayedScheduled, CloseRequestStateNone) == CloseRequestStateNone;
+        }
+
+        protected virtual void ReleaseDelayedCloseRequestAfterFailure()
+        {
+            Interlocked.CompareExchange(ref _CurrentCloseRequestState, CloseRequestStateNone, CloseRequestStateDelayedScheduled);
+        }
+
+        protected virtual void ReleaseCloseRequestAfterFailure()
+        {
+            Interlocked.CompareExchange(ref _CurrentCloseRequestState, CloseRequestStateNone, CloseRequestStateRequested);
         }
 
 

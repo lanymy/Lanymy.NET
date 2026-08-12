@@ -103,43 +103,64 @@ namespace Lanymy.Common.Instruments
 
         public virtual async Task AddToQueueAsync(TDataModel data)
         {
-
-            if (IsRunning)
+            if (!IsRunning)
             {
-
-                //while (!await _CurrentChannel.Writer.WaitToWriteAsync())
-                //{
-
-                //    await Task.Delay(TaskSleepMilliseconds);
-
-                //}
-
-                //await _CurrentChannel.Writer.WriteAsync(data);
-
-                //await OnAddToQueueAsync(data);
-
-
-                if (await _CurrentChannel.Writer.WaitToWriteAsync())
-                {
-
-                    await _CurrentChannel.Writer.WriteAsync(data);
-
-                }
-
-
+                return;
             }
 
+            var currentChannel = _CurrentChannel;
+            if (currentChannel.IfIsNull())
+            {
+                return;
+            }
+
+            //while (!await _CurrentChannel.Writer.WaitToWriteAsync())
+            //{
+
+            //    await Task.Delay(TaskSleepMilliseconds);
+
+            //}
+
+            //await _CurrentChannel.Writer.WriteAsync(data);
+
+            //await OnAddToQueueAsync(data);
+
+
+            if (!await currentChannel.Writer.WaitToWriteAsync())
+            {
+                return;
+            }
+
+            if (!IsRunning || !ReferenceEquals(_CurrentChannel, currentChannel))
+            {
+                return;
+            }
+
+            try
+            {
+                await currentChannel.Writer.WriteAsync(data);
+            }
+            catch (ChannelClosedException) when (!IsRunning || !ReferenceEquals(_CurrentChannel, currentChannel))
+            {
+                // ignored
+            }
         }
+
 
 
         protected virtual async Task<List<TDataModel>> ReadQueueAllDataAsync()
         {
 
             var list = new List<TDataModel>();
+            var currentChannel = _CurrentChannel;
+            if (currentChannel.IfIsNull())
+            {
+                return list;
+            }
 
             if (_IsInternalChannel)
             {
-                while (_CurrentChannel.Reader.TryRead(out var item))
+                while (currentChannel.Reader.TryRead(out var item))
                 {
                     list.Add(item);
                 }
@@ -147,7 +168,7 @@ namespace Lanymy.Common.Instruments
                 return list;
             }
 
-            await foreach (var item in _CurrentChannel.Reader.ReadAllAsync())
+            await foreach (var item in currentChannel.Reader.ReadAllAsync())
             {
                 list.Add(item);
             }
