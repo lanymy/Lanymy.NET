@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -11,7 +11,7 @@ namespace Lanymy.Common.Instruments
     internal static class DESCryptoExtensions
     {
 
-        public static ICryptoTransform CreateWeakEncryptor(this TripleDESCryptoServiceProvider cryptoProvider, byte[] key, byte[] iv)
+        public static ICryptoTransform CreateWeakEncryptor(this TripleDES cryptoProvider, byte[] key, byte[] iv)
         {
 
             //var aa = cryptoProvider.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
@@ -24,12 +24,12 @@ namespace Lanymy.Common.Instruments
         }
 
 
-        public static ICryptoTransform CreateWeakEncryptor(this TripleDESCryptoServiceProvider cryptoProvider)
+        public static ICryptoTransform CreateWeakEncryptor(this TripleDES cryptoProvider)
         {
             return CreateWeakEncryptor(cryptoProvider, cryptoProvider.Key, cryptoProvider.IV);
         }
 
-        public static ICryptoTransform CreateWeakDecryptor(this TripleDESCryptoServiceProvider cryptoProvider, byte[] key, byte[] iv)
+        public static ICryptoTransform CreateWeakDecryptor(this TripleDES cryptoProvider, byte[] key, byte[] iv)
         {
             // reflective way of doing what CreateDecryptor() does, bypassing the check for weak keys
             MethodInfo mi = cryptoProvider.GetType().GetMethod("_NewEncryptor", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -38,7 +38,7 @@ namespace Lanymy.Common.Instruments
             return trans;
         }
 
-        public static ICryptoTransform CreateWeakDecryptor(this TripleDESCryptoServiceProvider cryptoProvider)
+        public static ICryptoTransform CreateWeakDecryptor(this TripleDES cryptoProvider)
         {
             return CreateWeakDecryptor(cryptoProvider, cryptoProvider.Key, cryptoProvider.IV);
         }

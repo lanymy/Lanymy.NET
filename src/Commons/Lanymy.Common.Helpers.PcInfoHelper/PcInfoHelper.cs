@@ -1,10 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+#if NET8_0_OR_GREATER
+using System.Runtime.Versioning;
+#endif
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
@@ -218,11 +221,14 @@ namespace Lanymy.Common.Helpers
         /// <param name="arguments">参数</param>
         /// <param name="description">描述</param>
         /// <returns></returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static bool CreateBootAutoRun(string sourceExeFileFullPath, string targetShortcutFileName, string description = null, bool isOverride = true, string arguments = null)
         {
             var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), targetShortcutFileName);
 
-            return CreateShortcut(sourceExeFileFullPath, targetShortcutFileName, description, isOverride, arguments);
+            return CreateShortcut(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments);
         }
 
 
@@ -238,6 +244,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="arguments">参数</param>
         /// <param name="description">描述</param>
         /// <returns></returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static bool CreateDesktopShortcut(string sourceExeFileFullPath, string targetShortcutFileName, string description = null, bool isOverride = true, string arguments = null)
         {
 
@@ -257,6 +266,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="arguments">参数</param>
         /// <param name="description">描述</param>
         /// <returns></returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static bool CreateShortcut(string sourceExeFileFullPath, string targetShortcutFileFullPath, string description = null, bool isOverride = true, string arguments = null)
         {
 
@@ -274,6 +286,11 @@ namespace Lanymy.Common.Helpers
                 }
 
                 var shellType = Type.GetTypeFromProgID("WScript.Shell");
+                if (shellType == null)
+                {
+                    return false;
+                }
+
                 dynamic shell = Activator.CreateInstance(shellType);
                 var shortcut = shell.CreateShortcut(targetShortcutFileFullPath);
                 shortcut.TargetPath = sourceExeFileFullPath;
@@ -288,7 +305,7 @@ namespace Lanymy.Common.Helpers
                 return true;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Lanymy.Common.Enums;
+using Lanymy.Common.Helpers.ResultModels;
 
 namespace Lanymy.Common.Helpers
 {
@@ -22,7 +23,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool StartProcess(string applicationFileFullPath, bool createNoWindow, bool useShellExecute = false, params string[] args)
         {
-            return StartProcess(GetProcessStartInfo(applicationFileFullPath, createNoWindow, useShellExecute, args));
+            return StartProcessWithResult(applicationFileFullPath, createNoWindow, useShellExecute, args).IsSuccess;
         }
 
         /// <summary>
@@ -32,24 +33,126 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool StartProcess(ProcessStartInfo processStartInfo)
         {
+            return StartProcessWithResult(processStartInfo).IsSuccess;
+        }
 
-            bool state = false;
+        /// <summary>
+        /// 启动进程，并返回详细结果。
+        /// </summary>
+        /// <param name="applicationFileFullPath">应用程序全路径</param>
+        /// <param name="createNoWindow">是否显示启动进程界面</param>
+        /// <param name="useShellExecute">是否使用 shell 启动</param>
+        /// <param name="args">启动参数</param>
+        /// <returns>进程启动结果</returns>
+        public static ProcessResultModel StartProcessWithResult(string applicationFileFullPath, bool createNoWindow, bool useShellExecute = false, params string[] args)
+        {
+            return StartProcessWithResult(GetProcessStartInfo(applicationFileFullPath, createNoWindow, useShellExecute, args));
+        }
+
+        /// <summary>
+        /// 启动进程，并返回详细结果。
+        /// </summary>
+        /// <param name="processStartInfo">进程启动信息</param>
+        /// <returns>进程启动结果</returns>
+        public static ProcessResultModel StartProcessWithResult(ProcessStartInfo processStartInfo)
+        {
+            return ExecuteProcess(processStartInfo, false);
+        }
+
+        /// <summary>
+        /// 启动进程并等待退出，返回退出结果。
+        /// </summary>
+        /// <param name="applicationFileFullPath">应用程序全路径</param>
+        /// <param name="createNoWindow">是否显示启动进程界面</param>
+        /// <param name="useShellExecute">是否使用 shell 启动</param>
+        /// <param name="args">启动参数</param>
+        /// <returns>进程执行结果</returns>
+        public static ProcessResultModel RunProcessWithResult(string applicationFileFullPath, bool createNoWindow, bool useShellExecute = false, params string[] args)
+        {
+            return RunProcessWithResult(GetProcessStartInfo(applicationFileFullPath, createNoWindow, useShellExecute, args));
+        }
+
+        /// <summary>
+        /// 启动进程并等待退出，返回退出结果。
+        /// </summary>
+        /// <param name="processStartInfo">进程启动信息</param>
+        /// <returns>进程执行结果</returns>
+        public static ProcessResultModel RunProcessWithResult(ProcessStartInfo processStartInfo)
+        {
+            return ExecuteProcess(processStartInfo, true);
+        }
+
+        private static ProcessResultModel ExecuteProcess(ProcessStartInfo processStartInfo, bool waitForExit)
+        {
+            var result = new ProcessResultModel();
+
+            if (processStartInfo == null)
+            {
+                result.Exception = new ArgumentNullException(nameof(processStartInfo));
+                return result;
+            }
+
+            result.ApplicationFileFullPath = processStartInfo.FileName;
+            result.Arguments = processStartInfo.Arguments;
 
             try
             {
                 using (var process = new Process())
                 {
                     process.StartInfo = processStartInfo;
-                    state = process.Start();
+                    result.IsStarted = process.Start();
+
+                    if (!result.IsStarted)
+                    {
+                        return result;
+                    }
+
+                    result.ProcessId = process.Id;
+
+                    if (waitForExit)
+                    {
+                        process.WaitForExit();
+                        result.HasExited = true;
+                        result.ExitCode = process.ExitCode;
+                    }
+                    else if (TryGetExitCode(process, out var exitCode))
+                    {
+                        result.HasExited = true;
+                        result.ExitCode = exitCode;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
+        }
+
+        private static bool TryGetExitCode(Process process, out int exitCode)
+        {
+            exitCode = default;
+
+            if (process == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (!process.HasExited)
+                {
+                    return false;
+                }
+
+                exitCode = process.ExitCode;
+                return true;
             }
             catch
             {
-                state = false;
+                return false;
             }
-
-            return state;
-
         }
 
 

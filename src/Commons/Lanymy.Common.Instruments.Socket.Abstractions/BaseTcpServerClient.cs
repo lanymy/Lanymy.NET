@@ -16,7 +16,7 @@ namespace Lanymy.Common.Instruments
     public abstract class BaseTcpServerClient : ITcpServerClient
     {
 
-        public System.Net.Sockets.Socket CurrentSocket { get; }
+        public System.Net.Sockets.Socket CurrentSocket { get; private set; }
 
         public bool IsConnected
         {
@@ -196,7 +196,17 @@ namespace Lanymy.Common.Instruments
         {
             ReportServerClientError(ex);
 
-            var closeException = TryCloseSynchronously();
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception closeEx)
+            {
+                closeException = closeEx;
+            }
+
             if (closeException != null)
             {
                 OnCloseError(new InvalidOperationException("TcpServerClient close after error failed.", closeException));
@@ -573,7 +583,17 @@ namespace Lanymy.Common.Instruments
 
         public virtual void Send(byte[] sendDataBytes)
         {
-            var sendException = TryWaitSynchronously(() => SendAsync(sendDataBytes));
+            Exception sendException = null;
+
+            try
+            {
+                sendException = TryWaitSynchronously(() => SendAsync(sendDataBytes));
+            }
+            catch (Exception ex)
+            {
+                sendException = ex;
+            }
+
             if (sendException != null)
             {
                 OnServerClientError(sendException);
@@ -666,6 +686,11 @@ namespace Lanymy.Common.Instruments
                 {
                     _CurrentNetworkStream = null;
                 }
+
+                if (ReferenceEquals(CurrentSocket, currentSocket))
+                {
+                    CurrentSocket = null;
+                }
             }
 
             try
@@ -752,7 +777,17 @@ namespace Lanymy.Common.Instruments
 
         public void Close()
         {
-            var closeException = TryCloseSynchronously();
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+            }
+
             if (closeException != null)
             {
                 OnCloseError(new InvalidOperationException("TcpServerClient sync close failed.", closeException));
@@ -839,6 +874,11 @@ namespace Lanymy.Common.Instruments
                 if (ReferenceEquals(_CurrentNetworkStream, currentNetworkStream))
                 {
                     _CurrentNetworkStream = null;
+                }
+
+                if (ReferenceEquals(CurrentSocket, currentSocket))
+                {
+                    CurrentSocket = null;
                 }
 
                 _IsRunning = false;

@@ -17,6 +17,9 @@
 - 直接启动进程
   - `StartProcess(string applicationFileFullPath, bool createNoWindow, bool useShellExecute = false, params string[] args)`
   - `StartProcess(ProcessStartInfo processStartInfo)`
+- 严格结果模式启动/执行
+  - `StartProcessWithResult(...)`
+  - `RunProcessWithResult(...)`
 - 构造进程启动信息
   - `GetProcessStartInfo(...)`
 - 获取当前进程位数
@@ -41,15 +44,22 @@
 ## 维护时需要注意
 
 - `StartProcess(ProcessStartInfo)` 只返回布尔值，不返回 `Process` 实例，说明这个模块默认不打算让调用方继续做生命周期控制。
+- 新增的结果型入口会显式返回：
+  - `IsStarted`
+  - `ProcessId`
+  - `HasExited`
+  - `ExitCode`
+  - `Exception`
 - 参数拼接使用 `string.Join(" ", args)`，对带空格、引号、转义要求高的参数场景不算特别稳。
-- 当前异常统一吞掉并返回 `false`，适合轻调用，但不利于定位失败原因。
+- 兼容层 `StartProcess(...)` 仍保留“布尔返回”语义；需要诊断信息时，应优先使用结果型入口。
 
 ## 风险点
 
 - 由于不返回进程实例，调用方很难直接等待退出、读取退出码或做更细粒度的进程控制。
 - 字符串级参数拼接在复杂命令参数场景下可能产生歧义。
+- 当前结果型入口已经能覆盖“启动是否成功”和“退出码是否为 0”，但还没有超时、取消等执行控制。
 
 ## 后续建议
 
 - 可继续补一份“ProcessHelper 与 CMD.Abstractions 的关系”专题。
-- 若后续要增强能力，适合新增“返回 `Process` / 退出码 / 详细异常”的严格模式接口，而不是直接改现有布尔返回语义。
+- 若后续要继续增强能力，优先沿结果型入口补超时、取消和更安全的参数拼接，而不是直接破坏现有布尔兼容层。

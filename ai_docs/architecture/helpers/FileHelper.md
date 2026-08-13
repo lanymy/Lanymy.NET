@@ -25,10 +25,14 @@
   - `MoveFile`
 - 文件夹复制与删除
   - `CopyFolderToNewFoler`
+  - `CopyFolderToNewFolerWithResult`
   - `DeleteFolder`
+  - `DeleteFolderWithResult`
 - 二进制文件读写
   - `CreateBinaryFile`
   - `GetBinaryFileBytes`
+  - `ReadToBuffer`
+  - `ReadExactly`
 
 ## 实现特征
 
@@ -41,7 +45,9 @@
 
 - `CopyFolderToNewFoler` 内部吞掉了异常，调用方无法知道失败原因，只能从结果侧推断是否成功。
 - `DeleteFolder` 也是布尔返回值 + `catch` 吞异常风格，适合历史兼容，但不利于现代诊断。
+- 当前已经补充结果型入口；若需要拿到失败原因，优先使用 `CopyFolderToNewFolerWithResult` / `DeleteFolderWithResult`。
 - `GetBinaryFileBytes` 一次性把整个文件读入内存，更适合中小文件，不适合超大文件场景。
+- 读取二进制流时，不能假设单次 `Read(...)` 一定读满；当前已补充统一的循环读取辅助以收紧这类边界。
 - `MoveFile` 在源文件不存在时直接无操作，没有显式错误提示。
 - 方法命名里存在历史拼写问题，如 `CopyFolderToNewFoler`，文档与调用时都要注意保持一致。
 
@@ -60,4 +66,5 @@
 ## 后续建议
 
 - 可继续补一份“FileHelper 与 PathHelper 的职责边界”专题，避免两者能力继续交叉。
-- 若后续要现代化，可考虑把“吞异常”路径单独梳理成兼容层与严格层两套 API。
+- 当前已经开始把“吞异常”路径拆成兼容层与严格层两套 API，后续可以沿同样模式继续整理其他目录/文件操作。
+- 对所有依赖文件头/长度解析的模块，优先复用统一的“读满/EOF”辅助，避免再次出现单次 `Read(...)` 假设。

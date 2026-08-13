@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Lanymy.Common.Instruments.ResultModels
 {
@@ -50,6 +50,11 @@ namespace Lanymy.Common.Instruments.ResultModels
         /// 异常信息
         /// </summary>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// 进程退出码。未能获取时为 Null。
+        /// </summary>
+        public int? ExitCode { get; set; }
 
 
         /// <summary>

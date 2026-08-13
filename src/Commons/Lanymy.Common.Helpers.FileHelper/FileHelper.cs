@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using Lanymy.Common.Abstractions.Models;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers.ResultModels;
 
 namespace Lanymy.Common.Helpers
 {
@@ -44,7 +45,7 @@ namespace Lanymy.Common.Helpers
         public static string GetStreamHashCode(Stream inputStream, int offset = 0, HashAlgorithmTypeEnum hashAlgorithmType = HashAlgorithmTypeEnum.SHA256)
         {
             string hashString = string.Empty;
-            using (var hash = HashAlgorithm.Create(hashAlgorithmType.ToString()))
+            using (var hash = CreateHashAlgorithm(hashAlgorithmType))
             {
                 if (offset >= 0 && offset < inputStream.Length)
                 {
@@ -55,6 +56,25 @@ namespace Lanymy.Common.Helpers
             }
 
             return hashString;
+        }
+
+        private static HashAlgorithm CreateHashAlgorithm(HashAlgorithmTypeEnum hashAlgorithmType)
+        {
+            switch (hashAlgorithmType)
+            {
+                case HashAlgorithmTypeEnum.MD5:
+                    return MD5.Create();
+                case HashAlgorithmTypeEnum.SHA1:
+                    return SHA1.Create();
+                case HashAlgorithmTypeEnum.SHA256:
+                    return SHA256.Create();
+                case HashAlgorithmTypeEnum.SHA384:
+                    return SHA384.Create();
+                case HashAlgorithmTypeEnum.SHA512:
+                    return SHA512.Create();
+                default:
+                    throw new NotSupportedException($"Unsupported hash algorithm type: {hashAlgorithmType}.");
+            }
         }
 
         /// <summary>
@@ -146,71 +166,61 @@ namespace Lanymy.Common.Helpers
         /// <param name="targetFolderPath">目标文件夹物理路径</param>
         public static void CopyFolderToNewFoler(string sourceFolderPath, string targetFolderPath)
         {
+            CopyFolderToNewFolerWithResult(sourceFolderPath, targetFolderPath);
+        }
+
+        /// <summary>
+        /// 将一个文件夹中的内容复制到另一文件夹，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFolderPath">源文件夹物理路径</param>
+        /// <param name="targetFolderPath">目标文件夹物理路径</param>
+        /// <returns>文件夹复制结果</returns>
+        public static FileOperationResultModel CopyFolderToNewFolerWithResult(string sourceFolderPath, string targetFolderPath)
+        {
+            var result = new FileOperationResultModel
+            {
+                SourcePath = sourceFolderPath,
+                TargetPath = targetFolderPath,
+            };
 
             try
             {
-
-                if (!Directory.Exists(sourceFolderPath))
-                {
-                    throw new ApplicationException("Source directory does not exist");
-                }
-                if (!Directory.Exists(targetFolderPath))
-                {
-                    Directory.CreateDirectory(targetFolderPath);
-                }
-                DirectoryInfo directInfo = new DirectoryInfo(sourceFolderPath);
-                //copy files
-                FileInfo[] filesInfos = directInfo.GetFiles();
-                foreach (FileInfo fileinfo in filesInfos)
-                {
-                    string fileName = fileinfo.Name;
-                    //File.Copy(fileinfo.FullName, targetFolderPath + @"/" + fileName, true);
-                    File.Copy(fileinfo.FullName, Path.Combine(targetFolderPath, fileName), true);
-                }
-                //copy directory
-                foreach (DirectoryInfo directoryPath in directInfo.GetDirectories())
-                {
-                    //string toDirPath = toDir + @"/" + directoryPath.Name;
-                    string toDirPath = Path.Combine(targetFolderPath, directoryPath.Name);
-                    CopyFolderToNewFoler(directoryPath.FullName, toDirPath);
-                }
-
-                //targetFolderPath = PathHelper.GetFolderPath(targetFolderPath);
-
-                ////// 判断目标目录是否存在如果不存在则新建之
-                ////if (!Directory.Exists(desPath))
-                ////{
-                ////    Directory.CreateDirectory(desPath);
-                ////}
-
-                //PathHelper.InitDirectoryPath(targetFolderPath);
-
-                //// 得到源目录的文件列表,该里面是包含文件名以及子目录名的一个数组
-                //string[] fileList = Directory.GetFileSystemEntries(sourceFolderPath);
-                ////若只需复制源目录中的文件，只使用下面的数组
-                ////string[] fileList = Directory.GetFiles(sourcePath);
-
-                //// 遍历所有的文件和子目录
-                //foreach (string file in fileList)
-                //{
-                //    // 先将文件都当作目录处理，如果存在这个目录就递归,Copy该目录下面的所有文件
-                //    if (Directory.Exists(file))
-                //    {
-                //        CopyFolderToNewFoler(file, Path.Combine(targetFolderPath, Path.GetFileName(file)));
-                //    }
-                //    // 否则直接Copy文件
-                //    else
-                //    {
-                //        File.Copy(file, Path.Combine(targetFolderPath, Path.GetFileName(file)), true);
-                //    }
-                //}
-
+                CopyFolderCore(sourceFolderPath, targetFolderPath);
+                result.IsSuccess = true;
             }
-            catch
+            catch (Exception ex)
             {
-
+                result.Exception = ex;
             }
 
+            return result;
+        }
+
+        private static void CopyFolderCore(string sourceFolderPath, string targetFolderPath)
+        {
+            if (!Directory.Exists(sourceFolderPath))
+            {
+                throw new DirectoryNotFoundException($"Source directory does not exist: {sourceFolderPath}");
+            }
+
+            if (!Directory.Exists(targetFolderPath))
+            {
+                Directory.CreateDirectory(targetFolderPath);
+            }
+
+            var directInfo = new DirectoryInfo(sourceFolderPath);
+
+            foreach (var fileinfo in directInfo.GetFiles())
+            {
+                var fileName = fileinfo.Name;
+                File.Copy(fileinfo.FullName, Path.Combine(targetFolderPath, fileName), true);
+            }
+
+            foreach (var directoryPath in directInfo.GetDirectories())
+            {
+                var toDirPath = Path.Combine(targetFolderPath, directoryPath.Name);
+                CopyFolderCore(directoryPath.FullName, toDirPath);
+            }
         }
 
         #endregion
@@ -227,57 +237,44 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static bool DeleteFolder(string sourceFolderPath, bool ifClearSourceFolder)
         {
+            return DeleteFolderWithResult(sourceFolderPath, ifClearSourceFolder).IsSuccess;
+        }
+
+        /// <summary>
+        /// 删除文件夹及文件夹中的所有内容，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFolderPath">文件夹路径</param>
+        /// <param name="ifClearSourceFolder">True 清空文件夹  False 删除文件夹</param>
+        /// <returns>文件夹删除结果</returns>
+        public static FileOperationResultModel DeleteFolderWithResult(string sourceFolderPath, bool ifClearSourceFolder)
+        {
+            var result = new FileOperationResultModel
+            {
+                SourcePath = sourceFolderPath,
+                TargetPath = sourceFolderPath,
+            };
+
             try
             {
-
                 sourceFolderPath = PathHelper.GetFolderPath(sourceFolderPath);
 
                 Directory.Delete(sourceFolderPath, true);
-
 
                 if (ifClearSourceFolder)
                 {
                     PathHelper.InitDirectoryPath(sourceFolderPath);
                 }
 
-
-
-                ////判断目标目录是否存在如果不存在则新建之
-                //if (!Directory.Exists(desPath))
-                //{
-                //    Directory.CreateDirectory(desPath);
-                //}
-
-                ////得到源目录的文件列表,该里面是包含文件名以及子目录名的一个数组
-                //string[] fileList = Directory.GetFileSystemEntries(sourceFolderPath);
-                ////若只需复制源目录中的文件，只使用下面的数组
-                ////string[] fileList = Directory.GetFiles(sourcePath);
-
-                ////遍历所有的文件和子目录
-                //foreach (string file in fileList)
-                //{
-                //    // 先将文件都当作目录处理，如果存在这个目录就递归,Delete该目录下面的所有文件
-                //    if (Directory.Exists(file))
-                //    {
-                //        DeleteFolderAndFiles(desPath + Path.GetFileName(file));
-                //    }
-                //    //否则直接Delete文件
-                //    else
-                //    {
-                //        File.Delete(desPath + Path.GetFileName(file));
-                //    }
-                //}
-                ////最后删除文件夹
-                //System.IO.Directory.Delete(desPath, true);
-
-
+                result.SourcePath = sourceFolderPath;
+                result.TargetPath = sourceFolderPath;
+                result.IsSuccess = true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                result.Exception = ex;
             }
 
-            return true;
+            return result;
         }
 
         #endregion
@@ -315,11 +312,73 @@ namespace Lanymy.Common.Helpers
 
             using (FileStream fs = new FileStream(binaryFileFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
+                if (fs.Length > int.MaxValue)
+                {
+                    throw new IOException("Binary file is too large to read into a single byte array.");
+                }
+
                 bytes = new byte[fs.Length];
-                fs.Read(bytes, 0, bytes.Length);
+                ReadExactly(fs, bytes, 0, bytes.Length);
             }
 
             return bytes;
+        }
+
+        /// <summary>
+        /// 循环读取流，直到缓冲区读满或遇到 EOF。
+        /// </summary>
+        /// <param name="inputStream">输入流</param>
+        /// <param name="buffer">目标缓冲区</param>
+        /// <param name="offset">缓冲区偏移量</param>
+        /// <param name="count">需要读取的字节数</param>
+        /// <returns>实际读取的字节数</returns>
+        public static int ReadToBuffer(Stream inputStream, byte[] buffer, int offset, int count)
+        {
+            if (inputStream.IfIsNullOrEmpty())
+            {
+                throw new ArgumentNullException(nameof(inputStream));
+            }
+
+            if (buffer.IfIsNullOrEmpty())
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+
+            if (offset < 0 || count < 0 || buffer.Length - offset < count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            var totalReadCount = 0;
+
+            while (totalReadCount < count)
+            {
+                var currentReadCount = inputStream.Read(buffer, offset + totalReadCount, count - totalReadCount);
+                if (currentReadCount <= 0)
+                {
+                    break;
+                }
+
+                totalReadCount += currentReadCount;
+            }
+
+            return totalReadCount;
+        }
+
+        /// <summary>
+        /// 循环读取流，要求缓冲区必须被完整填满。
+        /// </summary>
+        /// <param name="inputStream">输入流</param>
+        /// <param name="buffer">目标缓冲区</param>
+        /// <param name="offset">缓冲区偏移量</param>
+        /// <param name="count">需要读取的字节数</param>
+        public static void ReadExactly(Stream inputStream, byte[] buffer, int offset, int count)
+        {
+            var totalReadCount = ReadToBuffer(inputStream, buffer, offset, count);
+            if (totalReadCount != count)
+            {
+                throw new EndOfStreamException($"Expected to read {count} bytes, but only read {totalReadCount} bytes.");
+            }
         }
 
         #endregion

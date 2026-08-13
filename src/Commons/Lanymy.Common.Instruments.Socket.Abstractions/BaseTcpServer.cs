@@ -911,7 +911,17 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnServerClose()
         {
-            var closeException = TryCloseSynchronously();
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+            }
+
             if (closeException != null)
             {
                 OnServerCloseError(new InvalidOperationException("TcpServer sync close failed.", closeException));
@@ -1082,6 +1092,7 @@ namespace Lanymy.Common.Instruments
         {
             System.Net.Sockets.Socket currentSocket = null;
             List<ITcpServerClient> tcpServerClients = null;
+            var closeExceptionReported = false;
 
             if (_IsDisposed)
             {
@@ -1098,8 +1109,20 @@ namespace Lanymy.Common.Instruments
                 _IsDisposed = true;
             }
 
-            var closeException = TryCloseSynchronously();
-            if (closeException != null)
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+                closeExceptionReported = true;
+                OnServerCloseError(new InvalidOperationException("TcpServer dispose close failed.", ex));
+            }
+
+            if (closeException != null && !closeExceptionReported)
             {
                 OnServerCloseError(new InvalidOperationException("TcpServer dispose close failed.", closeException));
             }

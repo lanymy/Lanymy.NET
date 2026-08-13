@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -161,7 +161,7 @@ namespace Lanymy.Common.ExtensionFunctions
             {
                 return o as TTarget;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return default(TTarget);
             }

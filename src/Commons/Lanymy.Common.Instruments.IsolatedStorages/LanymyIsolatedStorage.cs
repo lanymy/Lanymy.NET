@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
@@ -95,7 +95,7 @@ namespace Lanymy.Common.Instruments
         {
             if (stream.IfIsNullOrEmpty()) return string.Empty;
             byte[] data = new byte[stream.Length];
-            stream.Read(data, 0, data.Length);
+            FileHelper.ReadExactly(stream, data, 0, data.Length);
 
             //return SecurityHelperOld.DecryptStringFromBytes(CompressionHelper.DecompressBytesFromBytes(data), securityKey, encoding);
 

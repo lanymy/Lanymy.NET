@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+#if NET8_0_OR_GREATER
+using System.Runtime.Versioning;
+#endif
 using System.Text;
 using System.Threading.Tasks;
 using Lanymy.Common.Instruments.CryptoModels;
@@ -44,25 +47,85 @@ namespace Lanymy.Common.Instruments
         public abstract EncryptStringFileDigestInfoModel EncryptFileToFile(string sourceFileFullPath, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null);
         public abstract EncryptStringFileDigestInfoModel DecryptFileFromFile(string encryptedFileFullPath, string sourceFileFullPath, string secretKey = null, Encoding encoding = null);
         public abstract TEncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedFile<TEncryptDigestInfoModel>(string encryptedFileFullPath, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringBitmapDigestInfoModel EncryptBytesToBitmap(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringBitmapDigestInfoModel DecryptBytesFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringBitmapDigestInfoModel EncryptStringToBitmap(string strToEncrypt, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringBitmapDigestInfoModel DecryptStringFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptModelBitmapDigestInfoModel<T> EncryptModelToBitmap<T>(T t, string secretKey = null, Encoding encoding = null) where T : class;
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptModelBitmapDigestInfoModel<T> DecryptModelFromBitmap<T>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null) where T : class;
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringImageFileDigestInfoModel EncryptBytesToImageFile(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringImageFileDigestInfoModel DecryptBytesFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringImageFileDigestInfoModel EncryptStringToImageFile(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptStringImageFileDigestInfoModel DecryptStringFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null);
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptModelImageFileDigestInfoModel<T> EncryptModelToImageFile<T>(T t, string imageFileFullPath, string secretKey = null, Encoding encoding = null) where T : class;
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract EncryptModelImageFileDigestInfoModel<T> DecryptModelFromImageFile<T>(string imageFileFullPath, string secretKey = null, Encoding encoding = null) where T : class;
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel EncryptBytesToBitmap<TEncryptDigestInfoModel>(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel DecryptBytesFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel EncryptStringToBitmap<TEncryptDigestInfoModel>(string strToEncrypt, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel DecryptStringFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel EncryptBytesToImageFile<TEncryptDigestInfoModel>(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel DecryptBytesFromImageFile<TEncryptDigestInfoModel>(string imageFileFullPath, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel EncryptStringToImageFile<TEncryptDigestInfoModel>(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public abstract TEncryptDigestInfoModel DecryptStringFromImageFile<TEncryptDigestInfoModel>(string imageFileFullPath, string secretKey = null, Encoding encoding = null) where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
         public abstract EncryptModelDigestInfoModel<T> EncryptModelToBytes<T>(T t, string secretKey = null, bool ifRandom = true, Encoding encoding = null) where T : class;
         public abstract EncryptModelDigestInfoModel<T> DecryptModelFromBytes<T>(byte[] ecryptedBytes, string secretKey = null, Encoding encoding = null) where T : class;

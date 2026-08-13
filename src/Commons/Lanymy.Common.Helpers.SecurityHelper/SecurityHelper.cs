@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+#if NET8_0_OR_GREATER
+using System.Runtime.Versioning;
+#endif
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -150,24 +153,36 @@ namespace Lanymy.Common.Helpers
         #region Bitmap
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringBitmapDigestInfoModel EncryptBytesToBitmap(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptBytesToBitmap(bytesToEncrypt, secretKey, encoding);
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringBitmapDigestInfoModel DecryptBytesFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptBytesFromBitmap(encryptedBitmap, secretKey, encoding);
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringBitmapDigestInfoModel EncryptStringToBitmap(string strToEncrypt, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptStringToBitmap(strToEncrypt, secretKey, encoding);
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringBitmapDigestInfoModel DecryptStringFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
 
         {
@@ -177,11 +192,17 @@ namespace Lanymy.Common.Helpers
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptModelBitmapDigestInfoModel<T> EncryptModelToBitmap<T>(T t, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptModelToBitmap(t, secretKey, encoding);
         }
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptModelBitmapDigestInfoModel<T> DecryptModelFromBitmap<T>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptModelFromBitmap<T>(encryptedBitmap, secretKey, encoding);
@@ -196,6 +217,9 @@ namespace Lanymy.Common.Helpers
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringImageFileDigestInfoModel EncryptBytesToImageFile(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptBytesToImageFile(bytesToEncrypt, imageFileFullPath, secretKey, encoding);
@@ -203,6 +227,9 @@ namespace Lanymy.Common.Helpers
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringImageFileDigestInfoModel DecryptBytesFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptBytesFromImageFile(imageFileFullPath, secretKey, encoding);
@@ -211,6 +238,9 @@ namespace Lanymy.Common.Helpers
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringImageFileDigestInfoModel EncryptStringToImageFile(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptStringToImageFile(strToEncrypt, imageFileFullPath, secretKey, encoding);
@@ -220,6 +250,9 @@ namespace Lanymy.Common.Helpers
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptStringImageFileDigestInfoModel DecryptStringFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null)
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptStringFromImageFile(imageFileFullPath, secretKey, encoding);
@@ -227,11 +260,17 @@ namespace Lanymy.Common.Helpers
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptModelImageFileDigestInfoModel<T> EncryptModelToImageFile<T>(T t, string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).EncryptModelToImageFile(t, imageFileFullPath, secretKey, encoding);
         }
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public static EncryptModelImageFileDigestInfoModel<T> DecryptModelFromImageFile<T>(string imageFileFullPath, string secretKey = null, Encoding encoding = null, ICryptoBitmap cryptoBitmap = null) where T : class
         {
             return GenericityHelper.GetInterface(cryptoBitmap, DefaultLanymyCrypto).DecryptModelFromImageFile<T>(imageFileFullPath, secretKey, encoding);
@@ -300,7 +339,7 @@ namespace Lanymy.Common.Helpers
 
             if (bytes.IfIsNull()) throw new ArgumentNullException(nameof(bytes));
 
-            using var md5 = new MD5CryptoServiceProvider();
+            using var md5 = MD5.Create();
 
             var hashedBytes = md5.ComputeHash(bytes);
 
@@ -322,7 +361,8 @@ namespace Lanymy.Common.Helpers
         /// <summary>
         /// 字符串转成MD5
         /// </summary>
-        /// <param name="str"></param>
+        /// <param name="str">要计算 MD5 的字符串。</param>
+        /// <param name="encoding">字符串转字节时使用的编码，Null 表示使用默认编码。</param>
         /// <returns></returns>
         public static string StringToMD5(string str, Encoding encoding = null)
         {
@@ -617,7 +657,7 @@ namespace Lanymy.Common.Helpers
         /// RSA 解密 Base64 字符串 返回 解密后的 原始 字符串  
         /// </summary>
         /// <param name="privateKeyBlobBase64String">私钥 Blob 二进制数组 的 Base64 字符串</param>
-        /// <param name="keySize">密钥长度(加密级别) 1024/2048/3072/7680/15360</param>
+        /// <param name="keySizeType">密钥长度(加密级别) 1024/2048/3072/7680/15360</param>
         /// <param name="base64StringToDecrypt">要 解密 的 Base64 字符串</param>
         /// <returns></returns>
         public static string RsaDecryptStringFromBase64String(string privateKeyBlobBase64String, RsaKeySizeTypeEnum keySizeType, string base64StringToDecrypt)

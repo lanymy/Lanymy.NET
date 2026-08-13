@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Lanymy.Common.Abstractions.Models;
+using System.Runtime.Versioning;
 using Lanymy.Common.Helpers;
-using Lanymy.Common.Instruments;
-using Lanymy.Common.Instruments.CryptoModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Lanymy.Common.AllTests
@@ -24,18 +19,31 @@ namespace Lanymy.Common.AllTests
 
 
         [TestMethod()]
+        [SupportedOSPlatform("windows")]
         public void PcInfoHelperTest()
         {
+            var sourceFileFullPath = Environment.ProcessPath;
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sourceFileFullPath));
 
+            var shortcutDirectoryPath = Path.Combine(Path.GetTempPath(), $"PcInfoHelperTests_{Guid.NewGuid():N}");
+            var targetShortcutFileFullPath = Path.Combine(shortcutDirectoryPath, "ShortcutDemo");
 
-            //var port = PcInfoHelper.GetRandomAvaliablePort();
+            Directory.CreateDirectory(shortcutDirectoryPath);
 
-            var sourceFileFullPath = @"";
-            var targetFileName = "ShortcutDemo";
+            try
+            {
+                var result = PcInfoHelper.CreateShortcut(sourceFileFullPath, targetShortcutFileFullPath);
 
-            var result = PcInfoHelper.CreateDesktopShortcut(sourceFileFullPath, targetFileName);
-
-
+                Assert.IsTrue(result);
+                Assert.IsTrue(File.Exists(targetShortcutFileFullPath + ".lnk"));
+            }
+            finally
+            {
+                if (Directory.Exists(shortcutDirectoryPath))
+                {
+                    Directory.Delete(shortcutDirectoryPath, true);
+                }
+            }
         }
 
 

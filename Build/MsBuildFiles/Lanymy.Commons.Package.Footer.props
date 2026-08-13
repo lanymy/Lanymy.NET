@@ -35,6 +35,7 @@
     <Product>Lanymy.NET</Product>
 
     <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
 
     <PackageIconUrl>https://raw.githubusercontent.com/lanymy/Lanymy.SharedBinary.Public/master/src/imgs/icon.ico</PackageIconUrl>
 

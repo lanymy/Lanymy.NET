@@ -102,9 +102,9 @@ namespace Lanymy.Common.Instruments
         /// <typeparam name="T">要序列化的对象类型</typeparam>
         /// <param name="t">要序列化的对象</param>
         /// <returns></returns>
-        public virtual async Task<string> SerializeToJsonAsync<T>(T t) where T : class
+        public virtual Task<string> SerializeToJsonAsync<T>(T t) where T : class
         {
-            return await GenericityHelper.DoTaskWorkAsync(SerializeToJson, t);
+            return GenericityHelper.DoTaskWorkAsync(SerializeToJson, t);
         }
 
         /// <summary>
@@ -113,9 +113,9 @@ namespace Lanymy.Common.Instruments
         /// <typeparam name="T">反序列化成对象的对象类型</typeparam>
         /// <param name="json">要反序列化的Json字符串</param>
         /// <returns></returns>
-        public virtual async Task<T> DeserializeFromJsonAsync<T>(string json) where T : class
+        public virtual Task<T> DeserializeFromJsonAsync<T>(string json) where T : class
         {
-            return await GenericityHelper.DoTaskWorkAsync(DeserializeFromJson<T>, json);
+            return GenericityHelper.DoTaskWorkAsync(DeserializeFromJson<T>, json);
         }
 
         /// <summary>
@@ -140,9 +140,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="jsonFileFullPath">要保存序列化成的JSON文件全路径</param>
         /// <param name="t">要序列化的对象实例</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
-        public virtual async Task SerializeToJsonFileAsync<T>(T t, string jsonFileFullPath, Encoding encoding = null) where T : class
+        public virtual Task SerializeToJsonFileAsync<T>(T t, string jsonFileFullPath, Encoding encoding = null) where T : class
         {
-            await GenericityHelper.DoTaskWorkAsync(SerializeToJsonFile<T>, t, jsonFileFullPath, encoding);
+            return GenericityHelper.DoTaskWorkAsync(SerializeToJsonFile<T>, t, jsonFileFullPath, encoding);
         }
 
         /// <summary>
@@ -171,9 +171,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="jsonFileFullPath">要反序列化处理的JSON文件</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <returns></returns>
-        public virtual async Task<T> DeserializeFromJsonFileAsync<T>(string jsonFileFullPath, Encoding encoding = null) where T : class
+        public virtual Task<T> DeserializeFromJsonFileAsync<T>(string jsonFileFullPath, Encoding encoding = null) where T : class
         {
-            return await GenericityHelper.DoTaskWorkAsync(DeserializeFromJsonFile<T>, jsonFileFullPath, encoding);
+            return GenericityHelper.DoTaskWorkAsync(DeserializeFromJsonFile<T>, jsonFileFullPath, encoding);
         }
     }
 }

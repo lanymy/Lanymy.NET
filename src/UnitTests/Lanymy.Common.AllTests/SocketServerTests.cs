@@ -101,10 +101,12 @@ namespace Lanymy.Common.AllTests
             public int CloseAsyncCallCount { get; protected set; }
             public int SendCallCount { get; private set; }
             public Exception SendException { get; set; }
+            public Socket OriginalSocketForTest { get; }
 
             public TestTcpServerClient()
                 : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1)
             {
+                OriginalSocketForTest = CurrentSocket;
             }
 
             protected override void OnStartReceiveEvent()
@@ -422,7 +424,7 @@ namespace Lanymy.Common.AllTests
             }
         }
 
-        private sealed class ThrowingSyncCloseTcpServer : BaseTcpServer<TestTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
+        private class ThrowingSyncCloseTcpServer : BaseTcpServer<TestTcpServerClient, TestSessionToken, TestFixedHeaderPackageFilter, object, TestSendPackage>
         {
             public int CloseAsyncCallCount { get; private set; }
             public int ServerErrorCount { get; private set; }
@@ -511,6 +513,14 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingDirectSyncCloseTcpServer : ThrowingSyncCloseTcpServer
+        {
+            protected override Exception TryCloseSynchronously()
+            {
+                throw new InvalidOperationException("tcp server sync bridge failed");
+            }
+        }
+
         private sealed class StartReceiveSendQueueFailureTcpServerClient : BaseTcpServerClient
         {
             public StartReceiveSendQueueFailureTcpServerClient(Socket socket)
@@ -538,9 +548,13 @@ namespace Lanymy.Common.AllTests
 
         private sealed class AcceptedTcpServerClient : BaseTcpServerClient
         {
+            public Socket OriginalSocketForTest { get; }
+
             public AcceptedTcpServerClient(Socket socket, bool disableSendQueue = false)
                 : base(socket, receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1)
             {
+                OriginalSocketForTest = CurrentSocket;
+
                 if (disableSendQueue)
                 {
                     _CurrentSendWorkTaskQueue = null;
@@ -1391,6 +1405,20 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseTcpServer_Close_WhenTryCloseSynchronouslyThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var server = new ThrowingDirectSyncCloseTcpServer();
+
+            server.Close();
+
+            Assert.AreEqual(0, server.CloseAsyncCallCount);
+            Assert.AreEqual(1, server.ServerErrorCount);
+            Assert.AreEqual("TcpServer sync close failed.", server.LastServerError.Message);
+            Assert.IsNotNull(server.LastServerError.InnerException);
+            Assert.AreEqual("tcp server sync bridge failed", server.LastServerError.InnerException.Message);
+        }
+
+        [TestMethod]
         public void BaseTcpServer_Dispose_WhenCloseThrows_ShouldStillReleaseTrackedResources()
         {
             var server = new ThrowingSyncCloseTcpServer();
@@ -1405,6 +1433,7 @@ namespace Lanymy.Common.AllTests
                 client.MarkRunningForTest();
                 server.SetAcceptContextForTest(listenSocket, true);
                 server.AttachTrackedClientForTest(client);
+                var clientSocket = client.CurrentSocket;
 
                 server.Dispose();
 
@@ -1418,12 +1447,58 @@ namespace Lanymy.Common.AllTests
                 Assert.IsFalse(client.IsRunning);
                 Assert.IsFalse(client.HasHeartTimerForTest());
                 Assert.IsFalse(client.HasSendQueueForTest());
-                Assert.IsTrue(client.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsNull(client.CurrentSocket);
+                Assert.IsTrue(clientSocket.SafeHandle.IsClosed);
                 Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
                 Assert.AreEqual(1, server.ServerErrorCount);
                 Assert.AreEqual("TcpServer dispose close failed.", server.LastServerError.Message);
                 Assert.IsNotNull(server.LastServerError.InnerException);
                 Assert.AreEqual("tcp server close failed", server.LastServerError.InnerException.Message);
+            }
+            finally
+            {
+                client.Dispose();
+                listenSocket.Dispose();
+                server.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void BaseTcpServer_Dispose_WhenTryCloseSynchronouslyThrows_ShouldStillReleaseTrackedResources()
+        {
+            var server = new ThrowingDirectSyncCloseTcpServer();
+            var client = new ThrowingCloseTcpServerClient
+            {
+                CurrentSessionToken = new TestSessionToken("127.0.0.1", 9527),
+            };
+            var listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            try
+            {
+                client.MarkRunningForTest();
+                server.SetAcceptContextForTest(listenSocket, true);
+                server.AttachTrackedClientForTest(client);
+                var clientSocket = client.CurrentSocket;
+
+                server.Dispose();
+
+                Assert.AreEqual(0, server.CloseAsyncCallCount);
+                Assert.IsTrue(server.IsDisposed);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentSocket);
+                Assert.IsTrue(listenSocket.SafeHandle.IsClosed);
+                Assert.AreEqual(1, client.CloseAsyncCallCount);
+                Assert.IsTrue(client.IsDisposed);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsFalse(client.HasHeartTimerForTest());
+                Assert.IsFalse(client.HasSendQueueForTest());
+                Assert.IsNull(client.CurrentSocket);
+                Assert.IsTrue(clientSocket.SafeHandle.IsClosed);
+                Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
+                Assert.AreEqual(1, server.ServerErrorCount);
+                Assert.AreEqual("TcpServer dispose close failed.", server.LastServerError.Message);
+                Assert.IsNotNull(server.LastServerError.InnerException);
+                Assert.AreEqual("tcp server sync bridge failed", server.LastServerError.InnerException.Message);
             }
             finally
             {
@@ -1449,6 +1524,7 @@ namespace Lanymy.Common.AllTests
                 client.MarkRunningForTest();
                 server.SetAcceptContextForTest(listenSocket, true);
                 server.AttachTrackedClientForTest(client);
+                var clientSocket = client.CurrentSocket;
 
                 await server.CloseAsync();
 
@@ -1457,7 +1533,8 @@ namespace Lanymy.Common.AllTests
                 Assert.IsFalse(client.IsRunning);
                 Assert.IsFalse(client.HasHeartTimerForTest());
                 Assert.IsFalse(client.HasSendQueueForTest());
-                Assert.IsTrue(client.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsNull(client.CurrentSocket);
+                Assert.IsTrue(clientSocket.SafeHandle.IsClosed);
                 Assert.AreEqual(1, server.ErrorCallbackCount);
                 Assert.AreEqual("TcpServer close child client failed.", server.LastError.Message);
                 Assert.IsNotNull(server.LastError.InnerException);
@@ -1843,7 +1920,8 @@ namespace Lanymy.Common.AllTests
                 Assert.IsFalse(client.IsRunning);
                 Assert.IsFalse(client.HasHeartTimerForTest());
                 Assert.IsFalse(client.HasSendQueueForTest());
-                Assert.IsTrue(client.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsNull(client.CurrentSocket);
+                Assert.IsTrue(client.OriginalSocketForTest.SafeHandle.IsClosed);
                 Assert.IsFalse(server.HasTrackedClient(client.CurrentSessionToken.SessionID));
             }
             finally
@@ -1866,6 +1944,7 @@ namespace Lanymy.Common.AllTests
             try
             {
                 server.TrackClient(client);
+                var clientSocket = client.CurrentSocket;
 
                 server.SendDataBytes(client, new byte[] { 0x01 });
 
@@ -2011,6 +2090,8 @@ namespace Lanymy.Common.AllTests
                     await Task.Delay(10);
                 }
 
+                Assert.IsNotNull(failedClient);
+                var failedClientSocket = failedClient.OriginalSocketForTest;
                 Assert.IsTrue(server.IsRunning);
                 Assert.IsNotNull(server.CurrentSocket);
                 Assert.AreEqual(1, server.ServerErrorCount);
@@ -2020,7 +2101,9 @@ namespace Lanymy.Common.AllTests
                 Assert.IsTrue(failedClient.IsDisposed);
                 Assert.IsFalse(failedClient.HasHeartTimerForTest());
                 Assert.IsFalse(failedClient.HasSendQueueForTest());
-                Assert.IsTrue(failedClient.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsNull(failedClient.CurrentSocket);
+                Assert.IsNotNull(failedClientSocket);
+                Assert.IsTrue(failedClientSocket.SafeHandle.IsClosed);
 
                 using var secondClient = new TcpClient();
                 await secondClient.ConnectAsync(IPAddress.Loopback, port);
@@ -2061,10 +2144,13 @@ namespace Lanymy.Common.AllTests
 
                 var failedClient = server.FirstAcceptedClient;
                 Assert.IsNotNull(failedClient);
+                var failedClientSocket = failedClient.OriginalSocketForTest;
                 Assert.IsTrue(failedClient.IsDisposed);
                 Assert.IsFalse(failedClient.IsRunning);
                 Assert.IsFalse(failedClient.HasHeartTimerForTest());
-                Assert.IsTrue(failedClient.CurrentSocket.SafeHandle.IsClosed);
+                Assert.IsNull(failedClient.CurrentSocket);
+                Assert.IsNotNull(failedClientSocket);
+                Assert.IsTrue(failedClientSocket.SafeHandle.IsClosed);
                 Assert.AreEqual(0, server.TrackedClientCount);
                 Assert.AreEqual(0, server.AcceptCallbackCount);
                 Assert.AreEqual(0, server.ServerErrorCount);

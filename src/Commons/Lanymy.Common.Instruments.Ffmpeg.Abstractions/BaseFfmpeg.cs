@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
@@ -62,9 +62,9 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public async Task<string> RunFfmpegCmdAsync(params string[] args)
+        public Task<string> RunFfmpegCmdAsync(params string[] args)
         {
-            return await Task.Run(() => RunFfmpegCmd(args));
+            return Task.Run(() => RunFfmpegCmd(args));
         }
 
         /// <summary>
@@ -89,9 +89,9 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="ffmpegCmdString"></param>
         /// <returns></returns>
-        public async Task<string> RunFfmpegCmdAsync(string ffmpegCmdString)
+        public Task<string> RunFfmpegCmdAsync(string ffmpegCmdString)
         {
-            return await Task.Run(() => RunFfmpegCmd(ffmpegCmdString));
+            return Task.Run(() => RunFfmpegCmd(ffmpegCmdString));
         }
 
         /// <summary>
@@ -104,7 +104,12 @@ namespace Lanymy.Common.Instruments
 
             var cmdResultModel = _CmdFfmpeg.ExecuteCommand(GetFfmpegCmdFormatString(ffmpegCmdString));
 
-            return cmdResultModel.IsSuccess ? cmdResultModel.GetFullDataString() : cmdResultModel.Exception.ToString();
+            if (cmdResultModel.IsSuccess || cmdResultModel.Exception == null)
+            {
+                return cmdResultModel.GetFullDataString();
+            }
+
+            return cmdResultModel.Exception.ToString();
 
         }
 

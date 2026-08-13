@@ -1,10 +1,11 @@
-﻿using Lanymy.Common.Instruments.Models;
+using Lanymy.Common.Instruments.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.Helpers;
 
@@ -39,8 +40,8 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             //例子
 
-            //Task.Delay(TaskDelayMilliseconds).Wait();
-            Task.Delay(15 * 1000).Wait();
+            //Thread.Sleep(TaskDelayMilliseconds);
+            Thread.Sleep(15 * 1000);
 
             var analysisResourceListResult = new AnalysisResourceListResult<string, ResourceCrawlerDataModel>();
 
@@ -72,7 +73,7 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             //处理明细页相关信息
             //crawlerDataModel.Url;
-            //Task.Delay(3 * 1000).Wait();
+            //Thread.Sleep(3 * 1000);
 
             //Debug.WriteLine(string.Format("[ {0} ] - [ {1} ]", crawlerDataModel.ID, crawlerDataModel.CreateDateTime));
 

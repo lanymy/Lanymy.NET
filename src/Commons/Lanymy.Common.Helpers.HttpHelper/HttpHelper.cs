@@ -24,11 +24,9 @@ namespace Lanymy.Common.Helpers
         /// <typeparam name="TReturnDataModel">返回对象的类型</typeparam>
         /// <param name="httpResponseMessage">当前 HttpResponseMessage 实例</param>
         /// <returns></returns>
-        public static async Task<TReturnDataModel> GetResponseContentDataAsync<TReturnDataModel>(HttpResponseMessage httpResponseMessage)
+        public static Task<TReturnDataModel> GetResponseContentDataAsync<TReturnDataModel>(HttpResponseMessage httpResponseMessage)
         {
-
-            return await httpResponseMessage.Content.ReadAsAsync<TReturnDataModel>();
-
+            return httpResponseMessage.Content.ReadAsAsync<TReturnDataModel>();
         }
 
         /// <summary>
@@ -36,11 +34,9 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         /// <param name="httpResponseMessage">当前 HttpResponseMessage 实例</param>
         /// <returns></returns>
-        public static async Task<string> GetResponseContentStringAsync(HttpResponseMessage httpResponseMessage)
+        public static Task<string> GetResponseContentStringAsync(HttpResponseMessage httpResponseMessage)
         {
-
-            return await httpResponseMessage.Content.ReadAsStringAsync();
-
+            return httpResponseMessage.Content.ReadAsStringAsync();
         }
 
         /// <summary>
@@ -78,9 +74,10 @@ namespace Lanymy.Common.Helpers
 
                 }
 
-                var httpResponseMessage = await httpClient.GetAsync(url + strParameters);
-
-                html = await GetResponseContentStringAsync(httpResponseMessage);
+                using (var httpResponseMessage = await httpClient.GetAsync(url + strParameters))
+                {
+                    html = await GetResponseContentStringAsync(httpResponseMessage);
+                }
 
             }
 
@@ -123,10 +120,11 @@ namespace Lanymy.Common.Helpers
 
                     httpContent.Headers.ContentType = new MediaTypeHeaderValue(HttpContentTypeKeys.APPLICATION_JSON);
 
-                    var httpResponseMessage = await httpClient.PostAsync(url, httpContent);
-
-                    //data = await GetResponseContentDataAsync<TReturnDataModel>(httpResponseMessage);
-                    html = await GetResponseContentStringAsync(httpResponseMessage);
+                    using (var httpResponseMessage = await httpClient.PostAsync(url, httpContent))
+                    {
+                        //data = await GetResponseContentDataAsync<TReturnDataModel>(httpResponseMessage);
+                        html = await GetResponseContentStringAsync(httpResponseMessage);
+                    }
                 }
 
             }
@@ -221,9 +219,10 @@ namespace Lanymy.Common.Helpers
                     }
 
 
-                    var httpResponseMessage = await httpClient.PostAsync(url, httpContent);
-
-                    html = await GetResponseContentStringAsync(httpResponseMessage);
+                    using (var httpResponseMessage = await httpClient.PostAsync(url, httpContent))
+                    {
+                        html = await GetResponseContentStringAsync(httpResponseMessage);
+                    }
 
 
                     //var content = new MultipartFormDataContent();

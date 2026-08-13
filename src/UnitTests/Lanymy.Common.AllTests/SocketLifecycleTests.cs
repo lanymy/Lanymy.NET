@@ -446,6 +446,45 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingDirectSyncSendTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
+        {
+            public int SendAsyncCallCount { get; private set; }
+            public Exception LastError { get; private set; }
+
+            public ThrowingDirectSyncSendTcpClient()
+                : base(new TestFixedHeaderPackageFilter(), IPAddress.Loopback.ToString(), 9527, sendDataIntervalMilliseconds: 1, receiveBufferSize: 16, sendBufferSize: 16)
+            {
+            }
+
+            protected override void OnConnectionEvent()
+            {
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnReceivePackageEvent(object package)
+            {
+            }
+
+            protected override void OnErrorEvent(Exception ex)
+            {
+                LastError = ex;
+            }
+
+            protected override Exception TryWaitSynchronously(Func<Task> taskFactory)
+            {
+                throw new InvalidOperationException("tcp client sync send bridge failed");
+            }
+
+            public override Task SendAsync(byte[] sendDataBytes)
+            {
+                SendAsyncCallCount++;
+                return Task.CompletedTask;
+            }
+        }
+
         private sealed class ThrowingEncodePackageTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
         {
             public int CloseAsyncCallCount { get; private set; }
@@ -586,7 +625,7 @@ namespace Lanymy.Common.AllTests
             }
         }
 
-        private sealed class ThrowingCloseDisposeTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
+        private class ThrowingCloseDisposeTcpClient : BaseTcpClient<object, object, TestSessionToken, TestFixedHeaderPackageFilter>
         {
             public int CloseAsyncCallCount { get; private set; }
             public Exception LastError { get; private set; }
@@ -630,6 +669,14 @@ namespace Lanymy.Common.AllTests
             public bool HasSendQueueForTest()
             {
                 return _CurrentSendWorkTaskQueue != null;
+            }
+        }
+
+        private sealed class ThrowingDirectSyncCloseTcpClient : ThrowingCloseDisposeTcpClient
+        {
+            protected override Exception TryCloseSynchronously()
+            {
+                throw new InvalidOperationException("tcp client sync bridge failed");
             }
         }
 
@@ -798,7 +845,7 @@ namespace Lanymy.Common.AllTests
             }
         }
 
-        private sealed class ThrowingSendTcpServerClient : BaseTcpServerClient
+        private class ThrowingSendTcpServerClient : BaseTcpServerClient
         {
             public int CloseAsyncCallCount { get; private set; }
             public Exception LastError { get; private set; }
@@ -847,6 +894,14 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingDirectSyncCloseTcpServerClient : ThrowingSendTcpServerClient
+        {
+            protected override Exception TryCloseSynchronously()
+            {
+                throw new InvalidOperationException("tcp server client sync bridge failed");
+            }
+        }
+
         private sealed class ThrowingSyncSendTcpServerClient : BaseTcpServerClient
         {
             public int CloseAsyncCallCount { get; private set; }
@@ -882,6 +937,45 @@ namespace Lanymy.Common.AllTests
             public override Task CloseAsync()
             {
                 CloseAsyncCallCount++;
+                return Task.CompletedTask;
+            }
+        }
+
+        private sealed class ThrowingDirectSyncSendTcpServerClient : BaseTcpServerClient
+        {
+            public int SendAsyncCallCount { get; private set; }
+            public Exception LastError { get; private set; }
+
+            public ThrowingDirectSyncSendTcpServerClient()
+                : base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), receiveBufferSize: 16, sendBufferSize: 16, sendDataIntervalMilliseconds: 1, heartIntervalMilliseconds: 1000)
+            {
+            }
+
+            protected override void OnStartReceiveEvent()
+            {
+            }
+
+            protected override void OnCloseEvent()
+            {
+            }
+
+            protected override void OnServerClientErrorEvent(Exception ex)
+            {
+                LastError = ex;
+            }
+
+            protected override void OnReceiveDataEvent(BufferModel buffer, CacheModel cache)
+            {
+            }
+
+            protected override Exception TryWaitSynchronously(Func<Task> taskFactory)
+            {
+                throw new InvalidOperationException("tcp server client sync send bridge failed");
+            }
+
+            public override Task SendAsync(byte[] sendDataBytes)
+            {
+                SendAsyncCallCount++;
                 return Task.CompletedTask;
             }
         }
@@ -1348,6 +1442,7 @@ namespace Lanymy.Common.AllTests
             Assert.IsFalse(serverClient.HasHeartTimerForTest());
             Assert.IsFalse(serverClient.HasSendQueueForTest());
             Assert.IsFalse(serverClient.HasCloseEventHandlerForTest());
+            Assert.IsNull(serverClient.CurrentSocket);
             Assert.IsTrue(socket.SafeHandle.IsClosed);
         }
 
@@ -1372,6 +1467,7 @@ namespace Lanymy.Common.AllTests
             Assert.IsFalse(serverClient.IsRunning);
             Assert.IsFalse(serverClient.HasHeartTimerForTest());
             Assert.IsFalse(serverClient.HasSendQueueForTest());
+            Assert.IsNull(serverClient.CurrentSocket);
             Assert.IsTrue(socket.SafeHandle.IsClosed);
             CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient close heart timer failed.");
             CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient close send queue failed.");
@@ -1412,6 +1508,20 @@ namespace Lanymy.Common.AllTests
             Assert.IsNotNull(client.LastError);
             Assert.AreEqual("sync send failed", client.LastError.Message);
             Assert.AreEqual(1, client.CloseAsyncCallCount);
+        }
+
+        [TestMethod]
+        public void BaseTcpClient_Send_WhenTryWaitSynchronouslyThrows_ShouldReportErrorWithoutEscalating()
+        {
+            var client = new ThrowingDirectSyncSendTcpClient();
+
+            client.Send(new byte[] { 0x2A });
+
+            Assert.AreEqual(0, client.SendAsyncCallCount);
+            Assert.IsNotNull(client.LastError);
+            Assert.AreEqual("TcpClient close after error failed.", client.LastError.Message);
+            Assert.IsNotNull(client.LastError.InnerException);
+            Assert.AreEqual("tcp client sync send bridge failed", client.LastError.InnerException.Message);
         }
 
         [TestMethod]
@@ -1456,6 +1566,20 @@ namespace Lanymy.Common.AllTests
             Assert.IsNotNull(serverClient.LastError);
             Assert.AreEqual("sync send failed", serverClient.LastError.Message);
             Assert.AreEqual(1, serverClient.CloseAsyncCallCount);
+        }
+
+        [TestMethod]
+        public void BaseTcpServerClient_Send_WhenTryWaitSynchronouslyThrows_ShouldReportErrorWithoutEscalating()
+        {
+            var serverClient = new ThrowingDirectSyncSendTcpServerClient();
+
+            serverClient.Send(new byte[] { 0x5A });
+
+            Assert.AreEqual(0, serverClient.SendAsyncCallCount);
+            Assert.IsNotNull(serverClient.LastError);
+            Assert.AreEqual("TcpServerClient close after error failed.", serverClient.LastError.Message);
+            Assert.IsNotNull(serverClient.LastError.InnerException);
+            Assert.AreEqual("tcp server client sync send bridge failed", serverClient.LastError.InnerException.Message);
         }
 
         [TestMethod]
@@ -1553,6 +1677,18 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseTcpClient_Close_WhenTryCloseSynchronouslyThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var client = new ThrowingDirectSyncCloseTcpClient();
+
+            client.Close();
+
+            Assert.AreEqual(0, client.CloseAsyncCallCount);
+            CollectionAssert.Contains(client.Errors.ConvertAll(ex => ex.Message), "TcpClient sync close failed.");
+            Assert.AreEqual("tcp client sync bridge failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
         public void BaseTcpServerClient_Close_WhenCloseAsyncThrows_ShouldReportSyncCloseErrorWithoutEscalating()
         {
             var serverClient = new ThrowingSendTcpServerClient
@@ -1564,6 +1700,18 @@ namespace Lanymy.Common.AllTests
 
             Assert.AreEqual(1, serverClient.CloseAsyncCallCount);
             CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient sync close failed.");
+        }
+
+        [TestMethod]
+        public void BaseTcpServerClient_Close_WhenTryCloseSynchronouslyThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var serverClient = new ThrowingDirectSyncCloseTcpServerClient();
+
+            serverClient.Close();
+
+            Assert.AreEqual(0, serverClient.CloseAsyncCallCount);
+            CollectionAssert.Contains(serverClient.Errors.ConvertAll(ex => ex.Message), "TcpServerClient sync close failed.");
+            Assert.AreEqual("tcp server client sync bridge failed", serverClient.LastError?.InnerException?.Message);
         }
 
         [TestMethod]

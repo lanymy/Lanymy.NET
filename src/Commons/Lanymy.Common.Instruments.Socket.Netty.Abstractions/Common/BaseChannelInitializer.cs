@@ -175,12 +175,19 @@ namespace Lanymy.Common.Instruments.Common
                 return true;
             }
 
-            if (exception is InvalidOperationException && (channel == null || !channel.Open))
+            if (exception is InvalidOperationException && (channel == null || !channel.Open || IsUnregisteredChannelCloseNoise(exception, channel)))
             {
                 return true;
             }
 
             return false;
+        }
+
+        protected virtual bool IsUnregisteredChannelCloseNoise(Exception exception, ISocketChannel channel)
+        {
+            return channel != null
+                   && !channel.Registered
+                   && exception.Message?.IndexOf("not registered to an event loop", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         protected virtual void OnInitChannelError(Exception exception)

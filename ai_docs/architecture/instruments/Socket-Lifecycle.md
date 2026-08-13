@@ -54,6 +54,9 @@
 - 同步桥接失败后不能直接把 `AggregateException` / 桥接异常裸抛给调用方，而要进入各自的错误通道：
   - client 侧走 `OnError` / `OnCloseError` / `ReportError`
   - server 侧走 `OnServerCloseError` / `ReportServerError`
+- 即使 `TryCloseSynchronously()` / `TryWaitSynchronously(...)` 这类桥接 helper 自己意外直接抛异常，同步 `Close()`、同步 `Send()`，以及错误通道内部触发的“close after error”桥接也都必须把它重新转入各自错误通道；`Dispose()` 仍要继续完成后续 fallback 释放，不能因为 helper 的直接抛出把清理链截断。
+- `Send(TSendPackage)` / `SendPackage(...)` 这类同步包装入口如果在 `EncodePackage(...)` 阶段失败，也必须进入各自错误通道并保持返回值语义稳定，不能因为编码异常直接打穿调用方；TCP 与 UDP 在这一点上必须保持一致。
+- `UdpClient.Send(SendUdpDataModel)` 这类“同步等待异步发送结果”的入口，也必须通过统一 helper 收口，确保等待异常与 helper 直接抛异常都走 `ReportError(...)` / `OnErrorEvent(...)`，不能保留额外的裸 `GetAwaiter().GetResult()` 分支。
 - 启动链上的同步桥接如果失败，必须进入启动回滚，不能把对象留在“`IsRunning=true` 但内部队列 / socket / stream 未完全就绪”的半初始化状态。
 - `Dispose()` 可以感知 `CloseAsync()` 失败，但不能依赖公开 `Close()` 的抛异常语义中断后续 fallback 释放。
 
@@ -95,6 +98,7 @@
   - `StopAsync()` 失败不能阻断 `Dispose()`
   - 某一个资源释放失败不能阻断其余资源最终释放
 - 状态位和字段清空要放在尾声收口处统一处理；异常是否上抛或上报，放在清理动作之后决定。
+- `BaseTcpServerClient` 在 `CloseAsync()` / `Dispose()` 收口时，除了释放 accepted socket 本体，还必须同步清空 `CurrentSocket` 引用，避免关闭后的对象继续暴露已释放 socket 句柄。
 - server 关闭 child client 时，即使单个 child `CloseAsync()` 失败，也要继续清理其余 child，并对失败 child 做补偿 `Dispose()`。
 
 关键代码：
@@ -110,14 +114,40 @@
 - `BaseTcpClient` / `BaseTcpServerClient` 的接收回调采用“流快照 + 连续性校验 + 关闭期异常忽略”模型。
 - 旧 `NetworkStream`、已摘除 stream、关闭交界期的 `ObjectDisposedException` / `IOException` / 中止类 `SocketException`，都应按关闭噪音处理，而不是重新当作运行期故障放大。
 - 这一约束的目标是把真正的协议 / 网络错误与关闭噪音分开，避免误打空引用或重复关闭。
+- `BaseTcpClient` 与 `BaseTcpServerClient` 的 start-failure 回滚分工不同：前者会在自身 `ResetStartState(...)` 中回收并重建 client socket；后者只回收 stream / queue / timer，accepted socket 的最终释放由 `BaseTcpServer` 外层 failed accepted client cleanup 负责，不能按“看起来相似”把两条链硬改成同一种补偿顺序。
+- `BaseUdpClient` 现在也必须遵循同样的“旧句柄先收尾、再判断是否继续分发”的规则：
+  - `BeginReceive(...)` 必须把当前 `UdpClient` 作为 `asyncState` 传入回调
+  - `ReciveCallBack(...)` 即使在关闭窗口内发现实例已不再运行，也必须先对触发回调的旧 `UdpClient` 执行 `EndReceive(...)`
+  - 只有在 `TryGetReceiveContext(...)` 仍能取到当前运行态快照，且快照里的 `_CurrentUdpClient` 与回调携带的旧实例是同一个对象时，才允许把数据继续写入 receive queue 并续下一轮 `BeginReceive(...)`
+- 这样做的目的，是避免快速 `Start() -> Close() -> Start()` 或“关闭失败后重启”路径里留下未收尾的旧异步接收，最终把 testhost / 进程退出拖住。
 
 关键代码：
 
 - [BaseTcpClient.cs:L315-L374](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpClient.cs#L315-L374)
 - [BaseTcpServerClient.cs:L466-L536](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseTcpServerClient.cs#L466-L536)
 - [TcpReceiveGuardHelper.cs](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/TcpReceiveGuardHelper.cs)
+- [BaseUdpClient.cs:L269-L283](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseUdpClient.cs#L269-L283)
+- [BaseUdpClient.cs:L431-L476](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseUdpClient.cs#L431-L476)
 
-### 4.5 Netty host / reconnect 约束
+### 4.5 `BaseUdpClient.CloseAsync()` 关闭顺序约束
+
+- `BaseUdpClient.CloseAsync()` 的关闭顺序必须保持为：
+  1. 在锁内抓取 receive queue / send queue / 当前 `UdpClient` 快照
+  2. 立刻把 `_IsRunning` 切为 `false`，并把 `_CurrentUdpClient` 从实例字段里摘除
+  3. 先关闭并释放刚才抓到的 `UdpClient`
+  4. 再停止 receive queue / send queue
+  5. 若队列 stop 失败，再按现有逻辑替换失败队列并做补偿 dispose
+- 这条顺序不能退回成“先停队列，最后再关 `UdpClient`”，否则旧的 `BeginReceive` 回调可能一直挂在已经脱离当前生命周期的底层 socket 上，导致：
+  - `CloseAsync_WhenQueueStopFails_ShouldReplaceFailedQueuesBeforeRestart` 这类失败恢复路径在全量回归里出现宿主退出拖尾
+  - `TryGetReceiveContext(...)` 已经返回 false，但底层旧接收仍未真正收口
+- 这一顺序和 `ResetStartState(...)` 的已有做法保持一致，避免 `Start()` 回滚链与 `CloseAsync()` 正常关闭链在资源收口策略上出现分叉。
+
+关键代码：
+
+- [BaseUdpClient.cs:L291-L360](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseUdpClient.cs#L291-L360)
+- [BaseUdpClient.cs:L614-L682](file:///E:/Code/Git/My/Lanymy.NET/src/Commons/Lanymy.Common.Instruments.Socket.Abstractions/BaseUdpClient.cs#L614-L682)
+
+### 4.6 Netty host / reconnect 约束
 
 - `BaseSocketHost.StartAsync()` / `StopAsync()` / `DisposeAsync()` 必须继续保持信号量串行化语义：
   - `StopAsync()` 执行期间，新的 `StartAsync()` 必须等待 stop 尾声完成
@@ -127,12 +157,24 @@
   - reconnect 入口委托必须是稳定可用的强引用，不能因为 GC 回收掉委托对象而静默失去重连能力
   - `StopAsync()` 必须先把 `IsRunning` 置为 `false`，再关闭 channel、取消 reconnect token、等待 reconnect task 尾声
   - 旧 generation 的 `ChannelInactive` 不能在新 generation 已启动后重新拉起旧重连链
-  - `ConnectChannelAsync()` 返回异常或返回 `null channel` 时，都必须进入统一的“上报 + 延迟 + 是否继续重连”分支，不能静默丢失重连
+  - `ConnectChannelAsync()` 返回异常、返回 `null channel`，或返回“非空但未激活”的 channel 时，都必须进入统一的“上报 + 延迟 + 是否继续重连”分支，不能静默丢失重连
+  - 若 rejected channel 的补偿关闭再次失败，只能额外上报 `close rejected channel failed` 一类清理错误；原始的 `inactive channel` / `null channel` 根因仍必须继续沿主链上抛，不能被 cleanup 异常覆盖
+  - 上一条里的 rejected channel cleanup，以及后续 rollback/stop 对同一 channel 的补偿关闭，如果只遇到 `OperationCanceledException`、`ObjectDisposedException`，或“channel 尚未注册到 event loop”一类 `InvalidOperationException`，必须按关闭噪音忽略，不能再额外记成新的 `ConnectError` / `StartError` / `StopError`
+  - 若 connect 已经成功返回 channel，但随后因为旧 generation 或“当前已有活跃 channel”而被 `TryBindConnectedChannel(...)` 拒绝，这条分支只能做 rejected channel cleanup 后直接退出当前 connect attempt，不能再误报 `connect attempt failed`，也不能额外进入下一轮 delay/retry
+  - `CreateBootstrap(...)` 构造 pipeline initializer 时，必须先显式校验 initializer 非空；不能把 `null` initializer 直接交给 DotNetty 再在更深层报错，否则启动失败诊断会偏离实际缺口
+- `BaseNettySocketServer` 的启动链也必须满足：
+  - `CreateBootstrap(...)` 构造 child pipeline initializer 时，必须先显式校验 initializer 非空
+  - `BindServerAsync(...)` 返回 `null channel`，或返回“非空但未激活”的 listener channel 时，必须立刻按启动失败处理并回滚 boss group / worker group / bootstrap 状态，不能把对象留在“`IsRunning=true` 但实际没有监听 channel”的假运行态
+  - 若 rejected listener channel 的补偿关闭再次失败，也只能作为额外的 start error 单独记录；`bind returned inactive channel` / `bind returned null channel` 仍必须保持为启动失败主根因
+  - rejected listener channel cleanup，以及后续 rollback/stop 对同一 listener 的补偿关闭，如果只遇到 `OperationCanceledException`、`ObjectDisposedException`，或“channel 尚未注册到 event loop”一类 `InvalidOperationException`，也必须按关闭噪音忽略，不能再额外放大成新的 `StartError` / `StopError`
 - `BaseChannelHandler` / `BaseClientChannelHandler` / `BaseServerChannelHandler` 的 callback 必须满足：
   - handler 业务回调抛异常时，只能进入 `OnHandlerError(...)`，不能直接打断底层 close / reconnect / read complete 主链
   - `ChannelInactive` 清理当前状态后，server 侧只能移除“当前 handler 仍持有”的 session 映射，不能误删已被新 handler 接管的会话槽位
   - `BaseNettySocketServer.OnStopAsync()` 尾声必须清空 `CurrentChannelDictionary`，不能把已停止实例的旧 handler 映射留在 server context 里
   - `BaseChannelHandler.OnContextClose(...)` 必须对同一 active channel 做单次关闭请求防抖，避免 idle timeout、transport exception、主动 stop 叠加时重复调度 close；若单次 close 请求明确失败，则允许后续再次触发重试
+  - 上一条里的“close 请求失败”同时覆盖被识别为关闭噪音的 `OperationCanceledException`、`ObjectDisposedException`，以及“channel 已关闭 / 尚未注册到 event loop / 当前 handler 已经从 pipeline 摘除”一类 `InvalidOperationException`；这些异常虽然不应再上报为新的 handler 运行态错误，但仍必须释放 `_CurrentCloseRequestState`，避免后续真实 close 被卡在 `requested` / `delayed scheduled` 状态
+  - 同样的 “尚未注册到 event loop” / `"handler not added to pipeline yet"` 关闭噪音规则也要覆盖 `BaseChannelHandler` 的 callback / flush / write / close 几条收口链，不能只在 initializer 补偿关闭里忽略，否则 handler 侧仍会把 DotNetty 的关闭边界消息误报成新的运行态错误
+  - `BaseChannelHandler.ScheduleSendBytesAsync(...)` 调度延迟发送时，必须把真实的 `WriteBytesAsync(...)` task 串回调度结果，不能在调度 lambda 里把发送 task 直接 fire-and-forget；否则延迟发送阶段的异步失败会绕开 `SafeScheduleSendBytesAsync(...)` / `OnHandlerError(...)` 的错误收口
 
 关键代码：
 

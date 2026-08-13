@@ -4,11 +4,15 @@
   <!--https://docs.microsoft.com/zh-cn/visualstudio/msbuild/msbuild-reference?view=vs-2019-->
 
   <ItemGroup>
-    <None Include="..\..\..\imgs\icon.png">
+    <None Include="$(MSBuildThisFileDirectory)..\..\imgs\icon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="..\..\..\LICENSE">
+    <None Include="$(MSBuildThisFileDirectory)..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)..\..\README.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
@@ -20,6 +24,24 @@
     <!--<OutputPath>bin\Debug\</OutputPath>-->
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(CurrentBuildProjectName).xml</DocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == '' and '$(TargetFrameworks)' != ''">
+    <LanymyLegacyProjectReferenceTargetFramework Condition="'$(LanymyLegacyProjectReferenceTargetFramework)' == '' and $([System.String]::Copy('$(TargetFrameworks)').Contains('netstandard2.1'))">netstandard2.1</LanymyLegacyProjectReferenceTargetFramework>
+  </PropertyGroup>
+
+  <!--
+    Xamarin 旧式项目在解析多目标 SDK 项目引用时，会直接请求 GetTargetPath。
+    对于外层 cross-targeting build，这个目标默认不存在，因此这里转发到兼容性最好的 netstandard2.1 内层构建。
+  -->
+  <Target Name="GetTargetPath"
+          Condition="'$(TargetFramework)' == '' and '$(TargetFrameworks)' != '' and '$(LanymyLegacyProjectReferenceTargetFramework)' != ''"
+          Returns="@(_LanymyLegacyProjectTargetPath)">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetTargetPath"
+             Properties="TargetFramework=$(LanymyLegacyProjectReferenceTargetFramework)">
+      <Output TaskParameter="TargetOutputs" ItemName="_LanymyLegacyProjectTargetPath" />
+    </MSBuild>
+  </Target>
 
 
   <!--<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">

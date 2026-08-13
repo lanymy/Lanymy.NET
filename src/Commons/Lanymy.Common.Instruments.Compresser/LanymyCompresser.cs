@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -97,18 +97,18 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="compressBytes">要压缩的字节数组</param>
         /// <returns></returns>
-        public virtual async Task<byte[]> CompressBytesToBytesAsync(byte[] compressBytes)
+        public virtual Task<byte[]> CompressBytesToBytesAsync(byte[] compressBytes)
         {
-            return await GenericityHelper.DoTaskWorkAsync(CompressBytesToBytes, compressBytes);
+            return GenericityHelper.DoTaskWorkAsync(CompressBytesToBytes, compressBytes);
         }
         /// <summary>
         /// 异步 解压缩字节数组 返回解压缩后的 字节数组
         /// </summary>
         /// <param name="decompressBytes">要解压缩的字节数组</param>
         /// <returns></returns>
-        public virtual async Task<byte[]> DecompressBytesFromBytesAsync(byte[] decompressBytes)
+        public virtual Task<byte[]> DecompressBytesFromBytesAsync(byte[] decompressBytes)
         {
-            return await GenericityHelper.DoTaskWorkAsync(DecompressBytesFromBytes, decompressBytes);
+            return GenericityHelper.DoTaskWorkAsync(DecompressBytesFromBytes, decompressBytes);
         }
         /// <summary>
         /// 压缩字节数组 返回 压缩后字节数组生成的 Base64 字符串
@@ -133,18 +133,18 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="compressBytes">要压缩的字节数组</param>
         /// <returns></returns>
-        public virtual async Task<string> CompressBytesToBase64StringAsync(byte[] compressBytes)
+        public virtual Task<string> CompressBytesToBase64StringAsync(byte[] compressBytes)
         {
-            return await GenericityHelper.DoTaskWorkAsync(CompressBytesToBase64String, compressBytes);
+            return GenericityHelper.DoTaskWorkAsync(CompressBytesToBase64String, compressBytes);
         }
         /// <summary>
         /// 异步 解压缩 Base64 字符串 返回解压缩后的 字节数组
         /// </summary>
         /// <param name="decompressString"></param>
         /// <returns></returns>
-        public virtual async Task<byte[]> DecompressBytesFromBase64StringAsync(string decompressString)
+        public virtual Task<byte[]> DecompressBytesFromBase64StringAsync(string decompressString)
         {
-            return await GenericityHelper.DoTaskWorkAsync(DecompressBytesFromBase64String, decompressString);
+            return GenericityHelper.DoTaskWorkAsync(DecompressBytesFromBase64String, decompressString);
         }
         /// <summary>
         /// 压缩字符串 返回 压缩后的 字节数组
@@ -175,9 +175,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="compressString">要压缩的字符串</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <returns></returns>
-        public virtual async Task<byte[]> CompressStringToBytesAsync(string compressString, Encoding encoding = null)
+        public virtual Task<byte[]> CompressStringToBytesAsync(string compressString, Encoding encoding = null)
         {
-            return await GenericityHelper.DoTaskWorkAsync(CompressStringToBytes, compressString, encoding);
+            return GenericityHelper.DoTaskWorkAsync(CompressStringToBytes, compressString, encoding);
         }
         /// <summary>
         /// 异步 解压缩字节数组 返回 解压缩后的字符串
@@ -185,9 +185,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="decompressBytes">要解压缩的字节数组</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <returns></returns>
-        public virtual async Task<string> DecompressStringFromBytesAsync(byte[] decompressBytes, Encoding encoding = null)
+        public virtual Task<string> DecompressStringFromBytesAsync(byte[] decompressBytes, Encoding encoding = null)
         {
-            return await GenericityHelper.DoTaskWorkAsync(DecompressStringFromBytes, decompressBytes, encoding);
+            return GenericityHelper.DoTaskWorkAsync(DecompressStringFromBytes, decompressBytes, encoding);
         }
         /// <summary>
         /// 压缩字符串 返回 压缩后的Base64 字符串
@@ -215,9 +215,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="compressString">要压缩的字符串</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <returns></returns>
-        public virtual async Task<string> CompressStringToBase64StringAsync(string compressString, Encoding encoding = null)
+        public virtual Task<string> CompressStringToBase64StringAsync(string compressString, Encoding encoding = null)
         {
-            return await GenericityHelper.DoTaskWorkAsync(CompressStringToBase64String, compressString, encoding);
+            return GenericityHelper.DoTaskWorkAsync(CompressStringToBase64String, compressString, encoding);
         }
         /// <summary>
         /// 异步 解压缩 Base64 字符串 返回 解压缩后的字符串
@@ -225,9 +225,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="decompressString">要解压缩的Base64字符串</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <returns></returns>
-        public virtual async Task<string> DecompressStringFromBase64StringAsync(string decompressString, Encoding encoding = null)
+        public virtual Task<string> DecompressStringFromBase64StringAsync(string decompressString, Encoding encoding = null)
         {
-            return await GenericityHelper.DoTaskWorkAsync(DecompressStringFromBase64String, decompressString, encoding);
+            return GenericityHelper.DoTaskWorkAsync(DecompressStringFromBase64String, decompressString, encoding);
         }
 
 
@@ -286,9 +286,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="sourceFileFullPath">要压缩源文件的全路径</param>
         /// <param name="compressFileFullPath">压缩后文件全路径</param>
         /// <returns></returns>
-        public virtual async Task CompressSourceFileToCompressFileAsync(string sourceFileFullPath, string compressFileFullPath)
+        public virtual Task CompressSourceFileToCompressFileAsync(string sourceFileFullPath, string compressFileFullPath)
         {
-            await GenericityHelper.DoTaskWorkAsync(CompressSourceFileToCompressFile, sourceFileFullPath, compressFileFullPath);
+            return GenericityHelper.DoTaskWorkAsync(CompressSourceFileToCompressFile, sourceFileFullPath, compressFileFullPath);
         }
 
 
@@ -297,9 +297,9 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="sourceFileFullPath">解压缩后 源文件 全路径</param>
         /// <param name="compressFileFullPath">要解压缩的文件</param>
-        public virtual async Task DecompressSourceFileFromCompressFileAsync(string sourceFileFullPath, string compressFileFullPath)
+        public virtual Task DecompressSourceFileFromCompressFileAsync(string sourceFileFullPath, string compressFileFullPath)
         {
-            await GenericityHelper.DoTaskWorkAsync(DecompressSourceFileFromCompressFile, sourceFileFullPath, compressFileFullPath);
+            return GenericityHelper.DoTaskWorkAsync(DecompressSourceFileFromCompressFile, sourceFileFullPath, compressFileFullPath);
         }
 
 

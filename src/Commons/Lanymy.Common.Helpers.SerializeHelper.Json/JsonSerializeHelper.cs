@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
 using Lanymy.Common.Instruments;
@@ -43,9 +43,9 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         /// <param name="t">对象</param>
         /// <param name="jsonSerializer">序列化Json使用的序列化器</param>
-        public static async Task<string> SerializeToJsonAsync<T>(T t, IJsonSerializer jsonSerializer = null) where T : class
+        public static Task<string> SerializeToJsonAsync<T>(T t, IJsonSerializer jsonSerializer = null) where T : class
         {
-            return await GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).SerializeToJsonAsync(t);
+            return GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).SerializeToJsonAsync(t);
         }
 
 
@@ -55,9 +55,9 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         /// <param name="json">字符串序列</param>
         /// <param name="jsonSerializer">反序列化Json使用的序列化器</param>
-        public static async Task<T> DeserializeFromJsonAsync<T>(string json, IJsonSerializer jsonSerializer = null) where T : class
+        public static Task<T> DeserializeFromJsonAsync<T>(string json, IJsonSerializer jsonSerializer = null) where T : class
         {
-            return await GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).DeserializeFromJsonAsync<T>(json);
+            return GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).DeserializeFromJsonAsync<T>(json);
         }
 
 
@@ -82,9 +82,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="t">要序列化的对象实例</param>
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <param name="jsonSerializer">反序列化Json使用的序列化器</param>
-        public static async Task SerializeToJsonFileAsync<T>(T t, string jsonFileFullPath, Encoding encoding = null, IJsonSerializer jsonSerializer = null) where T : class
+        public static Task SerializeToJsonFileAsync<T>(T t, string jsonFileFullPath, Encoding encoding = null, IJsonSerializer jsonSerializer = null) where T : class
         {
-            await GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).SerializeToJsonFileAsync(t, jsonFileFullPath, encoding);
+            return GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).SerializeToJsonFileAsync(t, jsonFileFullPath, encoding);
         }
 
         /// <summary>
@@ -108,9 +108,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="encoding">编码 Null 使用默认编码</param>
         /// <param name="jsonSerializer">反序列化Json使用的序列化器</param>
         /// <returns></returns>
-        public static async Task<T> DeserializeFromJsonFileAsync<T>(string jsonFileFullPath, Encoding encoding = null, IJsonSerializer jsonSerializer = null) where T : class
+        public static Task<T> DeserializeFromJsonFileAsync<T>(string jsonFileFullPath, Encoding encoding = null, IJsonSerializer jsonSerializer = null) where T : class
         {
-            return await GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).DeserializeFromJsonFileAsync<T>(jsonFileFullPath, encoding);
+            return GenericityHelper.GetInterface(jsonSerializer, DefaultJsonSerializer).DeserializeFromJsonFileAsync<T>(jsonFileFullPath, encoding);
         }
 
 

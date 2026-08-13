@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -53,7 +53,7 @@ namespace Lanymy.Common.Abstractions.Models.AttachmentInfoModels
             //{
             //    return;
             //}
-            catch (Exception ex)
+            catch (Exception)
             {
                 return;
             }

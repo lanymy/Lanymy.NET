@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
@@ -40,9 +40,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="m3u8FileFullPath">支持 http 全路径 和 带盘符系统 全路径 如: http://www.abc.com/1.m3u8 或 c:\1.m3u8</param>
         /// <param name="saveFileFullPath">保存到本地的 mp4 文件系统全路径 如: c:\1.mp4</param>
         /// <returns></returns>
-        public async Task<string> SaveM3u8ToMp4FileAsync(string m3u8FileFullPath, string saveFileFullPath)
+        public Task<string> SaveM3u8ToMp4FileAsync(string m3u8FileFullPath, string saveFileFullPath)
         {
-            return await Task.Run(() => SaveM3u8ToMp4File(m3u8FileFullPath, saveFileFullPath));
+            return Task.Run(() => SaveM3u8ToMp4File(m3u8FileFullPath, saveFileFullPath));
         }
 
     }

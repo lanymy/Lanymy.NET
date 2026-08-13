@@ -5,6 +5,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetty.Buffers;
+using DotNetty.Common.Concurrency;
+using DotNetty.Common.Utilities;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
@@ -76,6 +78,134 @@ namespace Lanymy.Common.AllTests
             public TestNettyClientInitializer(TestNettyClientContext serverChannelContext)
                 : base(serverChannelContext)
             {
+            }
+        }
+
+        private sealed class TestChannelHandlerContext : IChannelHandlerContext
+        {
+            public TestChannelHandlerContext(IChannel channel, bool removed = false)
+            {
+                Channel = channel;
+                Removed = removed;
+            }
+
+            public IByteBufferAllocator Allocator => null;
+
+            public IChannel Channel { get; }
+
+            public IEventExecutor Executor => null;
+
+            public IChannelHandler Handler => null;
+
+            public string Name => nameof(TestChannelHandlerContext);
+
+            public bool Removed { get; }
+
+            public IAttribute<T> GetAttribute<T>(AttributeKey<T> key)
+                where T : class
+            {
+                return null;
+            }
+
+            public bool HasAttribute<T>(AttributeKey<T> key)
+                where T : class
+            {
+                return false;
+            }
+
+            public Task BindAsync(EndPoint localAddress)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task CloseAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task ConnectAsync(EndPoint remoteAddress)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task DeregisterAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task DisconnectAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            public IChannelHandlerContext FireChannelActive()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireChannelInactive()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireChannelRead(object message)
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireChannelReadComplete()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireChannelRegistered()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireChannelUnregistered()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireChannelWritabilityChanged()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireExceptionCaught(Exception cause)
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext FireUserEventTriggered(object evt)
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext Flush()
+            {
+                return this;
+            }
+
+            public IChannelHandlerContext Read()
+            {
+                return this;
+            }
+
+            public Task WriteAndFlushAsync(object message)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task WriteAsync(object message)
+            {
+                return Task.CompletedTask;
             }
         }
 
@@ -347,9 +477,19 @@ namespace Lanymy.Common.AllTests
                 SafeHandleException(null, exception);
             }
 
+            public void TriggerSafeExceptionForTest(IChannelHandlerContext context, Exception exception)
+            {
+                SafeHandleException(context, exception);
+            }
+
             public void TriggerSafeUserEventForTest(object evt)
             {
                 SafeHandleUserEventTriggered(null, evt);
+            }
+
+            public void TriggerSafeUserEventForTest(IChannelHandlerContext context, object evt)
+            {
+                SafeHandleUserEventTriggered(context, evt);
             }
 
             public void TriggerChannelReadCompleteForTest()
@@ -357,9 +497,19 @@ namespace Lanymy.Common.AllTests
                 SafeHandleChannelReadComplete(null);
             }
 
+            public void TriggerChannelReadCompleteForTest(IChannelHandlerContext context)
+            {
+                SafeHandleChannelReadComplete(context);
+            }
+
             public void TriggerSendBytesForTest(byte[] bytes)
             {
                 SendBytes(null, bytes);
+            }
+
+            public void TriggerSendBytesForTest(IChannelHandlerContext context, byte[] bytes)
+            {
+                SendBytes(context, bytes);
             }
 
             public void PrepareActiveStateForTest(IPEndPoint remoteIpEndPoint, bool isLogin)
@@ -379,9 +529,19 @@ namespace Lanymy.Common.AllTests
                 OnContextClose(null, delayMilliseconds);
             }
 
+            public void TriggerDelayedContextCloseForTest(IChannelHandlerContext context, int delayMilliseconds = 1)
+            {
+                OnContextClose(context, delayMilliseconds);
+            }
+
             public void TriggerContextCloseForTest()
             {
                 OnContextClose(null);
+            }
+
+            public void TriggerContextCloseForTest(IChannelHandlerContext context)
+            {
+                OnContextClose(context);
             }
 
             public void TriggerChannelInactiveForTest()
@@ -581,6 +741,9 @@ namespace Lanymy.Common.AllTests
 
             public bool ForceHasActiveBoundChannel { get; set; }
             public bool BlockAwaitReconnectTaskForTest { get; set; }
+            public bool UseConnectChannelResultForTest { get; set; }
+            public bool SkipBaseCloseChannelForTest { get; set; }
+            public bool ForceConnectedChannelReadyForTest { get; set; }
 
             public Exception CloseChannelException { get; set; }
 
@@ -593,6 +756,10 @@ namespace Lanymy.Common.AllTests
             public Exception CreateBossGroupException { get; set; }
 
             public Exception CreateBootstrapException { get; set; }
+
+            public Exception CreateChannelInitializerException { get; set; }
+
+            public bool ReturnNullChannelInitializer { get; set; }
 
             public Exception CreateReconnectCancellationTokenSourceException { get; set; }
 
@@ -633,6 +800,8 @@ namespace Lanymy.Common.AllTests
             public List<Exception> StartErrors { get; } = new List<Exception>();
 
             public List<Exception> ConnectErrors { get; } = new List<Exception>();
+
+            public IChannel ConnectChannelResultForTest { get; set; }
 
             public TestNettyClient(TestNettyClientContext serverChannelContext)
                 : base(serverChannelContext)
@@ -695,6 +864,11 @@ namespace Lanymy.Common.AllTests
                 return base.OnStopAsync();
             }
 
+            public Task RollbackStartStateForTest(IEventLoopGroup currentBossGroup, CancellationTokenSource currentReconnectCancellationTokenSource, Bootstrap currentBootstrap, Task currentReconnectTask, IChannel currentChannelHost)
+            {
+                return base.RollbackStartStateAsync(currentBossGroup, currentReconnectCancellationTokenSource, currentBootstrap, currentReconnectTask, currentChannelHost);
+            }
+
             public Task RunBaseConnectToServerAsyncForTest(long reconnectGeneration)
             {
                 return base.ConnectToServerAsync(reconnectGeneration);
@@ -751,7 +925,22 @@ namespace Lanymy.Common.AllTests
                     return Task.FromException<IChannel>(ConnectChannelException);
                 }
 
+                if (UseConnectChannelResultForTest)
+                {
+                    return Task.FromResult(ConnectChannelResultForTest);
+                }
+
                 return Task.FromResult<IChannel>(null);
+            }
+
+            protected override bool IsConnectedChannelReady(IChannel currentChannelHost)
+            {
+                if (ForceConnectedChannelReadyForTest)
+                {
+                    return currentChannelHost != null;
+                }
+
+                return base.IsConnectedChannelReady(currentChannelHost);
             }
 
             protected override IEventLoopGroup CreateBossGroup()
@@ -773,7 +962,27 @@ namespace Lanymy.Common.AllTests
                     throw CreateBootstrapException;
                 }
 
+                if (CreateChannelInitializerException != null || ReturnNullChannelInitializer)
+                {
+                    return base.CreateBootstrap(currentBossGroup);
+                }
+
                 return new Bootstrap();
+            }
+
+            protected override IChannelHandler CreateChannelInitializer()
+            {
+                if (CreateChannelInitializerException != null)
+                {
+                    throw CreateChannelInitializerException;
+                }
+
+                if (ReturnNullChannelInitializer)
+                {
+                    return null;
+                }
+
+                return base.CreateChannelInitializer();
             }
 
             protected override CancellationTokenSource CreateReconnectCancellationTokenSource()
@@ -804,6 +1013,11 @@ namespace Lanymy.Common.AllTests
                 if (CloseChannelException != null)
                 {
                     throw CloseChannelException;
+                }
+
+                if (SkipBaseCloseChannelForTest)
+                {
+                    return;
                 }
 
                 await base.CloseChannelAsync(channel);
@@ -911,6 +1125,18 @@ namespace Lanymy.Common.AllTests
 
             public Exception CreateBootstrapException { get; set; }
 
+            public Exception CreateChannelInitializerException { get; set; }
+
+            public bool ReturnNullChannelInitializer { get; set; }
+
+            public bool ReturnNullBoundChannel { get; set; }
+
+            public bool ReturnInactiveBoundChannel { get; set; }
+
+            public bool AllowNullChannelCloseExceptionForTest { get; set; } = true;
+
+            public bool SkipBaseCloseChannelForTest { get; set; }
+
             public Exception CleanupTrackedChannelHandlersException { get; set; }
 
             public int BindServerCallCount { get; private set; }
@@ -959,6 +1185,11 @@ namespace Lanymy.Common.AllTests
                 IsRunning = true;
             }
 
+            public Task RollbackStartStateForTest(IEventLoopGroup currentBossGroup, IEventLoopGroup currentWorkerGroup, ServerBootstrap currentBootstrap, IChannel currentChannelHost)
+            {
+                return base.RollbackStartStateAsync(currentBossGroup, currentWorkerGroup, currentBootstrap, currentChannelHost);
+            }
+
             protected override IEventLoopGroup CreateBossGroup()
             {
                 CreateBossGroupCallCount++;
@@ -993,7 +1224,27 @@ namespace Lanymy.Common.AllTests
                     throw CreateBootstrapException;
                 }
 
+                if (CreateChannelInitializerException != null || ReturnNullChannelInitializer)
+                {
+                    return base.CreateBootstrap(currentBossGroup, currentWorkerGroup);
+                }
+
                 return new ServerBootstrap();
+            }
+
+            protected override IChannelHandler CreateChannelInitializer()
+            {
+                if (CreateChannelInitializerException != null)
+                {
+                    throw CreateChannelInitializerException;
+                }
+
+                if (ReturnNullChannelInitializer)
+                {
+                    return null;
+                }
+
+                return base.CreateChannelInitializer();
             }
 
             protected override Task<IChannel> BindServerAsync(ServerBootstrap bootstrap)
@@ -1004,15 +1255,36 @@ namespace Lanymy.Common.AllTests
                     return Task.FromException<IChannel>(BindServerException);
                 }
 
-                return Task.FromResult<IChannel>(null);
+                if (ReturnNullBoundChannel)
+                {
+                    return Task.FromResult<IChannel>(null);
+                }
+
+                return Task.FromResult<IChannel>(new TcpServerSocketChannel());
+            }
+
+            protected override bool IsBoundChannelReady(IChannel currentChannelHost)
+            {
+                if (ReturnInactiveBoundChannel)
+                {
+                    return base.IsBoundChannelReady(currentChannelHost);
+                }
+
+                return currentChannelHost != null;
             }
 
             protected override Task CloseChannelAsync(IChannel currentChannelHost)
             {
                 CloseChannelCallCount++;
-                if (CloseChannelException != null)
+                if (CloseChannelException != null
+                    && (currentChannelHost != null || AllowNullChannelCloseExceptionForTest))
                 {
                     return Task.FromException(CloseChannelException);
+                }
+
+                if (SkipBaseCloseChannelForTest)
+                {
+                    return Task.CompletedTask;
                 }
 
                 return base.CloseChannelAsync(currentChannelHost);
@@ -1159,6 +1431,32 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseChannelHandler_ExceptionCaught_WhenExceptionCallbackThrowsInvalidOperationForUnregisteredChannel_ShouldIgnore()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                ExceptionCallbackException = new InvalidOperationException("channel not registered to an event loop"),
+            };
+
+            handler.TriggerSafeExceptionForTest(CreateUnregisteredChannelContext(), new InvalidOperationException("transport failed"));
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_ExceptionCaught_WhenExceptionCallbackThrowsInvalidOperationForRemovedContext_ShouldIgnore()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                ExceptionCallbackException = new InvalidOperationException("handler not added to pipeline yet"),
+            };
+
+            handler.TriggerSafeExceptionForTest(CreateRemovedChannelContext(), new InvalidOperationException("transport failed"));
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
         public void BaseChannelHandler_ExceptionCaught_WhenExceptionCallbackThrowsUnexpectedException_ShouldReportError()
         {
             var handler = new TestBaseChannelHandler(CreateClientContext())
@@ -1238,6 +1536,32 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseChannelHandler_ChannelReadComplete_WhenFlushThrowsInvalidOperationForUnregisteredChannel_ShouldIgnore()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                ChannelReadCompleteException = new InvalidOperationException("channel not registered to an event loop"),
+            };
+
+            handler.TriggerChannelReadCompleteForTest(CreateUnregisteredChannelContext());
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_ChannelReadComplete_WhenFlushThrowsInvalidOperationForRemovedContext_ShouldIgnore()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                ChannelReadCompleteException = new InvalidOperationException("handler not added to pipeline yet"),
+            };
+
+            handler.TriggerChannelReadCompleteForTest(CreateRemovedChannelContext());
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
         public void BaseChannelHandler_SendBytes_WhenScheduleThrows_ShouldReportError()
         {
             var handler = new TestBaseChannelHandler(CreateClientContext())
@@ -1274,6 +1598,32 @@ namespace Lanymy.Common.AllTests
             };
 
             handler.TriggerSendBytesForTest(new byte[] { 0x01 });
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_SendBytes_WhenWriteThrowsInvalidOperationForUnregisteredChannel_ShouldIgnore()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                WriteBytesException = new InvalidOperationException("channel not registered to an event loop"),
+            };
+
+            handler.TriggerSendBytesForTest(CreateUnregisteredChannelContext(), new byte[] { 0x01 });
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_SendBytes_WhenWriteThrowsInvalidOperationForRemovedContext_ShouldIgnore()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                WriteBytesException = new InvalidOperationException("handler not added to pipeline yet"),
+            };
+
+            handler.TriggerSendBytesForTest(CreateRemovedChannelContext(), new byte[] { 0x01 });
 
             Assert.AreEqual(0, handler.HandlerErrors.Count);
         }
@@ -1354,6 +1704,24 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenScheduleReturnsFaultedObjectDisposedTask_ShouldReleaseDelayedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                AllowNullContextCloseSchedulingForTest = true,
+                ScheduleCloseContextException = new ObjectDisposedException("context disposed"),
+                ReturnFaultedScheduleCloseTaskForTest = true,
+            };
+
+            handler.TriggerDelayedContextCloseForTest();
+            handler.TriggerDelayedContextCloseForTest();
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ScheduleCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
+        }
+
+        [TestMethod]
         public void BaseChannelHandler_OnContextClose_WhenScheduleReturnsCanceledTask_ShouldIgnore()
         {
             var handler = new TestBaseChannelHandler(CreateClientContext())
@@ -1366,6 +1734,60 @@ namespace Lanymy.Common.AllTests
             handler.TriggerDelayedContextCloseForTest();
 
             Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenScheduleReturnsCanceledTask_ShouldReleaseDelayedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                AllowNullContextCloseSchedulingForTest = true,
+                ScheduleCloseContextException = new OperationCanceledException("schedule close canceled"),
+                ReturnFaultedScheduleCloseTaskForTest = true,
+            };
+
+            handler.TriggerDelayedContextCloseForTest();
+            handler.TriggerDelayedContextCloseForTest();
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ScheduleCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenScheduleReturnsUnregisteredChannelCloseNoise_ShouldReleaseDelayedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                ScheduleCloseContextException = new InvalidOperationException("channel not registered to an event loop"),
+                ReturnFaultedScheduleCloseTaskForTest = true,
+            };
+            var context = CreateUnregisteredChannelContext();
+
+            handler.TriggerDelayedContextCloseForTest(context);
+            handler.TriggerDelayedContextCloseForTest(context);
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ScheduleCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenScheduleReturnsRemovedContextCloseNoise_ShouldReleaseDelayedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                ScheduleCloseContextException = new InvalidOperationException("handler not added to pipeline yet"),
+                ReturnFaultedScheduleCloseTaskForTest = true,
+            };
+            var context = CreateRemovedChannelContext();
+
+            handler.TriggerDelayedContextCloseForTest(context);
+            handler.TriggerDelayedContextCloseForTest(context);
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ScheduleCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
         }
 
         [TestMethod]
@@ -1433,6 +1855,24 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenCloseReturnsFaultedObjectDisposedTask_ShouldReleaseRequestedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                AllowNullContextCloseForTest = true,
+                CloseContextException = new ObjectDisposedException("context disposed"),
+                ReturnFaultedCloseContextTaskForTest = true,
+            };
+
+            handler.TriggerContextCloseForTest();
+            handler.TriggerContextCloseForTest();
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ExecuteCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
+        }
+
+        [TestMethod]
         public void BaseChannelHandler_OnContextClose_WhenCloseReturnsCanceledTask_ShouldIgnore()
         {
             var handler = new TestBaseChannelHandler(CreateClientContext())
@@ -1445,6 +1885,24 @@ namespace Lanymy.Common.AllTests
             handler.TriggerContextCloseForTest();
 
             Assert.AreEqual(0, handler.HandlerErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenCloseReturnsCanceledTask_ShouldReleaseRequestedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                AllowNullContextCloseForTest = true,
+                CloseContextException = new OperationCanceledException("close canceled"),
+                ReturnFaultedCloseContextTaskForTest = true,
+            };
+
+            handler.TriggerContextCloseForTest();
+            handler.TriggerContextCloseForTest();
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ExecuteCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
         }
 
         [TestMethod]
@@ -1478,6 +1936,42 @@ namespace Lanymy.Common.AllTests
 
             handler.TriggerChannelInactiveForTest();
 
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenCloseReturnsUnregisteredChannelCloseNoise_ShouldReleaseRequestedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                CloseContextException = new InvalidOperationException("channel not registered to an event loop"),
+                ReturnFaultedCloseContextTaskForTest = true,
+            };
+            var context = CreateUnregisteredChannelContext();
+
+            handler.TriggerContextCloseForTest(context);
+            handler.TriggerContextCloseForTest(context);
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ExecuteCloseContextCallCount);
+            Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
+        }
+
+        [TestMethod]
+        public void BaseChannelHandler_OnContextClose_WhenCloseReturnsRemovedContextCloseNoise_ShouldReleaseRequestedStateAndAllowRetry()
+        {
+            var handler = new TestBaseChannelHandler(CreateClientContext())
+            {
+                CloseContextException = new InvalidOperationException("handler not added to pipeline yet"),
+                ReturnFaultedCloseContextTaskForTest = true,
+            };
+            var context = CreateRemovedChannelContext();
+
+            handler.TriggerContextCloseForTest(context);
+            handler.TriggerContextCloseForTest(context);
+
+            Assert.AreEqual(0, handler.HandlerErrors.Count);
+            Assert.AreEqual(2, handler.ExecuteCloseContextCallCount);
             Assert.AreEqual(0, handler.CurrentCloseRequestStateForTest);
         }
 
@@ -1705,6 +2199,42 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseChannelInitializer_InitChannel_WhenCloseAfterInitReturnsObjectDisposedTask_ShouldIgnoreCloseNoiseAndThrowWrappedException()
+        {
+            var initializer = new TestFaultInjectingChannelInitializer(CreateClientContext())
+            {
+                AddTerminalChannelHandlersException = new InvalidOperationException("add handler failed"),
+                CloseChannelAfterInitFailureException = new ObjectDisposedException("channel disposed"),
+                ReturnFaultedCloseChannelAfterInitFailureTask = true,
+            };
+
+            var initException = Assert.ThrowsExactly<InvalidOperationException>(() => initializer.TriggerInitChannelForTest(new TcpSocketChannel()));
+
+            Assert.AreEqual("NettyChannelInitializer init channel failed.", initException.Message);
+            Assert.AreEqual("add handler failed", initException.InnerException?.Message);
+            Assert.AreEqual(1, initializer.CloseChannelAfterInitFailureCallCount);
+            Assert.AreEqual(0, initializer.InitChannelErrors.Count);
+        }
+
+        [TestMethod]
+        public void BaseChannelInitializer_InitChannel_WhenCloseAfterInitReturnsInvalidOperationForUnregisteredChannel_ShouldIgnoreCloseNoiseAndThrowWrappedException()
+        {
+            var initializer = new TestFaultInjectingChannelInitializer(CreateClientContext())
+            {
+                AddTerminalChannelHandlersException = new InvalidOperationException("add handler failed"),
+                CloseChannelAfterInitFailureException = new InvalidOperationException("channel not registered to an event loop"),
+                ReturnFaultedCloseChannelAfterInitFailureTask = true,
+            };
+
+            var initException = Assert.ThrowsExactly<InvalidOperationException>(() => initializer.TriggerInitChannelForTest(new TcpSocketChannel()));
+
+            Assert.AreEqual("NettyChannelInitializer init channel failed.", initException.Message);
+            Assert.AreEqual("add handler failed", initException.InnerException?.Message);
+            Assert.AreEqual(1, initializer.CloseChannelAfterInitFailureCallCount);
+            Assert.AreEqual(0, initializer.InitChannelErrors.Count);
+        }
+
+        [TestMethod]
         public void BaseNettySocketClient_WhenReconnectRequestGenerationIsStale_ShouldIgnoreRequest()
         {
             var client = CreateClient();
@@ -1803,6 +2333,66 @@ namespace Lanymy.Common.AllTests
                 Assert.AreEqual("NettySocketClient stop close channel failed.", client.StopErrors[0].Message);
                 Assert.AreEqual("NettySocketClient stop shutdown boss group failed.", client.StopErrors[1].Message);
                 Assert.AreEqual("NettySocketClient stop dispose reconnect token source failed.", client.StopErrors[2].Message);
+                Assert.IsNull(client.CurrentChannelHostForTest);
+                Assert.IsNull(client.CurrentBossGroupForTest);
+                Assert.IsNull(client.CurrentReconnectTaskForTest);
+                Assert.IsNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.IsNull(client.CurrentBootstrapForTest);
+            }
+            finally
+            {
+                reconnectCancellationTokenSource.Dispose();
+                await bossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_OnStopAsync_WhenCloseReturnsInvalidOperationForUnregisteredChannel_ShouldIgnoreCloseNoiseAndClearState()
+        {
+            var client = CreateClient();
+            var reconnectCancellationTokenSource = new CancellationTokenSource();
+            var channel = new TcpSocketChannel();
+            var bossGroup = new MultithreadEventLoopGroup(1);
+
+            try
+            {
+                client.PrepareStopStateForTest(channel, bossGroup, Task.CompletedTask, reconnectCancellationTokenSource, new Bootstrap());
+                client.CloseChannelException = new InvalidOperationException("channel not registered to an event loop");
+
+                await client.StopCoreAsyncForTest();
+
+                Assert.AreEqual(0, client.StopErrors.Count);
+                Assert.IsNull(client.CurrentChannelHostForTest);
+                Assert.IsNull(client.CurrentBossGroupForTest);
+                Assert.IsNull(client.CurrentReconnectTaskForTest);
+                Assert.IsNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.IsNull(client.CurrentBootstrapForTest);
+            }
+            finally
+            {
+                reconnectCancellationTokenSource.Dispose();
+                await bossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [TestMethod]
+        [DataRow("object_disposed")]
+        [DataRow("operation_canceled")]
+        public async Task BaseNettySocketClient_OnStopAsync_WhenCloseReturnsLifecycleCloseNoise_ShouldIgnoreAndClearState(string closeNoiseKind)
+        {
+            var client = CreateClient();
+            var reconnectCancellationTokenSource = new CancellationTokenSource();
+            var channel = new TcpSocketChannel();
+            var bossGroup = new MultithreadEventLoopGroup(1);
+
+            try
+            {
+                client.PrepareStopStateForTest(channel, bossGroup, Task.CompletedTask, reconnectCancellationTokenSource, new Bootstrap());
+                client.CloseChannelException = CreateLifecycleCloseNoiseException(closeNoiseKind);
+
+                await client.StopCoreAsyncForTest();
+
+                Assert.AreEqual(0, client.StopErrors.Count);
                 Assert.IsNull(client.CurrentChannelHostForTest);
                 Assert.IsNull(client.CurrentBossGroupForTest);
                 Assert.IsNull(client.CurrentReconnectTaskForTest);
@@ -1928,6 +2518,136 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        [DataRow("object_disposed")]
+        [DataRow("operation_canceled")]
+        public async Task BaseNettySocketClient_RollbackStartState_WhenCloseReturnsCloseNoise_ShouldIgnoreAndClearState(string closeNoiseKind)
+        {
+            var client = CreateClient();
+            var reconnectCancellationTokenSource = new CancellationTokenSource();
+            var bossGroup = new MultithreadEventLoopGroup(1);
+            var bootstrap = new Bootstrap();
+            var channel = new TcpSocketChannel();
+
+            try
+            {
+                client.PrepareStopStateForTest(channel, bossGroup, Task.CompletedTask, reconnectCancellationTokenSource, bootstrap);
+                client.CloseChannelException = CreateLifecycleCloseNoiseException(closeNoiseKind);
+
+                await client.RollbackStartStateForTest(bossGroup, reconnectCancellationTokenSource, bootstrap, Task.CompletedTask, channel);
+
+                Assert.AreEqual(0, client.StartErrors.Count);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsNull(client.CurrentChannelHostForTest);
+                Assert.IsNull(client.CurrentBossGroupForTest);
+                Assert.IsNull(client.CurrentReconnectTaskForTest);
+                Assert.IsNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.IsNull(client.CurrentBootstrapForTest);
+            }
+            finally
+            {
+                reconnectCancellationTokenSource.Dispose();
+                await bossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_StartAsync_WhenCreateChannelInitializerReturnsNull_ShouldRollbackStateAndSurfaceClearError()
+        {
+            var client = CreateClient();
+
+            try
+            {
+                client.ReturnNullChannelInitializer = true;
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.StartAsync());
+
+                Assert.AreEqual("NettySocketClient start failed.", startException.Message);
+                Assert.AreEqual("NettySocketClient create channel initializer returned null.", startException.InnerException?.Message);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsNull(client.CurrentBossGroupForTest);
+                Assert.IsNull(client.CurrentBootstrapForTest);
+                Assert.IsNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.IsNull(client.CurrentReconnectTaskForTest);
+                Assert.IsNull(client.CurrentChannelHostForTest);
+                Assert.AreEqual(0, client.StartErrors.Count);
+            }
+            finally
+            {
+                client.ReturnNullChannelInitializer = false;
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_StartAsync_WhenCreateChannelInitializerThrows_ShouldRollbackStateAndSurfaceClearError()
+        {
+            var client = CreateClient();
+
+            try
+            {
+                client.CreateChannelInitializerException = new InvalidOperationException("create channel initializer failed");
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.StartAsync());
+
+                Assert.AreEqual("NettySocketClient start failed.", startException.Message);
+                Assert.AreEqual("create channel initializer failed", startException.InnerException?.Message);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsNull(client.CurrentBossGroupForTest);
+                Assert.IsNull(client.CurrentBootstrapForTest);
+                Assert.IsNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.IsNull(client.CurrentReconnectTaskForTest);
+                Assert.IsNull(client.CurrentChannelHostForTest);
+                Assert.AreEqual(0, client.StartErrors.Count);
+            }
+            finally
+            {
+                client.CreateChannelInitializerException = null;
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_StartAsync_WhenCreateReconnectCancellationTokenSourceThrows_ShouldRollbackStateAndAllowRetry()
+        {
+            var client = CreateClient();
+
+            try
+            {
+                client.CreateReconnectCancellationTokenSourceException = new InvalidOperationException("create reconnect token failed");
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.StartAsync());
+
+                Assert.AreEqual("NettySocketClient start failed.", startException.Message);
+                Assert.AreEqual("create reconnect token failed", startException.InnerException?.Message);
+                Assert.IsFalse(client.IsRunning);
+                Assert.IsNull(client.CurrentBossGroupForTest);
+                Assert.IsNull(client.CurrentBootstrapForTest);
+                Assert.IsNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.IsNull(client.CurrentReconnectTaskForTest);
+                Assert.IsNull(client.CurrentChannelHostForTest);
+                Assert.AreEqual(0, client.StartErrors.Count);
+
+                client.CreateReconnectCancellationTokenSourceException = null;
+
+                await client.StartAsync();
+
+                Assert.IsTrue(client.IsRunning);
+                Assert.IsNotNull(client.CurrentBossGroupForTest);
+                Assert.IsNotNull(client.CurrentBootstrapForTest);
+                Assert.IsNotNull(client.CurrentReconnectCancellationTokenSourceForTest);
+                Assert.AreEqual(2, client.CreateReconnectCancellationTokenSourceCallCount);
+            }
+            finally
+            {
+                client.CreateReconnectCancellationTokenSourceException = null;
+                client.ReleaseReconnectLoopForTest();
+
+                if (client.IsRunning)
+                {
+                    await client.StopAsync();
+                }
+            }
+        }
+
+        [TestMethod]
         public async Task BaseNettySocketClient_ConnectToServerAsync_WhenUnexpectedExceptionOccurs_ShouldReportErrorAndRetryDelay()
         {
             var client = CreateClient();
@@ -1975,6 +2695,139 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual(1, client.ConnectErrors.Count);
             Assert.AreEqual("NettySocketClient connect attempt failed.", client.ConnectErrors[0].Message);
             Assert.AreEqual("NettySocketClient connect returned null channel.", client.ConnectErrors[0].InnerException?.Message);
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_ConnectToServerAsync_WhenConnectReturnsInactiveChannel_ShouldCloseReportErrorAndRetryDelay()
+        {
+            var client = CreateClient();
+            client.PrepareReconnectStateForTest(11);
+            client.SetCurrentBootstrapForTest(new Bootstrap());
+            client.UseConnectChannelResultForTest = true;
+            client.ConnectChannelResultForTest = new TcpSocketChannel();
+            client.SkipBaseCloseChannelForTest = true;
+            client.StopAfterDelayForTest = true;
+
+            await client.RunBaseConnectToServerAsyncForTest(11);
+
+            Assert.AreEqual(1, client.ConnectChannelCallCount);
+            Assert.AreEqual(1, client.CloseChannelCallCount);
+            Assert.AreEqual(1, client.DelayBeforeReconnectCallCount);
+            Assert.AreEqual(1, client.ConnectErrors.Count);
+            Assert.AreEqual("NettySocketClient connect attempt failed.", client.ConnectErrors[0].Message);
+            Assert.AreEqual("NettySocketClient connect returned inactive channel.", client.ConnectErrors[0].InnerException?.Message);
+            Assert.IsNull(client.CurrentChannelHostForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_ConnectToServerAsync_WhenInactiveChannelCloseFails_ShouldReportCleanupErrorAndPreserveInactiveRoot()
+        {
+            var client = CreateClient();
+            client.PrepareReconnectStateForTest(12);
+            client.SetCurrentBootstrapForTest(new Bootstrap());
+            client.UseConnectChannelResultForTest = true;
+            client.ConnectChannelResultForTest = new TcpSocketChannel();
+            client.CloseChannelException = new InvalidOperationException("close rejected channel failed");
+            client.StopAfterDelayForTest = true;
+
+            await client.RunBaseConnectToServerAsyncForTest(12);
+
+            Assert.AreEqual(1, client.ConnectChannelCallCount);
+            Assert.AreEqual(1, client.CloseChannelCallCount);
+            Assert.AreEqual(1, client.DelayBeforeReconnectCallCount);
+            Assert.AreEqual(2, client.ConnectErrors.Count);
+            Assert.AreEqual("NettySocketClient close rejected channel failed.", client.ConnectErrors[0].Message);
+            Assert.AreEqual("close rejected channel failed", client.ConnectErrors[0].InnerException?.Message);
+            Assert.AreEqual("NettySocketClient connect attempt failed.", client.ConnectErrors[1].Message);
+            Assert.AreEqual("NettySocketClient connect returned inactive channel.", client.ConnectErrors[1].InnerException?.Message);
+            Assert.IsNull(client.CurrentChannelHostForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_ConnectToServerAsync_WhenInactiveChannelCloseReturnsInvalidOperationForUnregisteredChannel_ShouldIgnoreCleanupNoiseAndPreserveInactiveRoot()
+        {
+            var client = CreateClient();
+            client.PrepareReconnectStateForTest(12);
+            client.SetCurrentBootstrapForTest(new Bootstrap());
+            client.UseConnectChannelResultForTest = true;
+            client.ConnectChannelResultForTest = new TcpSocketChannel();
+            client.CloseChannelException = new InvalidOperationException("channel not registered to an event loop");
+            client.StopAfterDelayForTest = true;
+
+            await client.RunBaseConnectToServerAsyncForTest(12);
+
+            Assert.AreEqual(1, client.ConnectChannelCallCount);
+            Assert.AreEqual(1, client.CloseChannelCallCount);
+            Assert.AreEqual(1, client.DelayBeforeReconnectCallCount);
+            Assert.AreEqual(1, client.ConnectErrors.Count);
+            Assert.AreEqual("NettySocketClient connect attempt failed.", client.ConnectErrors[0].Message);
+            Assert.AreEqual("NettySocketClient connect returned inactive channel.", client.ConnectErrors[0].InnerException?.Message);
+            Assert.IsNull(client.CurrentChannelHostForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_ConnectToServerAsync_WhenActiveChannelAlreadyBound_ShouldCloseRejectedChannelWithoutRetrying()
+        {
+            var client = CreateClient();
+            client.PrepareReconnectStateForTest(13);
+            client.SetCurrentBootstrapForTest(new Bootstrap());
+            client.UseConnectChannelResultForTest = true;
+            client.ForceConnectedChannelReadyForTest = true;
+            client.ConnectChannelResultForTest = new TcpSocketChannel();
+            client.ForceHasActiveBoundChannel = true;
+            client.SkipBaseCloseChannelForTest = true;
+
+            await client.RunBaseConnectToServerAsyncForTest(13);
+
+            Assert.AreEqual(1, client.ConnectChannelCallCount);
+            Assert.AreEqual(1, client.CloseChannelCallCount);
+            Assert.AreEqual(0, client.DelayBeforeReconnectCallCount);
+            Assert.AreEqual(0, client.ConnectErrors.Count);
+            Assert.IsNull(client.CurrentChannelHostForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_ConnectToServerAsync_WhenRejectedChannelCloseFailsAfterBindingRace_ShouldReportCleanupErrorWithoutRetrying()
+        {
+            var client = CreateClient();
+            client.PrepareReconnectStateForTest(14);
+            client.SetCurrentBootstrapForTest(new Bootstrap());
+            client.UseConnectChannelResultForTest = true;
+            client.ForceConnectedChannelReadyForTest = true;
+            client.ConnectChannelResultForTest = new TcpSocketChannel();
+            client.ForceHasActiveBoundChannel = true;
+            client.CloseChannelException = new InvalidOperationException("close rejected channel failed");
+
+            await client.RunBaseConnectToServerAsyncForTest(14);
+
+            Assert.AreEqual(1, client.ConnectChannelCallCount);
+            Assert.AreEqual(1, client.CloseChannelCallCount);
+            Assert.AreEqual(0, client.DelayBeforeReconnectCallCount);
+            Assert.AreEqual(1, client.ConnectErrors.Count);
+            Assert.AreEqual("NettySocketClient close rejected channel failed.", client.ConnectErrors[0].Message);
+            Assert.AreEqual("close rejected channel failed", client.ConnectErrors[0].InnerException?.Message);
+            Assert.IsNull(client.CurrentChannelHostForTest);
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketClient_ConnectToServerAsync_WhenRejectedChannelCloseReturnsInvalidOperationForUnregisteredChannelAfterBindingRace_ShouldIgnoreCleanupNoiseWithoutRetrying()
+        {
+            var client = CreateClient();
+            client.PrepareReconnectStateForTest(14);
+            client.SetCurrentBootstrapForTest(new Bootstrap());
+            client.UseConnectChannelResultForTest = true;
+            client.ForceConnectedChannelReadyForTest = true;
+            client.ConnectChannelResultForTest = new TcpSocketChannel();
+            client.ForceHasActiveBoundChannel = true;
+            client.CloseChannelException = new InvalidOperationException("channel not registered to an event loop");
+
+            await client.RunBaseConnectToServerAsyncForTest(14);
+
+            Assert.AreEqual(1, client.ConnectChannelCallCount);
+            Assert.AreEqual(1, client.CloseChannelCallCount);
+            Assert.AreEqual(0, client.DelayBeforeReconnectCallCount);
+            Assert.AreEqual(0, client.ConnectErrors.Count);
+            Assert.IsNull(client.CurrentChannelHostForTest);
         }
 
         [TestMethod]
@@ -2131,6 +2984,319 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        [DataRow("object_disposed")]
+        [DataRow("operation_canceled")]
+        public async Task BaseNettySocketServer_RollbackStartState_WhenCloseReturnsCloseNoise_ShouldIgnoreAndClearState(string closeNoiseKind)
+        {
+            var server = CreateServer();
+            var bossGroup = new MultithreadEventLoopGroup(1);
+            var workerGroup = new MultithreadEventLoopGroup(1);
+            var bootstrap = new ServerBootstrap();
+            var channel = new TcpServerSocketChannel();
+
+            try
+            {
+                server.PrepareStopStateForTest(channel, bossGroup, workerGroup, bootstrap);
+                server.CloseChannelException = CreateLifecycleCloseNoiseException(closeNoiseKind);
+
+                await server.RollbackStartStateForTest(bossGroup, workerGroup, bootstrap, channel);
+
+                Assert.AreEqual(0, server.StartErrors.Count);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+            }
+            finally
+            {
+                await bossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                await workerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenCreateChannelInitializerReturnsNull_ShouldRollbackStateAndSurfaceClearError()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.ReturnNullChannelInitializer = true;
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("NettySocketServer create channel initializer returned null.", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(0, server.StartErrors.Count);
+            }
+            finally
+            {
+                server.ReturnNullChannelInitializer = false;
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenCreateChannelInitializerThrows_ShouldRollbackStateAndSurfaceClearError()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.CreateChannelInitializerException = new InvalidOperationException("create channel initializer failed");
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("create channel initializer failed", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(0, server.StartErrors.Count);
+            }
+            finally
+            {
+                server.CreateChannelInitializerException = null;
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenCreateWorkerGroupThrows_ShouldRollbackStateAndAllowRetry()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.CreateWorkerGroupException = new InvalidOperationException("create worker group failed");
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("create worker group failed", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(0, server.StartErrors.Count);
+
+                server.CreateWorkerGroupException = null;
+
+                await server.StartAsync();
+
+                Assert.IsTrue(server.IsRunning);
+                Assert.IsNotNull(server.CurrentBossGroupForTest);
+                Assert.IsNotNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNotNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(2, server.CreateWorkerGroupCallCount);
+            }
+            finally
+            {
+                server.CreateWorkerGroupException = null;
+
+                if (server.IsRunning)
+                {
+                    await server.StopAsync();
+                }
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenBindReturnsNullChannel_ShouldRollbackStateAndSurfaceClearError()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.ReturnNullBoundChannel = true;
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("NettySocketServer bind returned null channel.", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(0, server.StartErrors.Count);
+            }
+            finally
+            {
+                server.ReturnNullBoundChannel = false;
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenBindReturnsInactiveChannel_ShouldCloseRollbackStateAndSurfaceClearError()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.ReturnInactiveBoundChannel = true;
+                server.SkipBaseCloseChannelForTest = true;
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("NettySocketServer bind returned inactive channel.", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(0, server.StartErrors.Count);
+                Assert.IsTrue(server.CloseChannelCallCount >= 1);
+            }
+            finally
+            {
+                server.ReturnInactiveBoundChannel = false;
+                server.SkipBaseCloseChannelForTest = false;
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenInactiveBoundChannelCloseFails_ShouldReportCleanupErrorAndPreserveInactiveRoot()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.ReturnInactiveBoundChannel = true;
+                server.CloseChannelException = new InvalidOperationException("close rejected bound channel failed");
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("NettySocketServer bind returned inactive channel.", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.IsTrue(server.StartErrors.Count >= 1);
+                Assert.IsTrue(server.StartErrors.Exists(ex =>
+                    ex.Message == "NettySocketServer close rejected bound channel failed."
+                    && ex.InnerException?.Message == "close rejected bound channel failed"));
+                Assert.IsTrue(server.CloseChannelCallCount >= 1);
+            }
+            finally
+            {
+                server.ReturnInactiveBoundChannel = false;
+                server.CloseChannelException = null;
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StartAsync_WhenInactiveBoundChannelCloseReturnsInvalidOperationForUnregisteredChannel_ShouldIgnoreCleanupNoiseAndPreserveInactiveRoot()
+        {
+            var server = CreateServer();
+
+            try
+            {
+                server.ReturnInactiveBoundChannel = true;
+                server.AllowNullChannelCloseExceptionForTest = false;
+                server.CloseChannelException = new InvalidOperationException("channel not registered to an event loop");
+
+                var startException = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => server.StartAsync());
+
+                Assert.AreEqual("NettySocketServer start failed.", startException.Message);
+                Assert.AreEqual("NettySocketServer bind returned inactive channel.", startException.InnerException?.Message);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+                Assert.AreEqual(0, server.StartErrors.Count);
+                Assert.IsTrue(server.CloseChannelCallCount >= 1);
+            }
+            finally
+            {
+                server.ReturnInactiveBoundChannel = false;
+                server.AllowNullChannelCloseExceptionForTest = true;
+                server.CloseChannelException = null;
+
+                foreach (var currentBossGroup in server.CreatedBossGroups)
+                {
+                    await currentBossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+
+                foreach (var currentWorkerGroup in server.CreatedWorkerGroups)
+                {
+                    await currentWorkerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                }
+            }
+        }
+
+        [TestMethod]
         public async Task BaseNettySocketServer_StopAsync_WhenCloseAndShutdownFail_ShouldReportErrorsAndClearState()
         {
             var server = CreateServer();
@@ -2156,6 +3322,64 @@ namespace Lanymy.Common.AllTests
                 Assert.IsNull(server.CurrentWorkerGroupForTest);
                 Assert.IsNull(server.CurrentBootstrapForTest);
                 Assert.AreEqual(0, server.CurrentContext.CurrentChannelDictionary.Count);
+            }
+            finally
+            {
+                await bossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                await workerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [TestMethod]
+        public async Task BaseNettySocketServer_StopAsync_WhenCloseReturnsInvalidOperationForUnregisteredChannel_ShouldIgnoreCloseNoiseAndClearState()
+        {
+            var server = CreateServer();
+            var bossGroup = new MultithreadEventLoopGroup(1);
+            var workerGroup = new MultithreadEventLoopGroup(1);
+
+            try
+            {
+                server.PrepareStopStateForTest(new TcpServerSocketChannel(), bossGroup, workerGroup, new ServerBootstrap());
+                server.CloseChannelException = new InvalidOperationException("channel not registered to an event loop");
+
+                await server.StopAsync();
+
+                Assert.AreEqual(0, server.StopErrors.Count);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
+            }
+            finally
+            {
+                await bossGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+                await workerGroup.ShutdownGracefullyAsync(TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [TestMethod]
+        [DataRow("object_disposed")]
+        [DataRow("operation_canceled")]
+        public async Task BaseNettySocketServer_StopAsync_WhenCloseReturnsLifecycleCloseNoise_ShouldIgnoreAndClearState(string closeNoiseKind)
+        {
+            var server = CreateServer();
+            var bossGroup = new MultithreadEventLoopGroup(1);
+            var workerGroup = new MultithreadEventLoopGroup(1);
+
+            try
+            {
+                server.PrepareStopStateForTest(new TcpServerSocketChannel(), bossGroup, workerGroup, new ServerBootstrap());
+                server.CloseChannelException = CreateLifecycleCloseNoiseException(closeNoiseKind);
+
+                await server.StopAsync();
+
+                Assert.AreEqual(0, server.StopErrors.Count);
+                Assert.IsFalse(server.IsRunning);
+                Assert.IsNull(server.CurrentChannelHostForTest);
+                Assert.IsNull(server.CurrentBossGroupForTest);
+                Assert.IsNull(server.CurrentWorkerGroupForTest);
+                Assert.IsNull(server.CurrentBootstrapForTest);
             }
             finally
             {
@@ -2230,6 +3454,26 @@ namespace Lanymy.Common.AllTests
         private static TestNettyClient CreateClient()
         {
             return new TestNettyClient(CreateClientContext());
+        }
+
+        private static IChannelHandlerContext CreateUnregisteredChannelContext()
+        {
+            return new TestChannelHandlerContext(new TcpSocketChannel());
+        }
+
+        private static IChannelHandlerContext CreateRemovedChannelContext()
+        {
+            return new TestChannelHandlerContext(new TcpSocketChannel(), removed: true);
+        }
+
+        private static Exception CreateLifecycleCloseNoiseException(string closeNoiseKind)
+        {
+            return closeNoiseKind switch
+            {
+                "object_disposed" => new ObjectDisposedException("close target disposed"),
+                "operation_canceled" => new OperationCanceledException("close canceled"),
+                _ => throw new ArgumentOutOfRangeException(nameof(closeNoiseKind), closeNoiseKind, null),
+            };
         }
 
         private static void AssignReconnectActionForGcTest(TestNettyClientContext context, Action<long> reconnectAction)

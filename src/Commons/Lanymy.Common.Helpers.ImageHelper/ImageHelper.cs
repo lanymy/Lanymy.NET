@@ -1,11 +1,17 @@
 using System.Drawing;
 using System.Drawing.Imaging;
+#if NET8_0_OR_GREATER
+using System.Runtime.Versioning;
+#endif
 
 namespace Lanymy.Common.Helpers
 {
     /// <summary>
     /// 图片 相关 辅助类
     /// </summary>
+#if NET8_0_OR_GREATER
+    [SupportedOSPlatform("windows")]
+#endif
     public class ImageHelper
     {
 

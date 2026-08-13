@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Lanymy.Common.Instruments.Models;
 
@@ -38,7 +39,7 @@ namespace Lanymy.Common.Instruments.Crawlers
                     lanymyFfmpeg.SaveM3u8ToMp4File(downloadUrl, saveFileFullPath);
 
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -49,7 +50,7 @@ namespace Lanymy.Common.Instruments.Crawlers
             }
 
 
-            Task.Delay(TaskDelayMilliseconds).Wait();
+            Thread.Sleep(TaskDelayMilliseconds);
 
         }
 

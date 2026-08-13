@@ -49,6 +49,18 @@ namespace Lanymy.Common.Instruments.Server
                 _CurrentBootstrap = currentBootstrap;
 
                 currentChannelHost = await BindServerAsync(currentBootstrap);
+                if (currentChannelHost == null)
+                {
+                    throw CreateNullBindException();
+                }
+
+                if (!IsBoundChannelReady(currentChannelHost))
+                {
+                    await CleanupRejectedBoundChannelAsync(currentChannelHost);
+                    currentChannelHost = null;
+                    throw CreateInactiveBindException();
+                }
+
                 _CurrentChannelHost = currentChannelHost;
             }
             catch (Exception ex)
@@ -70,6 +82,8 @@ namespace Lanymy.Common.Instruments.Server
 
         protected virtual ServerBootstrap CreateBootstrap(IEventLoopGroup currentBossGroup, IEventLoopGroup currentWorkerGroup)
         {
+            var currentChannelInitializer = EnsureChannelInitializerCreated(CreateChannelInitializer());
+
             var bootstrap = new ServerBootstrap();
             bootstrap.Group(currentBossGroup, currentWorkerGroup);
 
@@ -91,14 +105,84 @@ namespace Lanymy.Common.Instruments.Server
 
 #endif
 
-                .ChildHandler(Activator.CreateInstance(typeof(TServerChannelInitializer), _CurrentChannelContext) as IChannelHandler);
+                .ChildHandler(currentChannelInitializer);
 
             return bootstrap;
+        }
+
+        protected virtual IChannelHandler CreateChannelInitializer()
+        {
+            return Activator.CreateInstance(typeof(TServerChannelInitializer), _CurrentChannelContext) as IChannelHandler;
+        }
+
+        protected virtual IChannelHandler EnsureChannelInitializerCreated(IChannelHandler channelInitializer)
+        {
+            if (channelInitializer == null)
+            {
+                throw new InvalidOperationException("NettySocketServer create channel initializer returned null.");
+            }
+
+            return channelInitializer;
         }
 
         protected virtual Task<IChannel> BindServerAsync(ServerBootstrap bootstrap)
         {
             return bootstrap.BindAsync(_CurrentChannelOptions.Port);
+        }
+
+        protected virtual Exception CreateNullBindException()
+        {
+            return new InvalidOperationException("NettySocketServer bind returned null channel.");
+        }
+
+        protected virtual Exception CreateInactiveBindException()
+        {
+            return new InvalidOperationException("NettySocketServer bind returned inactive channel.");
+        }
+
+        protected virtual bool IsBoundChannelReady(IChannel currentChannelHost)
+        {
+            return !currentChannelHost.IfIsNull() && currentChannelHost.Active;
+        }
+
+        protected virtual async Task CleanupRejectedBoundChannelAsync(IChannel currentChannelHost)
+        {
+            try
+            {
+                await CloseChannelAsync(currentChannelHost);
+            }
+            catch (Exception ex) when (CanIgnoreRejectedBoundChannelCloseException(ex, currentChannelHost))
+            {
+            }
+            catch (Exception ex)
+            {
+                OnStartError(new InvalidOperationException("NettySocketServer close rejected bound channel failed.", ex));
+            }
+        }
+
+        protected virtual bool CanIgnoreRejectedBoundChannelCloseException(Exception exception, IChannel currentChannelHost)
+        {
+            return currentChannelHost.IfIsNull()
+                   || CanIgnoreDirectChannelCloseException(exception, currentChannelHost);
+        }
+
+        protected virtual bool CanIgnoreDirectChannelCloseException(Exception exception, IChannel currentChannelHost)
+        {
+            if (exception is OperationCanceledException || exception is ObjectDisposedException)
+            {
+                return true;
+            }
+
+            return exception is InvalidOperationException invalidOperationException
+                   && currentChannelHost != null
+                   && (!currentChannelHost.Open || IsUnregisteredChannelCloseNoise(invalidOperationException, currentChannelHost));
+        }
+
+        protected virtual bool IsUnregisteredChannelCloseNoise(InvalidOperationException exception, IChannel currentChannelHost)
+        {
+            return currentChannelHost != null
+                   && !currentChannelHost.Registered
+                   && exception.Message?.IndexOf("not registered to an event loop", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         protected virtual Task CloseChannelAsync(IChannel currentChannelHost)
@@ -126,6 +210,9 @@ namespace Lanymy.Common.Instruments.Server
             try
             {
                 await CloseChannelAsync(currentChannelHost);
+            }
+            catch (Exception ex) when (CanIgnoreDirectChannelCloseException(ex, currentChannelHost))
+            {
             }
             catch (Exception ex)
             {
@@ -238,6 +325,9 @@ namespace Lanymy.Common.Instruments.Server
             try
             {
                 await CloseChannelAsync(currentChannelHost);
+            }
+            catch (Exception ex) when (CanIgnoreDirectChannelCloseException(ex, currentChannelHost))
+            {
             }
             catch (Exception ex)
             {

@@ -192,7 +192,17 @@ namespace Lanymy.Common.Instruments
         {
             ReportError(ex);
 
-            var closeException = TryCloseSynchronously();
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception closeEx)
+            {
+                closeException = closeEx;
+            }
+
             if (closeException != null)
             {
                 OnCloseError(new InvalidOperationException("TcpClient close after error failed.", closeException));
@@ -422,7 +432,17 @@ namespace Lanymy.Common.Instruments
 
         public void Send(byte[] sendDataBytes)
         {
-            var sendException = TryWaitSynchronously(() => SendAsync(sendDataBytes));
+            Exception sendException = null;
+
+            try
+            {
+                sendException = TryWaitSynchronously(() => SendAsync(sendDataBytes));
+            }
+            catch (Exception ex)
+            {
+                sendException = ex;
+            }
+
             if (sendException != null)
             {
                 OnError(sendException);
@@ -634,7 +654,17 @@ namespace Lanymy.Common.Instruments
 
         public void Close()
         {
-            var closeException = TryCloseSynchronously();
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+            }
+
             if (closeException != null)
             {
                 OnCloseError(new InvalidOperationException("TcpClient sync close failed.", closeException));

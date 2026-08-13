@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,9 +51,9 @@ namespace Lanymy.Common.Instruments
         /// <param name="cmd"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual async Task<CmdResultModel> ExecuteCommandAsync(string cmd, params string[] args)
+        public virtual Task<CmdResultModel> ExecuteCommandAsync(string cmd, params string[] args)
         {
-            return await Task.Run(() => ExecuteCommand(cmd, args));
+            return Task.Run(() => ExecuteCommand(cmd, args));
         }
 
         /// <summary>
@@ -73,9 +73,9 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="cmdString"></param>
         /// <returns></returns>
-        public virtual async Task<CmdResultModel> ExecuteCommandAsync(string cmdString)
+        public virtual Task<CmdResultModel> ExecuteCommandAsync(string cmdString)
         {
-            return await Task.Run(() => ExecuteCommand(cmdString));
+            return Task.Run(() => ExecuteCommand(cmdString));
         }
 
 
@@ -89,8 +89,6 @@ namespace Lanymy.Common.Instruments
 
             _OutputDataReceivedMessage.Clear();
             _ErrorDataReceivedMessage.Clear();
-
-            var isSuccess = false;
 
             var resultModel = new CmdResultModel
             {
@@ -122,22 +120,19 @@ namespace Lanymy.Common.Instruments
 
 
                     process.WaitForExit();
-
-                    process.OutputDataReceived -= OnOutputDataReceived;
-                    process.ErrorDataReceived -= OnErrorDataReceived;
-
-                    isSuccess = true;
+                    resultModel.ExitCode = process.ExitCode;
 
                 }
                 catch (Exception ex)
                 {
 
-                    isSuccess = false;
                     resultModel.Exception = ex;
 
                 }
                 finally
                 {
+                    process.OutputDataReceived -= OnOutputDataReceived;
+                    process.ErrorDataReceived -= OnErrorDataReceived;
 
                     process.Close();
 
@@ -149,7 +144,7 @@ namespace Lanymy.Common.Instruments
             resultModel.OutputDataString = _OutputDataReceivedMessage.ToString();
             resultModel.ErrorDataString = _ErrorDataReceivedMessage.ToString();
             resultModel.CmdEndDateTime = DateTime.Now;
-            resultModel.IsSuccess = isSuccess;
+            resultModel.IsSuccess = resultModel.Exception == null && resultModel.ExitCode.GetValueOrDefault() == 0;
 
             return resultModel;
 

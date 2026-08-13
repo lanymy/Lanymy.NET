@@ -357,7 +357,7 @@ namespace Lanymy.Common.Instruments.Common
                 return true;
             }
 
-            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            if (IsClosedOrUnregisteredChannelInvalidOperation(exception, context))
             {
                 return true;
             }
@@ -406,7 +406,7 @@ namespace Lanymy.Common.Instruments.Common
                 return true;
             }
 
-            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            if (IsClosedOrUnregisteredChannelInvalidOperation(exception, context))
             {
                 return true;
             }
@@ -444,7 +444,7 @@ namespace Lanymy.Common.Instruments.Common
 
         protected virtual Task ScheduleSendBytesAsync(IChannelHandlerContext context, byte[] bytes)
         {
-            return context.Executor.ScheduleAsync(() => WriteBytesAsync(context, bytes), _CurrentSendDataIntervalMilliseconds);
+            return context.Executor.ScheduleAsync(async () => await WriteBytesAsync(context, bytes), _CurrentSendDataIntervalMilliseconds);
         }
 
         protected virtual async Task SafeScheduleSendBytesAsync(IChannelHandlerContext context, byte[] bytes)
@@ -497,7 +497,7 @@ namespace Lanymy.Common.Instruments.Common
                 return true;
             }
 
-            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            if (IsClosedOrUnregisteredChannelInvalidOperation(exception, context))
             {
                 return true;
             }
@@ -542,6 +542,7 @@ namespace Lanymy.Common.Instruments.Common
             }
             catch (Exception ex) when (CanIgnoreContextCloseException(ex, context))
             {
+                ReleaseCloseRequestAfterFailure();
             }
             catch (Exception ex)
             {
@@ -595,6 +596,7 @@ namespace Lanymy.Common.Instruments.Common
             }
             catch (Exception ex) when (CanIgnoreContextCloseException(ex, context))
             {
+                ReleaseDelayedCloseRequestAfterFailure();
             }
             catch (Exception ex)
             {
@@ -615,12 +617,41 @@ namespace Lanymy.Common.Instruments.Common
                 return true;
             }
 
-            if (exception is InvalidOperationException && !context.IfIsNull() && (context.Channel.IfIsNull() || !context.Channel.Open))
+            if (IsClosedOrUnregisteredChannelInvalidOperation(exception, context))
             {
                 return true;
             }
 
             return false;
+        }
+
+        protected virtual bool IsClosedOrUnregisteredChannelInvalidOperation(Exception exception, IChannelHandlerContext context)
+        {
+            if (exception is not InvalidOperationException || context.IfIsNull())
+            {
+                return false;
+            }
+
+            var channel = context.Channel;
+
+            return channel.IfIsNull()
+                   || !channel.Open
+                   || IsUnregisteredChannelOperationNoise(exception, channel)
+                   || IsRemovedHandlerContextOperationNoise(exception, context);
+        }
+
+        protected virtual bool IsUnregisteredChannelOperationNoise(Exception exception, IChannel channel)
+        {
+            return channel != null
+                   && !channel.Registered
+                   && exception.Message?.IndexOf("not registered to an event loop", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        protected virtual bool IsRemovedHandlerContextOperationNoise(Exception exception, IChannelHandlerContext context)
+        {
+            return context != null
+                   && context.Removed
+                   && exception.Message?.IndexOf("handler not added to pipeline yet", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         protected virtual bool TryBeginCloseRequest()

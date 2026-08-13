@@ -22,6 +22,21 @@ namespace Lanymy.Common.Instruments
             SyncWait(taskFactory());
         }
 
+        public static TResult SyncWait<TResult>(Task<TResult> task)
+        {
+            return task.GetAwaiter().GetResult();
+        }
+
+        public static TResult SyncWait<TResult>(Func<Task<TResult>> taskFactory)
+        {
+            if (taskFactory == null)
+            {
+                return default;
+            }
+
+            return SyncWait(taskFactory());
+        }
+
         public static Exception TrySyncWait(Func<Task> taskFactory)
         {
             try
@@ -31,6 +46,20 @@ namespace Lanymy.Common.Instruments
             }
             catch (Exception ex)
             {
+                return ex;
+            }
+        }
+
+        public static Exception TrySyncWait<TResult>(Func<Task<TResult>> taskFactory, out TResult result)
+        {
+            try
+            {
+                result = SyncWait(taskFactory);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                result = default;
                 return ex;
             }
         }

@@ -154,6 +154,11 @@ namespace Lanymy.Common.Instruments
             return TaskHelper.TrySyncWait(taskFactory);
         }
 
+        protected virtual Exception TryWaitSynchronously(Func<Task<bool>> taskFactory, out bool result)
+        {
+            return TaskHelper.TrySyncWait(taskFactory, out result);
+        }
+
         protected virtual Exception TryCloseSynchronously()
         {
             return TryWaitSynchronously(CloseAsync);
@@ -223,7 +228,7 @@ namespace Lanymy.Common.Instruments
                     return;
                 }
 
-                currentUdpClient.BeginReceive(ReciveCallBack, null);
+                BeginReceive(currentUdpClient);
 
                 if (!CanContinueStart(receiveWorkTaskQueue, sendWorkTaskQueue, currentUdpClient))
                 {
@@ -313,6 +318,16 @@ namespace Lanymy.Common.Instruments
                 _CurrentUdpClient = currentUdpClient;
                 return true;
             }
+        }
+
+        protected virtual void BeginReceive(UdpClient currentUdpClient)
+        {
+            currentUdpClient.BeginReceive(ReciveCallBack, currentUdpClient);
+        }
+
+        protected virtual byte[] EndReceive(UdpClient currentUdpClient, IAsyncResult asyncResult, ref IPEndPoint remoteIPEndPoint)
+        {
+            return currentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);
         }
 
         protected virtual void ResetStartState(WorkTaskQueue<UdpSourceDataModel> receiveWorkTaskQueue, WorkTaskQueue<SendUdpDataModel> sendWorkTaskQueue, UdpClient currentUdpClient, bool receiveWorkTaskQueueStarted, bool sendWorkTaskQueueStarted)
@@ -418,18 +433,31 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        private void ReciveCallBack(IAsyncResult asyncResult)
+        protected virtual void ReciveCallBack(IAsyncResult asyncResult)
         {
-            if (!TryGetReceiveContext(out var currentUdpClient, out var receiveWorkTaskQueue))
-            {
-                return;
-            }
-
+            var callbackUdpClient = asyncResult.AsyncState as UdpClient;
             IPEndPoint remoteIPEndPoint = null;
 
             try
             {
-                byte[] bytes = currentUdpClient.EndReceive(asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
+                if (callbackUdpClient.IfIsNull())
+                {
+                    return;
+                }
+
+                // 即使关闭过程已经把实例切到非运行态，也要先完成 EndReceive，
+                // 否则快速启停时会留下未收尾的旧回调，最终拖住测试宿主或进程退出。
+                byte[] bytes = EndReceive(callbackUdpClient, asyncResult, ref remoteIPEndPoint);//*结束挂起的异步接收
+
+                if (!TryGetReceiveContext(out var currentUdpClient, out var receiveWorkTaskQueue))
+                {
+                    return;
+                }
+
+                if (!ReferenceEquals(currentUdpClient, callbackUdpClient))
+                {
+                    return;
+                }
 
                 var addReceiveQueueTask = receiveWorkTaskQueue.AddToQueueAsync(new UdpSourceDataModel
                 {
@@ -440,26 +468,26 @@ namespace Lanymy.Common.Instruments
 
                 if (CanContinueReceive(currentUdpClient, receiveWorkTaskQueue))
                 {
-                    currentUdpClient.BeginReceive(ReciveCallBack, null);
+                    BeginReceive(currentUdpClient);
                 }
             }
             catch (ObjectDisposedException ex)
             {
-                if (_IsRunning)
+                if (_IsRunning && ReferenceEquals(_CurrentUdpClient, callbackUdpClient))
                 {
                     ReportError(remoteIPEndPoint, ex);
                 }
             }
             catch (SocketException ex)
             {
-                if (_IsRunning)
+                if (_IsRunning && ReferenceEquals(_CurrentUdpClient, callbackUdpClient))
                 {
                     ReportError(remoteIPEndPoint, ex);
                 }
             }
             catch (Exception ex)
             {
-                if (_IsRunning)
+                if (_IsRunning && ReferenceEquals(_CurrentUdpClient, callbackUdpClient))
                 {
                     ReportError(remoteIPEndPoint, ex);
                 }
@@ -528,15 +556,29 @@ namespace Lanymy.Common.Instruments
                 return false;
             }
 
-            var packageDataBytes = _CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage);
-            return Send(packageDataBytes, sendPackage.RemoteIpEndPoint);
+            try
+            {
+                var packageDataBytes = _CurrentFixedHeaderPackageFilter.EncodePackage(sendPackage);
+                return Send(packageDataBytes, sendPackage.RemoteIpEndPoint);
+            }
+            catch (Exception ex)
+            {
+                ReportError(sendPackage.RemoteIpEndPoint, ex);
+                return false;
+            }
         }
 
         public bool Send(SendUdpDataModel sendUdpDataModel)
         {
             try
             {
-                return TrySendAsync(sendUdpDataModel).GetAwaiter().GetResult();
+                var sendException = TryWaitSynchronously(() => TrySendAsync(sendUdpDataModel), out var result);
+                if (sendException != null)
+                {
+                    throw sendException;
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -580,7 +622,17 @@ namespace Lanymy.Common.Instruments
 
         public void Close()
         {
-            var closeException = TryCloseSynchronously();
+            Exception closeException = null;
+
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+            }
+
             if (closeException != null)
             {
                 OnCloseError(new InvalidOperationException("UdpClient sync close failed.", closeException));
@@ -615,6 +667,7 @@ namespace Lanymy.Common.Instruments
                     receiveWorkTaskQueue = _ReceiveWorkTaskQueue;
                     sendWorkTaskQueue = _SendWorkTaskQueue;
                     currentUdpClient = _CurrentUdpClient;
+                    _CurrentUdpClient = null;
 
                 }
                 else
@@ -622,6 +675,15 @@ namespace Lanymy.Common.Instruments
                     return;
                 }
 
+            }
+
+            try
+            {
+                DisposeCurrentUdpClient(currentUdpClient);
+            }
+            catch (Exception ex)
+            {
+                OnCloseError(new InvalidOperationException("UdpClient dispose udp client failed.", ex));
             }
 
             try
@@ -657,11 +719,6 @@ namespace Lanymy.Common.Instruments
                     failedSendWorkTaskQueue = _SendWorkTaskQueue;
                     _SendWorkTaskQueue = CreateSendWorkTaskQueue();
                 }
-
-                if (ReferenceEquals(_CurrentUdpClient, currentUdpClient))
-                {
-                    _CurrentUdpClient = null;
-                }
             }
 
             try
@@ -680,15 +737,6 @@ namespace Lanymy.Common.Instruments
             catch (Exception ex)
             {
                 OnCloseError(new InvalidOperationException("UdpClient dispose send queue after close failure failed.", ex));
-            }
-
-            try
-            {
-                DisposeCurrentUdpClient(currentUdpClient);
-            }
-            catch (Exception ex)
-            {
-                OnCloseError(new InvalidOperationException("UdpClient dispose udp client failed.", ex));
             }
 
 
@@ -766,9 +814,23 @@ namespace Lanymy.Common.Instruments
             }
 
             var disposeExceptions = new List<Exception>();
+            var closeExceptionReported = false;
 
-            var closeException = TryCloseSynchronously();
-            if (closeException != null)
+            Exception closeException = null;
+            try
+            {
+                closeException = TryCloseSynchronously();
+            }
+            catch (Exception ex)
+            {
+                closeException = ex;
+                closeExceptionReported = true;
+                var disposeCloseException = new InvalidOperationException("UdpClient dispose close failed.", ex);
+                OnCloseError(disposeCloseException);
+                disposeExceptions.Add(disposeCloseException);
+            }
+
+            if (closeException != null && !closeExceptionReported)
             {
                 var disposeCloseException = new InvalidOperationException("UdpClient dispose close failed.", closeException);
                 OnCloseError(disposeCloseException);

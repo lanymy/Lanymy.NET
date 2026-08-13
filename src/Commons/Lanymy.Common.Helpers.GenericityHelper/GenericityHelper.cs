@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Lanymy.Common.ExtensionFunctions;
 
@@ -17,11 +17,9 @@ namespace Lanymy.Common.Helpers
         /// <typeparam name="TReturn">返回参数</typeparam>
         /// <param name="taskWork">要执行的Task任务</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TReturn>(Func<TReturn> taskWork)
+        public static Task<TReturn> DoTaskWorkAsync<TReturn>(Func<TReturn> taskWork)
         {
-
-            return await Task.FromResult(taskWork());
-
+            return Task.FromResult(taskWork());
         }
 
         /// <summary>
@@ -32,11 +30,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="taskWork">要执行的Task任务</param>
         /// <param name="parameter1">参数1</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TParameter1, TReturn>(Func<TParameter1, TReturn> taskWork, TParameter1 parameter1)
+        public static Task<TReturn> DoTaskWorkAsync<TParameter1, TReturn>(Func<TParameter1, TReturn> taskWork, TParameter1 parameter1)
         {
-
-            return await Task.FromResult(taskWork(parameter1));
-
+            return Task.FromResult(taskWork(parameter1));
         }
 
         /// <summary>
@@ -49,9 +45,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter1">参数1</param>
         /// <param name="parameter2">参数2</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TReturn>(Func<TParameter1, TParameter2, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2)
+        public static Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TReturn>(Func<TParameter1, TParameter2, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2)
         {
-            return await Task.FromResult(taskWork(parameter1, parameter2));
+            return Task.FromResult(taskWork(parameter1, parameter2));
         }
 
         /// <summary>
@@ -66,9 +62,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter2">参数2</param>
         /// <param name="parameter3">参数3</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TReturn>(Func<TParameter1, TParameter2, TParameter3, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3)
+        public static Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TReturn>(Func<TParameter1, TParameter2, TParameter3, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3)
         {
-            return await Task.FromResult(taskWork(parameter1, parameter2, parameter3));
+            return Task.FromResult(taskWork(parameter1, parameter2, parameter3));
         }
 
 
@@ -86,9 +82,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter3">参数3</param>
         /// <param name="parameter4">参数4</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TReturn>(Func<TParameter1, TParameter2, TParameter3, TParameter4, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4)
+        public static Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TReturn>(Func<TParameter1, TParameter2, TParameter3, TParameter4, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4)
         {
-            return await Task.FromResult(taskWork(parameter1, parameter2, parameter3, parameter4));
+            return Task.FromResult(taskWork(parameter1, parameter2, parameter3, parameter4));
         }
 
 
@@ -108,9 +104,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter4">参数4</param>
         /// <param name="parameter5">参数5</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TReturn>(Func<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5)
+        public static Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TReturn>(Func<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5)
         {
-            return await Task.FromResult(taskWork(parameter1, parameter2, parameter3, parameter4, parameter5));
+            return Task.FromResult(taskWork(parameter1, parameter2, parameter3, parameter4, parameter5));
         }
 
 
@@ -132,9 +128,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter5">参数5</param>
         /// <param name="parameter6">参数6</param>
         /// <returns></returns>
-        public static async Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6, TReturn>(Func<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5, TParameter6 parameter6)
+        public static Task<TReturn> DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6, TReturn>(Func<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6, TReturn> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5, TParameter6 parameter6)
         {
-            return await Task.FromResult(taskWork(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6));
+            return Task.FromResult(taskWork(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6));
         }
 
 
@@ -144,9 +140,9 @@ namespace Lanymy.Common.Helpers
         /// </summary>
         /// <param name="taskWork">要执行的Task任务</param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync(Action taskWork)
+        public static Task DoTaskWorkAsync(Action taskWork)
         {
-            await Task.Run(taskWork);
+            return Task.Run(taskWork);
         }
 
 
@@ -158,9 +154,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="taskWork">要执行的Task任务</param>
         /// <param name="parameter1">参数1</param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync<TParameter1>(Action<TParameter1> taskWork, TParameter1 parameter1)
+        public static Task DoTaskWorkAsync<TParameter1>(Action<TParameter1> taskWork, TParameter1 parameter1)
         {
-            await Task.Run(() => taskWork(parameter1));
+            return Task.Run(() => taskWork(parameter1));
         }
 
         /// <summary>
@@ -172,9 +168,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter1">参数1</param>
         /// <param name="parameter2">参数2</param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync<TParameter1, TParameter2>(Action<TParameter1, TParameter2> taskWork, TParameter1 parameter1, TParameter2 parameter2)
+        public static Task DoTaskWorkAsync<TParameter1, TParameter2>(Action<TParameter1, TParameter2> taskWork, TParameter1 parameter1, TParameter2 parameter2)
         {
-            await Task.Run(() => taskWork(parameter1, parameter2));
+            return Task.Run(() => taskWork(parameter1, parameter2));
         }
 
         /// <summary>
@@ -188,9 +184,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter2">参数2</param>
         /// <param name="parameter3">参数3</param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3>(Action<TParameter1, TParameter2, TParameter3> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3)
+        public static Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3>(Action<TParameter1, TParameter2, TParameter3> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3)
         {
-            await Task.Run(() => taskWork(parameter1, parameter2, parameter3));
+            return Task.Run(() => taskWork(parameter1, parameter2, parameter3));
         }
 
         /// <summary>
@@ -206,9 +202,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter3">参数3</param>
         /// <param name="parameter4">参数4</param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4>(Action<TParameter1, TParameter2, TParameter3, TParameter4> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4)
+        public static Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4>(Action<TParameter1, TParameter2, TParameter3, TParameter4> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4)
         {
-            await Task.Run(() => taskWork(parameter1, parameter2, parameter3, parameter4));
+            return Task.Run(() => taskWork(parameter1, parameter2, parameter3, parameter4));
         }
 
 
@@ -227,9 +223,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter4">参数4</param>
         /// <param name="parameter5">参数5</param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5>(Action<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5)
+        public static Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5>(Action<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5)
         {
-            await Task.Run(() => taskWork(parameter1, parameter2, parameter3, parameter4, parameter5));
+            return Task.Run(() => taskWork(parameter1, parameter2, parameter3, parameter4, parameter5));
         }
 
 
@@ -250,9 +246,9 @@ namespace Lanymy.Common.Helpers
         /// <param name="parameter5">参数5</param>
         /// <param name="parameter6"></param>
         /// <returns></returns>
-        public static async Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6>(Action<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5, TParameter6 parameter6)
+        public static Task DoTaskWorkAsync<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6>(Action<TParameter1, TParameter2, TParameter3, TParameter4, TParameter5, TParameter6> taskWork, TParameter1 parameter1, TParameter2 parameter2, TParameter3 parameter3, TParameter4 parameter4, TParameter5 parameter5, TParameter6 parameter6)
         {
-            await Task.Run(() => taskWork(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6));
+            return Task.Run(() => taskWork(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6));
         }
 
 

@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+#if NET8_0_OR_GREATER
+using System.Runtime.Versioning;
+#endif
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -143,6 +146,17 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        /// <summary>
+        /// 3DES 历史上一直使用密钥前一个分组长度的字节作为 IV。
+        /// 这里统一收口，确保新旧密文都按同一契约处理。
+        /// </summary>
+        /// <param name="secretKeyBytes">标准化后的密钥字节。</param>
+        /// <returns>3DES 使用的初始化向量。</returns>
+        private static byte[] GetTripleDesInitializationVector(byte[] secretKeyBytes)
+        {
+            return secretKeyBytes.Take(sizeof(long)).ToArray();
+        }
+
 
 
 
@@ -169,7 +183,8 @@ namespace Lanymy.Common.Instruments
 
 
             using (var compressionStream = new GZipStream(encryptStream, CompressionMode.Compress, true))
-            using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateEncryptor(secretKeyBytes, secretKeyBytes.Take(8).ToArray()))
+            using (var tripleDes = TripleDES.Create())
+            using (ICryptoTransform transform = tripleDes.CreateEncryptor(secretKeyBytes, GetTripleDesInitializationVector(secretKeyBytes)))
             using (CryptoStream cryptoStream = new CryptoStream(compressionStream, transform, CryptoStreamMode.Write))
             {
 
@@ -321,7 +336,7 @@ namespace Lanymy.Common.Instruments
 
             //提取随机种子标识位
             var ifRandomBytes = new byte[1];
-            encryptedStream.Read(ifRandomBytes, 0, 1);
+            FileHelper.ReadExactly(encryptedStream, ifRandomBytes, 0, 1);
 
             bool ifRandom = ifRandomBytes[0] != 0;
 
@@ -342,17 +357,17 @@ namespace Lanymy.Common.Instruments
 
             //提取头摘要哈希值
             var encryptModelJsonBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
-            encryptedStream.Read(encryptModelJsonBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
+            FileHelper.ReadExactly(encryptedStream, encryptModelJsonBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
             var encryptModelJsonBytesHashCode = encoding.GetString(encryptModelJsonBytesHashCodeBytes);
 
             //提取头摘要长度
             var encryptModelBytesLengthBytes = new byte[CRYPTO_HEADER_INFO_BYTES_LENGTH];
-            encryptedStream.Read(encryptModelBytesLengthBytes, 0, CRYPTO_HEADER_INFO_BYTES_LENGTH);
+            FileHelper.ReadExactly(encryptedStream, encryptModelBytesLengthBytes, 0, CRYPTO_HEADER_INFO_BYTES_LENGTH);
             int encryptModelBytesLength = BitConverter.ToInt32(encryptModelBytesLengthBytes, 0);
 
             //提取头摘要信息
             var encryptModelJsonBytes = new byte[encryptModelBytesLength];
-            encryptedStream.Read(encryptModelJsonBytes, 0, encryptModelBytesLength);
+            FileHelper.ReadExactly(encryptedStream, encryptModelJsonBytes, 0, encryptModelBytesLength);
             var encryptModelHeaderJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
 
             if (encryptModelJsonBytesHashCode != encryptModelHeaderJsonBytesHashCode)
@@ -373,7 +388,7 @@ namespace Lanymy.Common.Instruments
                 encryptResultModel.DencryptHeaderInfoModelJsonString = encryptModelJson;
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 encryptResultModel.ErrorMessage = "指纹信息解析失败,无法继续解析";
                 return encryptResultModel;
@@ -382,11 +397,11 @@ namespace Lanymy.Common.Instruments
 
             //提取正文大小
             var encryptAfterContentBytesLengthBytes = new byte[CRYPTO_AFTER_CONTENT_BYTES_LENGTH];
-            encryptedStream.Read(encryptAfterContentBytesLengthBytes, 0, CRYPTO_AFTER_CONTENT_BYTES_LENGTH);
+            FileHelper.ReadExactly(encryptedStream, encryptAfterContentBytesLengthBytes, 0, CRYPTO_AFTER_CONTENT_BYTES_LENGTH);
             long encryptAfterContentBytesLength = BitConverter.ToInt64(encryptAfterContentBytesLengthBytes, 0);
             //提取正文哈希值
             var encryptAfterContentBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
-            encryptedStream.Read(encryptAfterContentBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
+            FileHelper.ReadExactly(encryptedStream, encryptAfterContentBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
             var encryptAfterContentBytesHashCode = encoding.GetString(encryptAfterContentBytesHashCodeBytes);
 
             var currentPosition = encryptedStream.Position;
@@ -473,7 +488,8 @@ namespace Lanymy.Common.Instruments
             byte[] secretKeyBytes = GetSecurityKeyBytes(secretKey, encoding);
 
             using (var decompressionStream = new GZipStream(encryptedStream, CompressionMode.Decompress, true))
-            using (ICryptoTransform transform = new TripleDESCryptoServiceProvider().CreateDecryptor(secretKeyBytes, secretKeyBytes))
+            using (var tripleDes = TripleDES.Create())
+            using (ICryptoTransform transform = tripleDes.CreateDecryptor(secretKeyBytes, GetTripleDesInitializationVector(secretKeyBytes)))
             using (CryptoStream cryptoStream = new CryptoStream(decompressionStream, transform, CryptoStreamMode.Read))
             {
 
@@ -801,6 +817,8 @@ namespace Lanymy.Common.Instruments
         /// <typeparam name="T">要序列化的实体类型</typeparam>
         /// <param name="t">要序列化的实体 实例</param>
         /// <param name="secretKey">密钥 Null 使用默认密钥</param>
+        /// <param name="ifRandom">是否随机不重复 True 随机; False 不随机; 默认值True</param>
+        /// <param name="encoding">加密使用的编码 , Null 表示 使用默认编码</param>
         /// <returns></returns>
         public override EncryptModelDigestInfoModel<T> EncryptModelToBase64String<T>(T t, string secretKey = null, bool ifRandom = true, Encoding encoding = null) where T : class
         {
@@ -816,6 +834,7 @@ namespace Lanymy.Common.Instruments
         /// <typeparam name="T">要反序列化成的实体类型</typeparam>
         /// <param name="encryptBase64String">要解密的Base64字符串</param>
         /// <param name="secretKey">密钥 Null 使用默认密钥</param>
+        /// <param name="encoding">编码 , Null 表示 使用默认编码</param>
         /// <returns></returns>
         public override EncryptModelDigestInfoModel<T> DecryptModelFromBase64String<T>(string encryptBase64String, string secretKey = null, Encoding encoding = null) where T : class
         {
@@ -1035,6 +1054,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         private Bitmap GetEncryptedBitmap(string strToBitmap)
         {
 
@@ -1115,6 +1137,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         private string GetStringFromEncryptedBitmap(Bitmap encryptedBitmap)
         {
 
@@ -1161,6 +1186,9 @@ namespace Lanymy.Common.Instruments
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringBitmapDigestInfoModel EncryptBytesToBitmap(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null)
         {
             return EncryptBytesToBitmap<EncryptStringBitmapDigestInfoModel>(bytesToEncrypt, secretKey, encoding);
@@ -1168,6 +1196,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel EncryptBytesToBitmap<TEncryptDigestInfoModel>(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1185,12 +1216,18 @@ namespace Lanymy.Common.Instruments
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringBitmapDigestInfoModel DecryptBytesFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
         {
             return DecryptBytesFromBitmap<EncryptStringBitmapDigestInfoModel>(encryptedBitmap, secretKey, encoding);
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel DecryptBytesFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1210,12 +1247,18 @@ namespace Lanymy.Common.Instruments
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringBitmapDigestInfoModel EncryptStringToBitmap(string strToEncrypt, string secretKey = null, Encoding encoding = null)
         {
             return EncryptStringToBitmap<EncryptStringBitmapDigestInfoModel>(strToEncrypt, secretKey, encoding);
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel EncryptStringToBitmap<TEncryptDigestInfoModel>(string strToEncrypt, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1236,6 +1279,9 @@ namespace Lanymy.Common.Instruments
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringBitmapDigestInfoModel DecryptStringFromBitmap(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
         {
             return DecryptStringFromBitmap<EncryptStringBitmapDigestInfoModel>(encryptedBitmap, secretKey, encoding);
@@ -1246,10 +1292,14 @@ namespace Lanymy.Common.Instruments
         /// <summary>
         /// Decrypts the string from bitmap.
         /// </summary>
-        /// <param name="decryptBitmap">The decrypt bitmap.</param>
-        /// <param name="isDecryptStringFromBase64String">是否 从 Base64String 字符串中 解密 出 原始字符串</param>
+        /// <param name="encryptedBitmap">The encrypted bitmap.</param>
+        /// <param name="secretKey">The secret key.</param>
+        /// <param name="encoding">The encoding.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentException">不是有效的加密位图数据源</exception>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel DecryptStringFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1267,6 +1317,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptModelBitmapDigestInfoModel<T> EncryptModelToBitmap<T>(T t, string secretKey = null, Encoding encoding = null) where T : class
         {
 
@@ -1290,6 +1343,9 @@ namespace Lanymy.Common.Instruments
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptModelBitmapDigestInfoModel<T> DecryptModelFromBitmap<T>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null) where T : class
         {
 
@@ -1316,6 +1372,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringImageFileDigestInfoModel EncryptBytesToImageFile(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
             return EncryptBytesToImageFile<EncryptStringImageFileDigestInfoModel>(bytesToEncrypt, imageFileFullPath, secretKey, encoding);
@@ -1328,7 +1387,12 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="bytesToEncrypt">The bytes to encrypt.</param>
         /// <param name="imageFileFullPath">The image file full path.</param>
+        /// <param name="secretKey">The secret key.</param>
+        /// <param name="encoding">The encoding.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel EncryptBytesToImageFile<TEncryptDigestInfoModel>(byte[] bytesToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
             var encryptStringImageFileDigestInfoModel = EncryptBytesToBitmap<TEncryptDigestInfoModel>(bytesToEncrypt, secretKey, encoding);
@@ -1345,6 +1409,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringImageFileDigestInfoModel DecryptBytesFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
             return DecryptBytesFromImageFile<EncryptStringImageFileDigestInfoModel>(imageFileFullPath, secretKey, encoding);
@@ -1356,7 +1423,12 @@ namespace Lanymy.Common.Instruments
         /// Decrypts the bytes from image file.
         /// </summary>
         /// <param name="imageFileFullPath">The image file full path.</param>
+        /// <param name="secretKey">The secret key.</param>
+        /// <param name="encoding">The encoding.</param>
         /// <returns>System.Byte[].</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel DecryptBytesFromImageFile<TEncryptDigestInfoModel>(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1384,6 +1456,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringImageFileDigestInfoModel EncryptStringToImageFile(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
             return EncryptStringToImageFile<EncryptStringImageFileDigestInfoModel>(strToEncrypt, imageFileFullPath, secretKey, encoding);
@@ -1396,7 +1471,12 @@ namespace Lanymy.Common.Instruments
         /// </summary>
         /// <param name="strToEncrypt">The string to encrypt.</param>
         /// <param name="imageFileFullPath">The image file full path.</param>
+        /// <param name="secretKey">The secret key.</param>
+        /// <param name="encoding">The encoding.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel EncryptStringToImageFile<TEncryptDigestInfoModel>(string strToEncrypt, string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1418,6 +1498,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptStringImageFileDigestInfoModel DecryptStringFromImageFile(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
             return DecryptStringFromImageFile<EncryptStringImageFileDigestInfoModel>(imageFileFullPath, secretKey, encoding);
@@ -1428,7 +1511,12 @@ namespace Lanymy.Common.Instruments
         /// Decrypts the string from image file.
         /// </summary>
         /// <param name="imageFileFullPath">The image file full path.</param>
+        /// <param name="secretKey">The secret key.</param>
+        /// <param name="encoding">The encoding.</param>
         /// <returns>System.String.</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override TEncryptDigestInfoModel DecryptStringFromImageFile<TEncryptDigestInfoModel>(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
         {
 
@@ -1446,6 +1534,9 @@ namespace Lanymy.Common.Instruments
 
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptModelImageFileDigestInfoModel<T> EncryptModelToImageFile<T>(T t, string imageFileFullPath, string secretKey = null, Encoding encoding = null) where T : class
         {
 
@@ -1468,6 +1559,9 @@ namespace Lanymy.Common.Instruments
         }
 
 
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
         public override EncryptModelImageFileDigestInfoModel<T> DecryptModelFromImageFile<T>(string imageFileFullPath, string secretKey = null, Encoding encoding = null) where T : class
         {
 

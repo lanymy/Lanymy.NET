@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -101,7 +101,11 @@ namespace Lanymy.Common.Instruments.Crawlers
             {
                 //Interlocked.Increment(ref _CurrentTaskProgressTotalCount);
                 //_CurrentWorkTaskQueue.AddToQueueAsync(crawlerDataModel).Wait();
-                AddToQueueAsync(crawlerDataModel).Wait();
+                var addToQueueException = TaskHelper.TrySyncWait(() => AddToQueueAsync(crawlerDataModel));
+                if (addToQueueException != null)
+                {
+                    throw new InvalidOperationException("Crawler add to queue failed.", addToQueueException);
+                }
             }
 
             analysisResourceListResult.AnalysisResourceList.Clear();

@@ -33,6 +33,7 @@ namespace Lanymy.Common.AllTests
         private sealed class TestFixedHeaderPackageFilter : BaseFixedHeaderPackageFilter<TestUdpPackage, TestUdpPackage, TestSessionToken>
         {
             public bool IsPackageValid { get; set; } = true;
+            public bool ThrowOnEncode { get; set; }
 
             public TestFixedHeaderPackageFilter()
                 : base(4)
@@ -51,6 +52,11 @@ namespace Lanymy.Common.AllTests
 
             public override byte[] EncodePackage(TestUdpPackage sendPackage)
             {
+                if (ThrowOnEncode)
+                {
+                    throw new InvalidOperationException("udp encode package failed");
+                }
+
                 return Array.Empty<byte>();
             }
 
@@ -269,6 +275,23 @@ namespace Lanymy.Common.AllTests
             }
         }
 
+        private sealed class ThrowingDirectSyncSendUdpClient : TestUdpClient
+        {
+            public int TrySendSynchronouslyCallCount { get; private set; }
+
+            public ThrowingDirectSyncSendUdpClient(int port)
+                : base(port)
+            {
+            }
+
+            protected override Exception TryWaitSynchronously(Func<Task<bool>> taskFactory, out bool result)
+            {
+                TrySendSynchronouslyCallCount++;
+                result = default;
+                throw new InvalidOperationException("udp sync send bridge failed");
+            }
+        }
+
         private sealed class ThrowingSyncCloseUdpClient : TestUdpClient
         {
             public int CloseAsyncCallCount { get; private set; }
@@ -282,6 +305,66 @@ namespace Lanymy.Common.AllTests
             {
                 CloseAsyncCallCount++;
                 throw new InvalidOperationException("udp close failed");
+            }
+        }
+
+        private sealed class ThrowingDirectSyncCloseUdpClient : TestUdpClient
+        {
+            public int TryCloseSynchronouslyCallCount { get; private set; }
+
+            public ThrowingDirectSyncCloseUdpClient(int port)
+                : base(port)
+            {
+            }
+
+            protected override Exception TryCloseSynchronously()
+            {
+                TryCloseSynchronouslyCallCount++;
+                throw new InvalidOperationException("udp sync bridge failed");
+            }
+        }
+
+        private sealed class CallbackAsyncResult : IAsyncResult
+        {
+            public object AsyncState { get; init; }
+            public WaitHandle AsyncWaitHandle => null;
+            public bool CompletedSynchronously => true;
+            public bool IsCompleted => true;
+        }
+
+        private sealed class CallbackLifecycleUdpClient : TestUdpClient
+        {
+            private UdpClient _lastBeginReceiveUdpClient;
+
+            public int BeginReceiveCallCount { get; private set; }
+            public int EndReceiveCallCount { get; private set; }
+            public byte[] EndReceiveBytes { get; set; } = new byte[] { 1, 2, 3, 4 };
+            public IPEndPoint EndReceiveRemoteEndPoint { get; set; } = new IPEndPoint(IPAddress.Loopback, 9527);
+
+            public CallbackLifecycleUdpClient(int port)
+                : base(port)
+            {
+            }
+
+            protected override void BeginReceive(UdpClient currentUdpClient)
+            {
+                BeginReceiveCallCount++;
+                _lastBeginReceiveUdpClient = currentUdpClient;
+            }
+
+            protected override byte[] EndReceive(UdpClient currentUdpClient, IAsyncResult asyncResult, ref IPEndPoint remoteIPEndPoint)
+            {
+                EndReceiveCallCount++;
+                remoteIPEndPoint = EndReceiveRemoteEndPoint;
+                return EndReceiveBytes;
+            }
+
+            public void InvokeLastReceiveCallback()
+            {
+                base.ReciveCallBack(new CallbackAsyncResult
+                {
+                    AsyncState = _lastBeginReceiveUdpClient,
+                });
             }
         }
 
@@ -443,6 +526,45 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseUdpClient_Send_WhenTryWaitSynchronouslyThrows_ShouldReportErrorWithoutEscalating()
+        {
+            var client = new ThrowingDirectSyncSendUdpClient(0);
+
+            try
+            {
+                client.Start();
+
+                var result = client.Send(new SendUdpDataModel(new IPEndPoint(IPAddress.Loopback, 9527), new byte[] { 1, 2, 3, 4 }));
+
+                Assert.IsFalse(result);
+                Assert.AreEqual(1, client.TrySendSynchronouslyCallCount);
+                Assert.AreEqual(1, client.ErrorCount);
+                Assert.AreEqual("udp sync send bridge failed", client.LastError?.Message);
+            }
+            finally
+            {
+                client.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_SendPackage_WhenEncodeThrows_ShouldReportErrorWithoutEscalating()
+        {
+            var client = new TestUdpClient(0);
+            client.TestFilter.ThrowOnEncode = true;
+
+            var result = client.Send(new TestUdpPackage
+            {
+                RemoteIpEndPoint = new IPEndPoint(IPAddress.Loopback, 9527),
+            });
+
+            Assert.IsFalse(result);
+            Assert.AreEqual(1, client.ErrorCount);
+            Assert.IsNotNull(client.LastError);
+            Assert.AreEqual("udp encode package failed", client.LastError.Message);
+        }
+
+        [TestMethod]
         public void BaseUdpClient_Dispose_WhenNeverStarted_ShouldSetDisposedState()
         {
             var client = new TestUdpClient(0);
@@ -556,6 +678,31 @@ namespace Lanymy.Common.AllTests
         }
 
         [TestMethod]
+        public void BaseUdpClient_StaleReceiveCallbackAfterClose_ShouldEndReceiveWithoutRedispatching()
+        {
+            var client = new CallbackLifecycleUdpClient(0);
+
+            try
+            {
+                client.Start();
+                client.Close();
+
+                client.InvokeLastReceiveCallback();
+
+                Assert.AreEqual(1, client.BeginReceiveCallCount);
+                Assert.AreEqual(1, client.EndReceiveCallCount);
+                Assert.AreEqual(0, client.ReceivedPackageCount);
+                Assert.AreEqual(0, client.ErrorCount);
+                Assert.IsFalse(client.IsAccept);
+                Assert.IsFalse(client.IsDisposed);
+            }
+            finally
+            {
+                client.Dispose();
+            }
+        }
+
+        [TestMethod]
         public async Task BaseUdpClient_MultipleStartCloseCycles_ReceiveQueueShouldProcessMessagesEveryCycle()
         {
             var client = new TestUdpClient(0);
@@ -638,6 +785,20 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual("UdpClient sync close failed.", client.LastError?.Message);
             Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
             Assert.AreEqual("udp close failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_Close_WhenTryCloseSynchronouslyThrows_ShouldReportSyncCloseErrorWithoutEscalating()
+        {
+            var client = new ThrowingDirectSyncCloseUdpClient(0);
+
+            client.Close();
+
+            Assert.AreEqual(1, client.TryCloseSynchronouslyCallCount);
+            Assert.AreEqual(1, client.ErrorCount);
+            Assert.AreEqual("UdpClient sync close failed.", client.LastError?.Message);
+            Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
+            Assert.AreEqual("udp sync bridge failed", client.LastError?.InnerException?.Message);
         }
 
         [TestMethod]
@@ -728,6 +889,26 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual("UdpClient dispose close failed.", client.LastError?.Message);
             Assert.IsInstanceOfType(client.LastError?.InnerException, typeof(InvalidOperationException));
             Assert.AreEqual("udp close failed", client.LastError?.InnerException?.Message);
+        }
+
+        [TestMethod]
+        public void BaseUdpClient_Dispose_WhenTryCloseSynchronouslyThrows_ShouldReportAndContinueCleanup()
+        {
+            var client = new ThrowingDirectSyncCloseUdpClient(0);
+
+            client.Start();
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => client.Dispose());
+
+            Assert.IsTrue(client.IsDisposed);
+            Assert.IsFalse(client.IsAccept);
+            Assert.AreEqual(1, client.TryCloseSynchronouslyCallCount);
+            Assert.AreEqual("UdpClient dispose close failed.", exception.Message);
+            Assert.AreEqual(1, client.ErrorCount);
+            Assert.AreEqual("UdpClient dispose close failed.", client.LastError?.Message);
+            Assert.AreEqual("udp sync bridge failed", client.LastError?.InnerException?.Message);
+            Assert.IsNull(client.GetReceiveWorkTaskQueueForTest());
+            Assert.IsNull(client.GetSendWorkTaskQueueForTest());
         }
 
         [TestMethod]
