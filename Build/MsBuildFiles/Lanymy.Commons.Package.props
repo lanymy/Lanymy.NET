@@ -15,7 +15,9 @@
 
     <FileVersion>$(FileRevision)</FileVersion>
 
-    <Version>$(CurrentReleaseNumbers)</Version>
+    <Version>$(CurrentPackageVersion)</Version>
+    <PackageVersion>$(CurrentPackageVersion)</PackageVersion>
+    <InformationalVersion>$(CurrentPackageVersion)</InformationalVersion>
 
 
 

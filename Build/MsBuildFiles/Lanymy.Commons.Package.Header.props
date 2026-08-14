@@ -5,9 +5,16 @@
 
     <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
 
-    <LanymyCommonFrameworkPackageReleaseNumbers>0.17.5</LanymyCommonFrameworkPackageReleaseNumbers>
+    <!--<LanymyCommonFrameworkPackageReleaseNumbers>0.17.5</LanymyCommonFrameworkPackageReleaseNumbers>-->
+    <LanymyCommonFrameworkPackageReleaseNumbers>0.17.6</LanymyCommonFrameworkPackageReleaseNumbers>
+
+    <!--<LanymyCommonFrameworkPackageVersionSuffix>alpha</LanymyCommonFrameworkPackageVersionSuffix>-->
+    <LanymyCommonFrameworkPackageVersionSuffix>alpha</LanymyCommonFrameworkPackageVersionSuffix>
 
     <CurrentReleaseNumbers>$(LanymyCommonFrameworkPackageReleaseNumbers)</CurrentReleaseNumbers>
+
+    <CurrentPackageVersion>$(CurrentReleaseNumbers)</CurrentPackageVersion>
+    <CurrentPackageVersion Condition="'$(LanymyCommonFrameworkPackageVersionSuffix)' != ''">$(CurrentReleaseNumbers)-$(LanymyCommonFrameworkPackageVersionSuffix)</CurrentPackageVersion>
 
   </PropertyGroup>
 
