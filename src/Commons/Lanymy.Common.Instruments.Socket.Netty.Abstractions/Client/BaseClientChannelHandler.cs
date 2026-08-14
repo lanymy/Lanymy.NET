@@ -10,7 +10,9 @@ using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments.Client
 {
-
+    /// <summary>
+    /// 客户端通道处理器基类，负责在断链后触发同世代重连请求。
+    /// </summary>
     public abstract class BaseClientChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext> : BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext>
         where TReceivePackage : class
         where TSendPackage : class
@@ -19,19 +21,24 @@ namespace Lanymy.Common.Instruments.Client
         where TClientChannelContext : BaseClientChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
-
+        /// <summary>
+        /// 请求宿主发起重连的回调。
+        /// </summary>
         protected readonly Action<long> _OnConnectToServerAction;
+
+        /// <summary>
+        /// 当前 handler 绑定时记录的重连世代号。
+        /// </summary>
         protected readonly long _CurrentReconnectGeneration;
 
-        //protected BaseClientChannelHandler(TChannelContext channelContext, Action connectToServerAction) : base(channelContext)
+        /// <summary>
+        /// 初始化客户端 handler。
+        /// </summary>
         protected BaseClientChannelHandler(TClientChannelContext channelContext) : base(channelContext)
         {
-            //_OnConnectToServerAction = connectToServerAction;
             _CurrentReconnectGeneration = channelContext.CurrentReconnectGeneration;
             _OnConnectToServerAction = channelContext.CurrentConnectToServerAction;
         }
-
-
 
         /// <summary>
         /// 当前频道未激活状态 / channel处于非活跃状态，已断开远程主机连接
@@ -39,15 +46,11 @@ namespace Lanymy.Common.Instruments.Client
         /// <param name="context"></param>
         protected override void OnChannelInactive(IChannelHandlerContext context)
         {
-
             if (!_OnConnectToServerAction.IfIsNull())
             {
+                // 把建立连接时的 generation 带回去，防止旧 handler 在新一轮启动后误触发重连。
                 _OnConnectToServerAction(_CurrentReconnectGeneration);
             }
-
         }
-
-
     }
-
 }

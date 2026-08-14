@@ -6,26 +6,32 @@ using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Instruments
 {
-
-
-
+    /// <summary>
+    /// 基于 <see cref="Channel{T}"/> 的工作任务基类，负责队列创建、写入和停机读尾。
+    /// </summary>
     public abstract class BaseChannelWorkTask<TDataModel> : BaseWorkTask//, IChannelWorkTask<TDataModel>
                                                                         //where TDataModel : IWorkTaskQueueDataModel
     {
-
+        /// <summary>
+        /// 当前使用的通道实例。
+        /// </summary>
         protected Channel<TDataModel> _CurrentChannel;
         protected readonly Func<TDataModel, Task> _CurrentAsyncWorkAction;
         protected readonly Action<List<TDataModel>> _CurrentStopAndReadQueueAllDataAction;
         protected readonly Action<TDataModel> _CurrentWorkAction;
 
-        //protected bool _IsReadQueueAllData = false;
-
+        /// <summary>
+        /// 绑定通道容量；小于等于 0 时使用无界通道。
+        /// </summary>
         public int ChannelCapacityCount { get; }
 
         public BoundedChannelFullMode ChannelFullMode { get; }
         public int TaskSleepMilliseconds { get; }
         public int WorkTaskTotalCount { get; }
 
+        /// <summary>
+        /// 指示当前通道是否由外部注入。
+        /// </summary>
         protected readonly bool _IsInternalChannel = false;
 
 
@@ -43,7 +49,6 @@ namespace Lanymy.Common.Instruments
 
         private BaseChannelWorkTask(Channel<TDataModel> channel, Action<TDataModel> workAction, Func<TDataModel, Task> asyncWorkAction, Action<List<TDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount, int taskSleepMilliseconds, int channelCapacityCount, BoundedChannelFullMode channelFullMode)
         {
-
             if (workAction.IfIsNull() && asyncWorkAction.IfIsNull())
             {
                 throw new ArgumentNullException(nameof(workAction));
@@ -77,19 +82,18 @@ namespace Lanymy.Common.Instruments
 
             if (!channel.IfIsNull())
             {
-
+                // 外部传入 channel 时，由调用方负责它的生命周期。
                 _IsInternalChannel = true;
                 _CurrentChannel = channel;
-
             }
-
-
-
         }
 
+        /// <summary>
+        /// 根据容量配置创建内部通道。
+        /// </summary>
+        /// <returns>新建的通道实例。</returns>
         protected virtual Channel<TDataModel> CreateChannel()
         {
-
             var channel = ChannelCapacityCount <= 0
                 ? Channel.CreateUnbounded<TDataModel>()
                 : Channel.CreateBounded<TDataModel>(new BoundedChannelOptions(ChannelCapacityCount)
@@ -98,9 +102,12 @@ namespace Lanymy.Common.Instruments
                 });
 
             return channel;
-
         }
 
+        /// <summary>
+        /// 向当前通道追加一条数据。
+        /// </summary>
+        /// <param name="data">待写入的数据。</param>
         public virtual async Task AddToQueueAsync(TDataModel data)
         {
             if (!IsRunning)
@@ -114,23 +121,12 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
-            //while (!await _CurrentChannel.Writer.WaitToWriteAsync())
-            //{
-
-            //    await Task.Delay(TaskSleepMilliseconds);
-
-            //}
-
-            //await _CurrentChannel.Writer.WriteAsync(data);
-
-            //await OnAddToQueueAsync(data);
-
-
             if (!await currentChannel.Writer.WaitToWriteAsync())
             {
                 return;
             }
 
+            // WaitToWriteAsync 返回后再做一次快照确认，避免 stop / channel 切换窗口把数据写进旧通道。
             if (!IsRunning || !ReferenceEquals(_CurrentChannel, currentChannel))
             {
                 return;
@@ -146,11 +142,12 @@ namespace Lanymy.Common.Instruments
             }
         }
 
-
-
+        /// <summary>
+        /// 读取停机时通道中尚未消费完的全部数据。
+        /// </summary>
+        /// <returns>剩余数据列表。</returns>
         protected virtual async Task<List<TDataModel>> ReadQueueAllDataAsync()
         {
-
             var list = new List<TDataModel>();
             var currentChannel = _CurrentChannel;
             if (currentChannel.IfIsNull())
@@ -160,6 +157,7 @@ namespace Lanymy.Common.Instruments
 
             if (_IsInternalChannel)
             {
+                // 外部通道不能被本类消费 Completion，因此这里只做非阻塞快照读取。
                 while (currentChannel.Reader.TryRead(out var item))
                 {
                     list.Add(item);
@@ -177,34 +175,17 @@ namespace Lanymy.Common.Instruments
 
         }
 
-
+        /// <summary>
+        /// 在停止阶段执行剩余数据回调。
+        /// </summary>
         protected virtual async Task OnStopAndReadQueueAllDataActionAsync()
         {
-
             if (!_CurrentStopAndReadQueueAllDataAction.IfIsNull())
             {
-
                 var list = await ReadQueueAllDataAsync();
                 _CurrentStopAndReadQueueAllDataAction(list);
-
                 list.Clear();
-
             }
-
         }
-
-
-        ///// <summary>
-        ///// 停止执行任务,并返回当前消息队列中的全部数据
-        ///// </summary>
-        ///// <returns></returns>
-        //public abstract Task<List<TDataModel>> StopAndReadQueueAllDataAsync();
-
-
     }
-
-
-
-
-
 }

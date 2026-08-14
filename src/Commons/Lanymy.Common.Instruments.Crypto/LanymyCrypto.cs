@@ -19,10 +19,8 @@ using Lanymy.Common.Instruments.CryptoModels;
 
 namespace Lanymy.Common.Instruments
 {
-
-
     /// <summary>
-    /// 加密/解密 操作器
+    /// 基于 3DES、压缩和摘要头部的多介质加解密实现。
     /// </summary>
     public class LanymyCrypto : BaseCrypto
     {
@@ -155,6 +153,26 @@ namespace Lanymy.Common.Instruments
         private static byte[] GetTripleDesInitializationVector(byte[] secretKeyBytes)
         {
             return secretKeyBytes.Take(sizeof(long)).ToArray();
+        }
+
+        /// <summary>
+        /// 为文件型输出目标补齐父目录，避免文件边界入口在目录缺失时行为不一致。
+        /// </summary>
+        /// <param name="fileFullPath">目标文件路径。</param>
+        private static void EnsureParentDirectoryExists(string fileFullPath)
+        {
+            if (fileFullPath.IfIsNullOrEmpty())
+            {
+                return;
+            }
+
+            var fullPath = Path.GetFullPath(fileFullPath);
+            var directoryPath = Path.GetDirectoryName(fullPath);
+
+            if (!directoryPath.IfIsNullOrEmpty())
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
         }
 
 
@@ -332,112 +350,121 @@ namespace Lanymy.Common.Instruments
                 IsSuccess = false,
             };
 
-            encryptedStream.Position = 0;
-
-            //提取随机种子标识位
-            var ifRandomBytes = new byte[1];
-            FileHelper.ReadExactly(encryptedStream, ifRandomBytes, 0, 1);
-
-            bool ifRandom = ifRandomBytes[0] != 0;
-
-            if (ifRandom)
-            {
-
-                ////提取随机种子标识位
-                //var headerFlagDataStringBytes = new byte[CRYPTO_RANDOM_HEADER_FLAG_DATA_LENGTH];
-                //encryptedStream.Read(headerFlagDataStringBytes, 0, CRYPTO_RANDOM_HEADER_FLAG_DATA_LENGTH);
-                //var headerFlagDataString = new string(Encoding.UTF8.GetString(headerFlagDataStringBytes).Reverse().ToArray());
-                //encryptResultModel.CreateDateTime = DateTime.ParseExact(headerFlagDataString, DateTimeFormatKeys.DATE_TIME_FORMAT_2, null);
-
-
-                //创建时间头部摘要信息中有 此处直接跳过时间戳长度即可
-                encryptedStream.Position += CRYPTO_RANDOM_HEADER_FLAG_DATA_LENGTH;
-
-            }
-
-            //提取头摘要哈希值
-            var encryptModelJsonBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
-            FileHelper.ReadExactly(encryptedStream, encryptModelJsonBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
-            var encryptModelJsonBytesHashCode = encoding.GetString(encryptModelJsonBytesHashCodeBytes);
-
-            //提取头摘要长度
-            var encryptModelBytesLengthBytes = new byte[CRYPTO_HEADER_INFO_BYTES_LENGTH];
-            FileHelper.ReadExactly(encryptedStream, encryptModelBytesLengthBytes, 0, CRYPTO_HEADER_INFO_BYTES_LENGTH);
-            int encryptModelBytesLength = BitConverter.ToInt32(encryptModelBytesLengthBytes, 0);
-
-            //提取头摘要信息
-            var encryptModelJsonBytes = new byte[encryptModelBytesLength];
-            FileHelper.ReadExactly(encryptedStream, encryptModelJsonBytes, 0, encryptModelBytesLength);
-            var encryptModelHeaderJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
-
-            if (encryptModelJsonBytesHashCode != encryptModelHeaderJsonBytesHashCode)
-            {
-                encryptResultModel.ErrorMessage = "指纹信息效验失败,无法继续解析";
-                return encryptResultModel;
-            }
-
-
-
-            //EncryptDigestInfoModel encryptHeaderModel;
-
             try
             {
+                encryptedStream.Position = 0;
 
-                var encryptModelJson = CompressionHelper.DecompressStringFromBytes(encryptModelJsonBytes);
-                encryptResultModel = JsonSerializeHelper.DeserializeFromJson<TEncryptDigestInfoModel>(encryptModelJson);
-                encryptResultModel.DencryptHeaderInfoModelJsonString = encryptModelJson;
+                //提取随机种子标识位
+                var ifRandomBytes = new byte[1];
+                FileHelper.ReadExactly(encryptedStream, ifRandomBytes, 0, 1);
 
+                bool ifRandom = ifRandomBytes[0] != 0;
+
+                if (ifRandom)
+                {
+
+                    ////提取随机种子标识位
+                    //var headerFlagDataStringBytes = new byte[CRYPTO_RANDOM_HEADER_FLAG_DATA_LENGTH];
+                    //encryptedStream.Read(headerFlagDataStringBytes, 0, CRYPTO_RANDOM_HEADER_FLAG_DATA_LENGTH);
+                    //var headerFlagDataString = new string(Encoding.UTF8.GetString(headerFlagDataStringBytes).Reverse().ToArray());
+                    //encryptResultModel.CreateDateTime = DateTime.ParseExact(headerFlagDataString, DateTimeFormatKeys.DATE_TIME_FORMAT_2, null);
+
+
+                    //创建时间头部摘要信息中有 此处直接跳过时间戳长度即可
+                    encryptedStream.Position += CRYPTO_RANDOM_HEADER_FLAG_DATA_LENGTH;
+
+                }
+
+                //提取头摘要哈希值
+                var encryptModelJsonBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
+                FileHelper.ReadExactly(encryptedStream, encryptModelJsonBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
+                var encryptModelJsonBytesHashCode = encoding.GetString(encryptModelJsonBytesHashCodeBytes);
+
+                //提取头摘要长度
+                var encryptModelBytesLengthBytes = new byte[CRYPTO_HEADER_INFO_BYTES_LENGTH];
+                FileHelper.ReadExactly(encryptedStream, encryptModelBytesLengthBytes, 0, CRYPTO_HEADER_INFO_BYTES_LENGTH);
+                int encryptModelBytesLength = BitConverter.ToInt32(encryptModelBytesLengthBytes, 0);
+
+                //提取头摘要信息
+                var encryptModelJsonBytes = new byte[encryptModelBytesLength];
+                FileHelper.ReadExactly(encryptedStream, encryptModelJsonBytes, 0, encryptModelBytesLength);
+                var encryptModelHeaderJsonBytesHashCode = FileHelper.GetBytesHashCode(encryptModelJsonBytes, hashAlgorithmType: _CurrentHashAlgorithmType);
+
+                if (encryptModelJsonBytesHashCode != encryptModelHeaderJsonBytesHashCode)
+                {
+                    encryptResultModel.ErrorMessage = "指纹信息效验失败,无法继续解析";
+                    return encryptResultModel;
+                }
+
+
+
+                //EncryptDigestInfoModel encryptHeaderModel;
+
+                try
+                {
+
+                    var encryptModelJson = CompressionHelper.DecompressStringFromBytes(encryptModelJsonBytes);
+                    encryptResultModel = JsonSerializeHelper.DeserializeFromJson<TEncryptDigestInfoModel>(encryptModelJson);
+                    encryptResultModel.DencryptHeaderInfoModelJsonString = encryptModelJson;
+
+                }
+                catch (Exception)
+                {
+                    encryptResultModel.ErrorMessage = "指纹信息解析失败,无法继续解析";
+                    return encryptResultModel;
+                }
+
+
+                //提取正文大小
+                var encryptAfterContentBytesLengthBytes = new byte[CRYPTO_AFTER_CONTENT_BYTES_LENGTH];
+                FileHelper.ReadExactly(encryptedStream, encryptAfterContentBytesLengthBytes, 0, CRYPTO_AFTER_CONTENT_BYTES_LENGTH);
+                long encryptAfterContentBytesLength = BitConverter.ToInt64(encryptAfterContentBytesLengthBytes, 0);
+                //提取正文哈希值
+                var encryptAfterContentBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
+                FileHelper.ReadExactly(encryptedStream, encryptAfterContentBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
+                var encryptAfterContentBytesHashCode = encoding.GetString(encryptAfterContentBytesHashCodeBytes);
+
+                var currentPosition = encryptedStream.Position;
+
+                // 头部校验通过后，再对正文段做一次完整指纹比对，避免在错误密钥下直接进入解密流。
+                var encryptedAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, (int)currentPosition, _CurrentHashAlgorithmType);
+
+                if (encryptAfterContentBytesHashCode != encryptedAfterContentBytesHashCode)
+                {
+                    encryptResultModel.ErrorMessage = "加密信息效验失败,无法继续解析";
+                    return encryptResultModel;
+                }
+
+                //只有在随机加密情况下 时间戳才有值
+                //encryptHeaderModel.CreateDateTime
+
+                encryptResultModel.EncryptBytesSize = encryptedStream.Length;
+                encryptResultModel.EncryptBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, hashAlgorithmType: _CurrentHashAlgorithmType);
+                encryptResultModel.EncryptContentBytesSize = encryptAfterContentBytesLength;
+                encryptResultModel.EncryptContentBytesHashCode = encryptAfterContentBytesHashCode;
+
+                // 摘要 JSON 里原本没有最终正文大小和最终整体哈希，这里回填成完整诊断视图。
+                dynamic json = Newtonsoft.Json.Linq.JToken.Parse(encryptResultModel.DencryptHeaderInfoModelJsonString);
+                json.EncryptBytesSize = encryptResultModel.EncryptBytesSize;
+                json.EncryptBytesHashCode = encryptResultModel.EncryptBytesHashCode;
+                json.EncryptContentBytesSize = encryptResultModel.EncryptContentBytesSize;
+                json.EncryptContentBytesHashCode = encryptResultModel.EncryptContentBytesHashCode;
+                var jsonNew = json.ToString();
+                encryptResultModel.DencryptHeaderInfoModelJsonString = jsonNew;
+
+                encryptedStream.Position = currentPosition;
+
+                //encryptResultModel.IsSuccess = true;
+                //encryptResultModel.HeaderInfoModel = encryptHeaderModel;
+
+                //return encryptResultModel;
+
+                encryptResultModel.IsSuccess = true;
             }
             catch (Exception)
             {
-                encryptResultModel.ErrorMessage = "指纹信息解析失败,无法继续解析";
-                return encryptResultModel;
+                encryptResultModel.ErrorMessage = "加密信息结构无效,无法继续解析";
             }
-
-
-            //提取正文大小
-            var encryptAfterContentBytesLengthBytes = new byte[CRYPTO_AFTER_CONTENT_BYTES_LENGTH];
-            FileHelper.ReadExactly(encryptedStream, encryptAfterContentBytesLengthBytes, 0, CRYPTO_AFTER_CONTENT_BYTES_LENGTH);
-            long encryptAfterContentBytesLength = BitConverter.ToInt64(encryptAfterContentBytesLengthBytes, 0);
-            //提取正文哈希值
-            var encryptAfterContentBytesHashCodeBytes = new byte[BYTES_HASH_CODE_LENGTH];
-            FileHelper.ReadExactly(encryptedStream, encryptAfterContentBytesHashCodeBytes, 0, BYTES_HASH_CODE_LENGTH);
-            var encryptAfterContentBytesHashCode = encoding.GetString(encryptAfterContentBytesHashCodeBytes);
-
-            var currentPosition = encryptedStream.Position;
-
-            var encryptedAfterContentBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, (int)currentPosition, _CurrentHashAlgorithmType);
-
-            if (encryptAfterContentBytesHashCode != encryptedAfterContentBytesHashCode)
-            {
-                encryptResultModel.ErrorMessage = "加密信息效验失败,无法继续解析";
-                return encryptResultModel;
-            }
-
-            //只有在随机加密情况下 时间戳才有值
-            //encryptHeaderModel.CreateDateTime
-
-            encryptResultModel.EncryptBytesSize = encryptedStream.Length;
-            encryptResultModel.EncryptBytesHashCode = FileHelper.GetStreamHashCode(encryptedStream, hashAlgorithmType: _CurrentHashAlgorithmType);
-            encryptResultModel.EncryptContentBytesSize = encryptAfterContentBytesLength;
-            encryptResultModel.EncryptContentBytesHashCode = encryptAfterContentBytesHashCode;
-
-            dynamic json = Newtonsoft.Json.Linq.JToken.Parse(encryptResultModel.DencryptHeaderInfoModelJsonString);
-            json.EncryptBytesSize = encryptResultModel.EncryptBytesSize;
-            json.EncryptBytesHashCode = encryptResultModel.EncryptBytesHashCode;
-            json.EncryptContentBytesSize = encryptResultModel.EncryptContentBytesSize;
-            json.EncryptContentBytesHashCode = encryptResultModel.EncryptContentBytesHashCode;
-            var jsonNew = json.ToString();
-            encryptResultModel.DencryptHeaderInfoModelJsonString = jsonNew;
-
-            encryptedStream.Position = currentPosition;
-
-            //encryptResultModel.IsSuccess = true;
-            //encryptResultModel.HeaderInfoModel = encryptHeaderModel;
-
-            //return encryptResultModel;
-
-            encryptResultModel.IsSuccess = true;
 
             return encryptResultModel;
 
@@ -461,6 +488,8 @@ namespace Lanymy.Common.Instruments
                 encryptDigestInfoModel = GetEncryptDigestInfoModelFromEncryptedStream<TEncryptDigestInfoModel>(encryptedStream, encoding);
 
             }
+
+            PopulateEncryptedFilePath(encryptDigestInfoModel, encryptedFileFullPath);
 
             return encryptDigestInfoModel;
         }
@@ -492,9 +521,22 @@ namespace Lanymy.Common.Instruments
             using (ICryptoTransform transform = tripleDes.CreateDecryptor(secretKeyBytes, GetTripleDesInitializationVector(secretKeyBytes)))
             using (CryptoStream cryptoStream = new CryptoStream(decompressionStream, transform, CryptoStreamMode.Read))
             {
+                try
+                {
+                    //cryptoStream.CopyToAsync(sourceStream).Wait();
+                    cryptoStream.CopyTo(sourceStream);
+                }
+                catch (Exception)
+                {
+                    if (sourceStream.CanSeek)
+                    {
+                        sourceStream.SetLength(0);
+                        sourceStream.Position = 0;
+                    }
 
-                //cryptoStream.CopyToAsync(sourceStream).Wait();
-                cryptoStream.CopyTo(sourceStream);
+                    encryptResultModel.IsSuccess = false;
+                    encryptResultModel.ErrorMessage = "解密失败,密钥或加密内容无效";
+                }
 
             }
 
@@ -727,14 +769,18 @@ namespace Lanymy.Common.Instruments
 
             if (base64StringToDecrypt.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(base64StringToDecrypt));
 
-            var encryptDigestInfoModel = DecryptStringFromBytes<TEncryptDigestInfoModel>(Convert.FromBase64String(base64StringToDecrypt), secretKey, encoding);
-
-            if (encryptDigestInfoModel.IsSuccess)
+            TEncryptDigestInfoModel encryptDigestInfoModel;
+            try
             {
-
-                encryptDigestInfoModel.EncryptedBase64String = base64StringToDecrypt;
-
+                encryptDigestInfoModel = DecryptStringFromBytes<TEncryptDigestInfoModel>(Convert.FromBase64String(base64StringToDecrypt), secretKey, encoding);
             }
+            catch (FormatException)
+            {
+                encryptDigestInfoModel = new TEncryptDigestInfoModel();
+                MarkDigestFailure(encryptDigestInfoModel, "加密内容不是有效的Base64字符串");
+            }
+
+            encryptDigestInfoModel.EncryptedBase64String = base64StringToDecrypt;
 
             return encryptDigestInfoModel;
 
@@ -781,6 +827,43 @@ namespace Lanymy.Common.Instruments
 
         }
 
+        private static void PopulateModelTypeMetadata<T>(dynamic encryptModelDigestInfoModel)
+        {
+            var modelType = typeof(T);
+            encryptModelDigestInfoModel.ModelTypeName = modelType.Name;
+            encryptModelDigestInfoModel.ModelTypeFullName = modelType.FullName;
+        }
+
+        private static void MarkDigestFailure(dynamic encryptModelDigestInfoModel, string errorMessage)
+        {
+            encryptModelDigestInfoModel.IsSuccess = false;
+            encryptModelDigestInfoModel.ErrorMessage = errorMessage;
+        }
+
+        private static void PopulateEncryptedFilePath(dynamic encryptModelDigestInfoModel, string encryptedFileFullPath)
+        {
+            var propertyInfo = encryptModelDigestInfoModel.GetType().GetProperty("EncryptedFileFullPath");
+            if (propertyInfo != null && propertyInfo.CanWrite)
+            {
+                propertyInfo.SetValue(encryptModelDigestInfoModel, encryptedFileFullPath);
+            }
+        }
+
+        private static bool TryPopulateSourceModelFromJson<T>(dynamic encryptModelDigestInfoModel) where T : class
+        {
+            try
+            {
+                encryptModelDigestInfoModel.SourceModel = JsonSerializeHelper.DeserializeFromJson<T>(encryptModelDigestInfoModel.SourceString);
+                PopulateModelTypeMetadata<T>(encryptModelDigestInfoModel);
+                return true;
+            }
+            catch (Exception)
+            {
+                MarkDigestFailure(encryptModelDigestInfoModel, "模型反序列化失败,无法继续解析");
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// 解密并反序列化字节数组 返回 Model
@@ -800,8 +883,7 @@ namespace Lanymy.Common.Instruments
 
             if (encryptModelDigestInfoModel.IsSuccess)
             {
-
-                encryptModelDigestInfoModel.SourceModel = JsonSerializeHelper.DeserializeFromJson<T>(encryptModelDigestInfoModel.SourceString);
+                TryPopulateSourceModelFromJson<T>(encryptModelDigestInfoModel);
                 //encryptModelDigestInfoModel.SourceString = string.Empty;
 
             }
@@ -839,7 +921,20 @@ namespace Lanymy.Common.Instruments
         public override EncryptModelDigestInfoModel<T> DecryptModelFromBase64String<T>(string encryptBase64String, string secretKey = null, Encoding encoding = null) where T : class
         {
             if (encryptBase64String.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(encryptBase64String));
-            return DecryptModelFromBytes<T>(Convert.FromBase64String(encryptBase64String), secretKey, encoding);
+            EncryptModelDigestInfoModel<T> encryptModelDigestInfoModel;
+            try
+            {
+                encryptModelDigestInfoModel = DecryptModelFromBytes<T>(Convert.FromBase64String(encryptBase64String), secretKey, encoding);
+            }
+            catch (FormatException)
+            {
+                encryptModelDigestInfoModel = new EncryptModelDigestInfoModel<T>();
+                MarkDigestFailure(encryptModelDigestInfoModel, "加密内容不是有效的Base64字符串");
+            }
+
+            encryptModelDigestInfoModel.EncryptedBase64String = encryptBase64String;
+
+            return encryptModelDigestInfoModel;
         }
 
 
@@ -868,6 +963,7 @@ namespace Lanymy.Common.Instruments
             if (sourceBytes.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(sourceBytes));
 
             TEncryptDigestInfoModel encryptBytesDigestInfoModel;
+            EnsureParentDirectoryExists(encryptFileFullPath);
             using (var sourceStream = new MemoryStream(sourceBytes))
             using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
@@ -875,6 +971,7 @@ namespace Lanymy.Common.Instruments
                 encryptBytesDigestInfoModel = EncryptStreamToStream<TEncryptDigestInfoModel>(sourceStream, encryptStream, secretKey, ifRandom, encoding);
                 if (encryptBytesDigestInfoModel.IsSuccess)
                 {
+                    encryptBytesDigestInfoModel.SourceBytes = sourceBytes;
                     encryptBytesDigestInfoModel.EncryptedFileFullPath = encryptFileFullPath;
                 }
 
@@ -905,6 +1002,7 @@ namespace Lanymy.Common.Instruments
 
                 if (encryptStringFileDigestInfoModel.IsSuccess)
                 {
+                    encryptStringFileDigestInfoModel.SourceBytes = sourceStream.ToArray();
                     encryptStringFileDigestInfoModel.EncryptedFileFullPath = encryptedFileFullPath;
                 }
 
@@ -934,6 +1032,7 @@ namespace Lanymy.Common.Instruments
             var encryptStringFileDigestInfoModel = EncryptBytesToFile<TEncryptDigestInfoModel>(encoding.GetBytes(sourceString), encryptFileFullPath, secretKey, ifRandom, encoding);
             if (encryptStringFileDigestInfoModel.IsSuccess)
             {
+                encryptStringFileDigestInfoModel.SourceString = sourceString;
                 encryptStringFileDigestInfoModel.EncryptedFileFullPath = encryptFileFullPath;
             }
 
@@ -956,6 +1055,7 @@ namespace Lanymy.Common.Instruments
 
             if (encryptStringDigestInfoModel.IsSuccess)
             {
+                encryptStringDigestInfoModel.SourceString = encoding.GetString(encryptStringDigestInfoModel.SourceBytes);
                 encryptStringDigestInfoModel.EncryptedFileFullPath = encryptedFileFullPath;
             }
 
@@ -976,10 +1076,7 @@ namespace Lanymy.Common.Instruments
             {
 
                 encryptModelFileDigestInfoModel.SourceModel = t;
-
-                var modelType = typeof(T);
-                encryptModelFileDigestInfoModel.ModelTypeName = modelType.Name;
-                encryptModelFileDigestInfoModel.ModelTypeFullName = modelType.FullName;
+                PopulateModelTypeMetadata<T>(encryptModelFileDigestInfoModel);
 
                 encryptModelFileDigestInfoModel.EncryptedFileFullPath = encryptFileFullPath;
 
@@ -997,7 +1094,7 @@ namespace Lanymy.Common.Instruments
             if (encryptModelFileDigestInfoModel.IsSuccess)
             {
 
-                encryptModelFileDigestInfoModel.SourceModel = JsonSerializeHelper.DeserializeFromJson<T>(encryptModelFileDigestInfoModel.SourceString);
+                TryPopulateSourceModelFromJson<T>(encryptModelFileDigestInfoModel);
                 encryptModelFileDigestInfoModel.EncryptedFileFullPath = encryptedFileFullPath;
 
             }
@@ -1016,6 +1113,7 @@ namespace Lanymy.Common.Instruments
 
             EncryptStringFileDigestInfoModel encryptFileDigestInfoModel;
 
+            EnsureParentDirectoryExists(encryptFileFullPath);
             using (var sourceStream = File.OpenRead(sourceFileFullPath))
             using (var encryptStream = File.Create(encryptFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
@@ -1041,10 +1139,16 @@ namespace Lanymy.Common.Instruments
         public override EncryptStringFileDigestInfoModel DecryptFileFromFile(string encryptedFileFullPath, string sourceFileFullPath, string secretKey = null, Encoding encoding = null)
         {
             EncryptStringFileDigestInfoModel encryptStringFileDigestInfoModel;
+            EnsureParentDirectoryExists(sourceFileFullPath);
             using (var encryptedStream = File.OpenRead(encryptedFileFullPath))
             using (var sourceStream = File.Create(sourceFileFullPath, BufferSizeKeys.BUFFER_SIZE_4K))
             {
                 encryptStringFileDigestInfoModel = DencryptStreamFromStream<EncryptStringFileDigestInfoModel>(encryptedStream, sourceStream, secretKey, encoding);
+            }
+            if (encryptStringFileDigestInfoModel.IsSuccess)
+            {
+                encryptStringFileDigestInfoModel.EncryptedFileFullPath = encryptedFileFullPath;
+                encryptStringFileDigestInfoModel.SourceFileFullPath = sourceFileFullPath;
             }
             return encryptStringFileDigestInfoModel;
         }
@@ -1093,8 +1197,7 @@ namespace Lanymy.Common.Instruments
             {
                 for (int j = 0; j < sqrt; j++)
                 {
-
-                    //byte[] bytes = Encoding.UTF32.GetBytes(message[i * sqrt + j].ToString());
+                    // 每个字符编码为 4 字节 ARGB，再写进像素矩阵；这样图片本身就是密文载体。
                     byte[] bytes = Encoding.UTF32.GetBytes(messageChars, i * sqrt + j, 1);
                     EncryptBitmapBytes(random, bytes);
                     image.SetPixel(i, j, System.Drawing.Color.FromArgb(bytes[0], bytes[1], bytes[2], bytes[3]));
@@ -1113,7 +1216,7 @@ namespace Lanymy.Common.Instruments
             //var random = new Random((int)DateTime.Now.Ticks);
             //var random = new Random(Guid.NewGuid().GetHashCode());
             var randomBytes = BitConverter.GetBytes(random.Next(int.MinValue, int.MaxValue));
-            //除了第一个元素本值反转,其他三个全部随机翻转
+            // 只保留第一个字节的可逆信息，剩余三位混入随机值，减少肉眼可读痕迹。
             for (int i = 0; i < bitmapBytes.Length; i++)
             {
                 if (i > 0)
@@ -1155,6 +1258,7 @@ namespace Lanymy.Common.Instruments
                 for (int j = 0; j < encryptedBitmap.Height; j++)
                 {
                     var color = encryptedBitmap.GetPixel(i, j);
+                    // 解码时只读取 A 通道承载的有效字节，其余通道会在 DecryptBitmapBytes 中归零。
                     var bytes = new[] { color.A, color.R, color.G, color.B };
                     DecryptBitmapBytes(bytes);
                     sb.Append(Encoding.UTF32.GetString(bytes));
@@ -1230,12 +1334,23 @@ namespace Lanymy.Common.Instruments
 #endif
         public override TEncryptDigestInfoModel DecryptBytesFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
         {
-
-
-
-            var bitmapBase64String = GetStringFromEncryptedBitmap(encryptedBitmap);
-            var encryptedBytes = Convert.FromBase64String(bitmapBase64String);
-            var encryptBitmapDigestInfoModel = DecryptBytesFromBytes<TEncryptDigestInfoModel>(encryptedBytes, secretKey, encoding);
+            TEncryptDigestInfoModel encryptBitmapDigestInfoModel;
+            try
+            {
+                var bitmapBase64String = GetStringFromEncryptedBitmap(encryptedBitmap);
+                var encryptedBytes = Convert.FromBase64String(bitmapBase64String);
+                encryptBitmapDigestInfoModel = DecryptBytesFromBytes<TEncryptDigestInfoModel>(encryptedBytes, secretKey, encoding);
+            }
+            catch (ArgumentException ex)
+            {
+                encryptBitmapDigestInfoModel = new TEncryptDigestInfoModel();
+                MarkDigestFailure(encryptBitmapDigestInfoModel, ex.Message);
+            }
+            catch (FormatException)
+            {
+                encryptBitmapDigestInfoModel = new TEncryptDigestInfoModel();
+                MarkDigestFailure(encryptBitmapDigestInfoModel, "位图内容不是有效的加密数据");
+            }
 
             if (encryptBitmapDigestInfoModel.IsSuccess)
             {
@@ -1302,6 +1417,7 @@ namespace Lanymy.Common.Instruments
 #endif
         public override TEncryptDigestInfoModel DecryptStringFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
         {
+            if (encoding.IfIsNullOrEmpty()) encoding = DefaultSettingKeys.DEFAULT_ENCODING;
 
             var encryptBitmapDigestInfoModel = DecryptBytesFromBitmap<TEncryptDigestInfoModel>(encryptedBitmap, secretKey, encoding);
 
@@ -1330,10 +1446,7 @@ namespace Lanymy.Common.Instruments
             {
 
                 encryptModelFileDigestInfoModel.SourceModel = t;
-
-                var modelType = typeof(T);
-                encryptModelFileDigestInfoModel.ModelTypeName = modelType.Name;
-                encryptModelFileDigestInfoModel.ModelTypeFullName = modelType.FullName;
+                PopulateModelTypeMetadata<T>(encryptModelFileDigestInfoModel);
 
             }
 
@@ -1353,8 +1466,7 @@ namespace Lanymy.Common.Instruments
 
             if (encryptModelFileDigestInfoModel.IsSuccess)
             {
-
-                encryptModelFileDigestInfoModel.SourceModel = JsonSerializeHelper.DeserializeFromJson<T>(encryptModelFileDigestInfoModel.SourceString);
+                TryPopulateSourceModelFromJson<T>(encryptModelFileDigestInfoModel);
 
             }
 
@@ -1398,8 +1510,17 @@ namespace Lanymy.Common.Instruments
             var encryptStringImageFileDigestInfoModel = EncryptBytesToBitmap<TEncryptDigestInfoModel>(bytesToEncrypt, secretKey, encoding);
             if (encryptStringImageFileDigestInfoModel.IsSuccess)
             {
-                ImageHelper.SaveBitmapToImageFile(encryptStringImageFileDigestInfoModel.EncryptedBitmap, imageFileFullPath);
-                encryptStringImageFileDigestInfoModel.EncryptedFileFullPath = imageFileFullPath;
+                var saved = ImageHelper.SaveBitmapToImageFile(encryptStringImageFileDigestInfoModel.EncryptedBitmap, imageFileFullPath);
+                if (saved)
+                {
+                    encryptStringImageFileDigestInfoModel.EncryptedFileFullPath = imageFileFullPath;
+                }
+                else
+                {
+                    encryptStringImageFileDigestInfoModel.IsSuccess = false;
+                    encryptStringImageFileDigestInfoModel.ErrorMessage = "Failed to save encrypted bitmap to image file.";
+                }
+
                 encryptStringImageFileDigestInfoModel.EncryptedBitmap.Dispose();
                 encryptStringImageFileDigestInfoModel.EncryptedBitmap = null;
             }
@@ -1433,20 +1554,32 @@ namespace Lanymy.Common.Instruments
         {
 
             TEncryptDigestInfoModel encryptBitmapDigestInfoModel;
-
-            using (var encryptedBitmap = ImageHelper.GetBitmapFromImageFile(imageFileFullPath))
+            try
             {
-                encryptBitmapDigestInfoModel = DecryptBytesFromBitmap<TEncryptDigestInfoModel>(encryptedBitmap, secretKey, encoding);
-                if (encryptBitmapDigestInfoModel.IsSuccess)
+                using (var encryptedBitmap = ImageHelper.GetBitmapFromImageFile(imageFileFullPath))
                 {
-                    encryptBitmapDigestInfoModel.EncryptedFileFullPath = imageFileFullPath;
-                }
+                    encryptBitmapDigestInfoModel = DecryptBytesFromBitmap<TEncryptDigestInfoModel>(encryptedBitmap, secretKey, encoding);
+                    if (encryptBitmapDigestInfoModel.IsSuccess)
+                    {
+                        encryptBitmapDigestInfoModel.EncryptedFileFullPath = imageFileFullPath;
+                    }
 
-                if (!encryptBitmapDigestInfoModel.EncryptedBitmap.IfIsNullOrEmpty())
-                {
-                    encryptBitmapDigestInfoModel.EncryptedBitmap.Dispose();
-                    encryptBitmapDigestInfoModel.EncryptedBitmap = null;
+                    if (!encryptBitmapDigestInfoModel.EncryptedBitmap.IfIsNullOrEmpty())
+                    {
+                        encryptBitmapDigestInfoModel.EncryptedBitmap.Dispose();
+                        encryptBitmapDigestInfoModel.EncryptedBitmap = null;
+                    }
                 }
+            }
+            catch (FileNotFoundException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                encryptBitmapDigestInfoModel = new TEncryptDigestInfoModel();
+                MarkDigestFailure(encryptBitmapDigestInfoModel, "图片文件内容无效,无法继续解析");
+                encryptBitmapDigestInfoModel.EncryptedFileFullPath = imageFileFullPath;
             }
 
             return encryptBitmapDigestInfoModel;
@@ -1547,10 +1680,7 @@ namespace Lanymy.Common.Instruments
             {
 
                 encryptModelImageFileDigestInfoModel.SourceModel = t;
-
-                var modelType = typeof(T);
-                encryptModelImageFileDigestInfoModel.ModelTypeName = modelType.Name;
-                encryptModelImageFileDigestInfoModel.ModelTypeFullName = modelType.FullName;
+                PopulateModelTypeMetadata<T>(encryptModelImageFileDigestInfoModel);
 
             }
 
@@ -1569,8 +1699,7 @@ namespace Lanymy.Common.Instruments
 
             if (encryptModelBitmapDigestInfoModel.IsSuccess)
             {
-
-                encryptModelBitmapDigestInfoModel.SourceModel = JsonSerializeHelper.DeserializeFromJson<T>(encryptModelBitmapDigestInfoModel.SourceString);
+                TryPopulateSourceModelFromJson<T>(encryptModelBitmapDigestInfoModel);
 
             }
 

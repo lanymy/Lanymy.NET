@@ -8,8 +8,9 @@ using DotNetty.Transport.Channels.Sockets;
 
 namespace Lanymy.Common.Instruments.Common
 {
-
-
+    /// <summary>
+    /// 负责初始化 Netty Channel Pipeline，并挂载长度字段解码、空闲检测与最终业务处理器。
+    /// </summary>
     public abstract class BaseChannelInitializer<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext, TChannelHandler> : ChannelInitializer<ISocketChannel>
         where TReceivePackage : class
         where TSendPackage : class
@@ -19,8 +20,9 @@ namespace Lanymy.Common.Instruments.Common
         where TChannelContext : BaseChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions>
         where TChannelFixedHeaderPackageFilter : BaseChannelFixedHeaderPackageFilter<TReceivePackage, TSendPackage, TChannelSession>, new()
     {
-
-
+        /// <summary>
+        /// 当前通道上下文。
+        /// </summary>
         protected readonly TChannelContext _CurrentServerChannelContext;
         protected readonly BaseChannelOptions _CurrentChannelOptions;
 
@@ -30,7 +32,9 @@ namespace Lanymy.Common.Instruments.Common
 
         protected readonly Type _CurrentChannelClientHandlerType;
 
-
+        /// <summary>
+        /// 初始化通道初始化器。
+        /// </summary>
         protected BaseChannelInitializer
         (
             //ChannelOptionDto channelOptionDto
@@ -49,7 +53,6 @@ namespace Lanymy.Common.Instruments.Common
             _CurrentWriterIdleTime = TimeSpan.FromMilliseconds(_CurrentChannelOptions.IntervalHeartTotalMilliseconds);
 
         }
-
 
         protected override void InitChannel(ISocketChannel channel)
         {
@@ -86,6 +89,7 @@ namespace Lanymy.Common.Instruments.Common
 
         protected virtual void ConfigureBasePipeline(IChannelPipeline pipeline)
         {
+            // 基础 pipeline 先负责日志、心跳超时和基于长度字段的拆帧；业务 handler 最后挂入。
             pipeline
 
 #if DEBUG
@@ -113,6 +117,7 @@ namespace Lanymy.Common.Instruments.Common
         {
             if (_CurrentChannelOptions.IsUseSingleThreadEventLoop)
             {
+                // 把最终业务 handler 放到单线程事件循环，避免业务回调与前置解码链共享线程。
                 pipeline.AddLast(new SingleThreadEventLoop(), channelHandler);
             }
             else
@@ -194,16 +199,9 @@ namespace Lanymy.Common.Instruments.Common
         {
         }
 
-
-        //protected abstract TChannelHandler GetChannelHandler();
-
         protected virtual TChannelHandler GetChannelHandler()
         {
-            //return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext, _OnConnectToServerAction) as TClientChannelHandler;
             return Activator.CreateInstance(_CurrentChannelClientHandlerType, _CurrentServerChannelContext) as TChannelHandler;
         }
-
-
     }
-
 }

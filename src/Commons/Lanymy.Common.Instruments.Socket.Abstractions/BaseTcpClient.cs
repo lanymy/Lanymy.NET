@@ -10,16 +10,18 @@ using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {
-
-
+    /// <summary>
+    /// 提供主动连接型 TCP 客户端的收发、拆包和关闭收口逻辑。
+    /// </summary>
     public abstract class BaseTcpClient<TPackage, TSendPackage, TSessionToken, TFixedHeaderPackageFilter> : ITcpClient
         where TPackage : class
         where TSendPackage : class
         where TSessionToken : ISessionToken
         where TFixedHeaderPackageFilter : IFixedHeaderPackageFilter<TPackage, TSendPackage, TSessionToken>
     {
-
-
+        /// <summary>
+        /// 当前活动 socket。
+        /// </summary>
         public System.Net.Sockets.Socket CurrentSocket { get; private set; }
 
         public bool IsConnected
@@ -42,8 +44,6 @@ namespace Lanymy.Common.Instruments
         public string ServerIP { get; }
         public int Port { get; }
 
-        #region 内部变量
-
         protected readonly TFixedHeaderPackageFilter _CurrentFixedHeaderPackageFilter;
         protected readonly int _SendDataIntervalMilliseconds;
 
@@ -62,13 +62,17 @@ namespace Lanymy.Common.Instruments
 
         protected WorkTaskQueue<byte[]> _CurrentSendWorkTaskQueue;
 
-
-        #endregion
-
-
+        /// <summary>
+        /// 初始化 TCP 客户端。
+        /// </summary>
+        /// <param name="fixedHeaderPackageFilter">固定包头过滤器。</param>
+        /// <param name="serverIP">服务端 IP。</param>
+        /// <param name="port">服务端端口。</param>
+        /// <param name="sendDataIntervalMilliseconds">连续发送之间的节流间隔。</param>
+        /// <param name="receiveBufferSize">接收缓冲区大小。</param>
+        /// <param name="sendBufferSize">发送缓冲区大小。</param>
         protected BaseTcpClient(TFixedHeaderPackageFilter fixedHeaderPackageFilter, string serverIP, int port, int sendDataIntervalMilliseconds = 500, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K)
         {
-
             ReceiveBufferSize = receiveBufferSize;
             SendBufferSize = sendBufferSize;
             ServerIP = serverIP;
@@ -81,13 +85,7 @@ namespace Lanymy.Common.Instruments
 
             CurrentSocket = CreateSocket();
             _CurrentSendWorkTaskQueue = CreateSendWorkTaskQueue();
-
-
         }
-
-
-        #region 通知事件
-
 
         protected abstract void OnConnectionEvent();
 
@@ -108,12 +106,10 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnReceiveDataEvent(BufferModel buffer, CacheModel cache)
         {
-
             try
             {
                 while (true)
                 {
-
                     var packageBytes = _CurrentFixedHeaderPackageFilter.GetPackageBytes(buffer, cache);
 
                     if (packageBytes.IfIsNull())
@@ -174,7 +170,6 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void ReportError(Exception ex)
         {
-
             try
             {
                 lock (_ErrorLocker)
@@ -255,8 +250,9 @@ namespace Lanymy.Common.Instruments
             return TryWaitSynchronously(CloseAsync);
         }
 
-        #endregion
-
+        /// <summary>
+        /// 启动客户端并连接到服务端。
+        /// </summary>
         public void Start()
         {
             if (_IsDisposed)
@@ -294,7 +290,6 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-
                 _CurrentBuffer.Clear();
                 _CurrentCache.Clear();
 
@@ -302,6 +297,7 @@ namespace Lanymy.Common.Instruments
                 var currentNetworkStream = new NetworkStream(currentSocket);
                 _CurrentNetworkStream = currentNetworkStream;
 
+                // 发送队列必须在连接成功后立即进入工作态，确保连接事件内的首批发送不会丢失。
                 WaitSynchronously(() => currentSendWorkTaskQueue.StartAsync());
                 sendWorkTaskQueueStarted = true;
 
@@ -309,9 +305,9 @@ namespace Lanymy.Common.Instruments
 
                 if (CanContinueReceive(currentNetworkStream))
                 {
+                    // 从第一次 BeginRead 开始，后续由回调链自己续接。
                     currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
                 }
-
             }
             catch (Exception exception)
             {
@@ -349,16 +345,14 @@ namespace Lanymy.Common.Instruments
 
                 if (_CurrentReadCount > 0)
                 {
-
                     _CurrentBuffer.Position = _CurrentReadCount;
 
                     OnReceiveDataEvent(_CurrentBuffer, _CurrentCache);
-
-
                 }
 
                 if (CanContinueReceive(currentNetworkStream))
                 {
+                    // 始终基于当前流快照续接读取，避免关闭期旧回调误用新流。
                     currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize - _CurrentBuffer.Position, OnReceive, null);
                 }
 
@@ -386,23 +380,18 @@ namespace Lanymy.Common.Instruments
 
         protected virtual async Task OnSendWorkTaskQueueAsync(byte[] sendDataBytes)
         {
-
             try
             {
                 var currentNetworkStream = _CurrentNetworkStream;
 
-                //if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && IsConnected && !_CurrentNetworkStream.IfIsNull())
                 if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && !currentNetworkStream.IfIsNull())
                 {
-
                     await currentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
                     await currentNetworkStream.FlushAsync();
-                    //CurrentSessionToken.LastSendDateTime = DateTime.Now;
 
+                    // 发送节流用于降低连续写入把下游瞬时压满的概率。
                     await Task.Delay(_SendDataIntervalMilliseconds);
-
                 }
-
             }
             catch (Exception exception)
             {
@@ -532,6 +521,7 @@ namespace Lanymy.Common.Instruments
 
             if (ReferenceEquals(CurrentSocket, currentSocket))
             {
+                // client 在启动失败后会重建 socket，为后续重试保留干净句柄。
                 CurrentSocket = CreateSocket();
             }
 
@@ -543,7 +533,6 @@ namespace Lanymy.Common.Instruments
 
         protected virtual async Task OnCloseAsync()
         {
-
             if (!_IsRunning)
             {
                 return;
@@ -596,6 +585,7 @@ namespace Lanymy.Common.Instruments
 
                 if (ReferenceEquals(CurrentSocket, currentSocket))
                 {
+                    // 先清空引用，再做实际 Dispose，避免外部在关闭窗口继续拿到旧 socket。
                     CurrentSocket = null;
                 }
             }
@@ -638,12 +628,10 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-
                 _CurrentBuffer.Clear();
                 _CurrentCache.Clear();
 
                 OnCloseEvent();
-
             }
             catch (Exception ex)
             {
@@ -676,8 +664,6 @@ namespace Lanymy.Common.Instruments
         {
             await OnCloseAsync();
         }
-
-
 
         public void Dispose()
         {
@@ -791,8 +777,6 @@ namespace Lanymy.Common.Instruments
             {
                 OnCloseError(new InvalidOperationException("TcpClient dispose finalization failed.", ex));
             }
-
         }
-
     }
 }

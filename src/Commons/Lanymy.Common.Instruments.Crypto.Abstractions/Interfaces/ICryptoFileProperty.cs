@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments.Interfaces
 {
+    /// <summary>
+    /// 描述加密结果里与文件路径相关的公共属性。
+    /// </summary>
     public interface ICryptoFileProperty
     {
         /// <summary>

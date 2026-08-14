@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Lanymy.Common.Abstractions.Models;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.ExtensionFunctions;
@@ -15,6 +14,10 @@ namespace Lanymy.Common.Helpers
     /// </summary>
     public class VersionHelper
     {
+        private static Assembly GetCallDomainAssembly()
+        {
+            return Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        }
 
         /// <summary>
         /// 获取程序集版本号
@@ -36,7 +39,7 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static Version GetCallDomainAssemblyVersion()
         {
-            return GetAssemblyVersion(System.Reflection.Assembly.GetEntryAssembly());
+            return GetAssemblyVersion(GetCallDomainAssembly());
         }
 
 
@@ -46,14 +49,11 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static Version GetCallDomainAssemblyFileVersion()
         {
-
-
             var domainFullPath = PathHelper.GetCallDomainPath();
-            var assembly = System.Reflection.Assembly.GetEntryAssembly();
-            var fileName = assembly.ToString().LeftSubString(",");
+            var assembly = GetCallDomainAssembly();
+            var fileName = assembly.GetName().Name;
 
             var dllFileFullPath = Path.Combine(domainFullPath, fileName + FileExtensionKeys.DLL_FILE_EXTENSION);
-
 
             var fileVersion = GetFileVersion(dllFileFullPath);
 

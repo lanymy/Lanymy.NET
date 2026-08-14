@@ -55,6 +55,8 @@
 - 若要理解当前仓库整体定位与主结构，优先读 [ai_docs/agents/AGENTS-Lanymy.Common.md](./ai_docs/agents/AGENTS-Lanymy.Common.md)。
 - 若要继续深挖实现与分层，进入 [ai_docs/architecture/README.md](./ai_docs/architecture/README.md)。
 - 若要确认功能修改后的测试补齐约束，读 [ai_docs/conventions/Testing-Convention.md](./ai_docs/conventions/Testing-Convention.md)。
+- 若要确认通用 Helper / Instrument 的返回值、结果模型与异常边界，读 [ai_docs/conventions/HelperResult-Semantics-Convention.md](./ai_docs/conventions/HelperResult-Semantics-Convention.md)。
+- 若要确认兼容层仍保留的历史语义边界，读 [ai_docs/conventions/HelperCompatibility-Legacy-Semantics.md](./ai_docs/conventions/HelperCompatibility-Legacy-Semantics.md)。
 
 ## 7. 通用修改前后检查
 

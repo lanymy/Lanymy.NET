@@ -1,32 +1,38 @@
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 #if NET8_0_OR_GREATER
 using System.Runtime.Versioning;
 #endif
 using System.Text;
-using System.Threading.Tasks;
 using Lanymy.Common.Instruments.CryptoModels;
 
 namespace Lanymy.Common.Instruments.Interfaces
 {
+    /// <summary>
+    /// 定义返回具体摘要模型的位图与图片文件加解密泛型入口。
+    /// </summary>
     public interface ICryptoBitmapCore
     {
-
-
+        /// <summary>
+        /// 把字节数组加密为位图，并返回指定摘要模型。
+        /// </summary>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
         TEncryptDigestInfoModel EncryptBytesToBitmap<TEncryptDigestInfoModel>(byte[] bytesToEncrypt, string secretKey = null, Encoding encoding = null)
             where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
 
+        /// <summary>
+        /// 把位图解密为字节数组，并返回指定摘要模型。
+        /// </summary>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
         TEncryptDigestInfoModel DecryptBytesFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
             where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
 
+        /// <summary>
+        /// 把字符串加密为位图，并返回指定摘要模型。
+        /// </summary>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
@@ -34,28 +40,18 @@ namespace Lanymy.Common.Instruments.Interfaces
             where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
 
         /// <summary>
-        /// Decrypts the string from bitmap.
+        /// 把加密位图解密为字符串，并返回指定摘要模型。
         /// </summary>
-        /// <param name="encryptedBitmap">The encrypted bitmap.</param>
-        /// <param name="secretKey">The secret key.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException">不是有效的加密位图数据源</exception>
+        /// <exception cref="System.ArgumentException">不是有效的加密位图数据源。</exception>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
         TEncryptDigestInfoModel DecryptStringFromBitmap<TEncryptDigestInfoModel>(Bitmap encryptedBitmap, string secretKey = null, Encoding encoding = null)
             where TEncryptDigestInfoModel : EncryptStringBitmapDigestInfoModel, new();
 
-
         /// <summary>
-        /// Encrypts the bytes to image file.
+        /// 把字节数组加密为图片文件，并返回指定摘要模型。
         /// </summary>
-        /// <param name="bytesToEncrypt">The bytes to encrypt.</param>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <param name="secretKey">The secret key.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
@@ -63,12 +59,8 @@ namespace Lanymy.Common.Instruments.Interfaces
             where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
 
         /// <summary>
-        /// Decrypts the bytes from image file.
+        /// 从加密图片文件解密出字节数组，并返回指定摘要模型。
         /// </summary>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <param name="secretKey">The secret key.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns>System.Byte[].</returns>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
@@ -76,13 +68,8 @@ namespace Lanymy.Common.Instruments.Interfaces
             where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
 
         /// <summary>
-        /// Encrypts the string to image file.
+        /// 把字符串加密为图片文件，并返回指定摘要模型。
         /// </summary>
-        /// <param name="strToEncrypt">The string to encrypt.</param>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <param name="secretKey">The secret key.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
@@ -90,17 +77,12 @@ namespace Lanymy.Common.Instruments.Interfaces
             where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
 
         /// <summary>
-        /// Decrypts the string from image file.
+        /// 从加密图片文件解密出字符串，并返回指定摘要模型。
         /// </summary>
-        /// <param name="imageFileFullPath">The image file full path.</param>
-        /// <param name="secretKey">The secret key.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns>System.String.</returns>
 #if NET8_0_OR_GREATER
         [SupportedOSPlatform("windows")]
 #endif
         TEncryptDigestInfoModel DecryptStringFromImageFile<TEncryptDigestInfoModel>(string imageFileFullPath, string secretKey = null, Encoding encoding = null)
             where TEncryptDigestInfoModel : EncryptStringImageFileDigestInfoModel, new();
-
     }
 }

@@ -11,18 +11,21 @@ using Lanymy.Common.Helpers;
 
 namespace Lanymy.Common.Instruments.Crawlers
 {
-
-
+    /// <summary>
+    /// 示例资源爬虫，演示如何定时抓列表并并发处理详情页。
+    /// </summary>
     public class LanymyResourceCrawler : BaseResourceCrawler<string, ResourceCrawlerDataModel>
     {
-
-
+        /// <summary>
+        /// 是否启用当前示例爬虫。
+        /// </summary>
         public override bool IsEnabled { get; set; } = true;
 
-
+        /// <summary>
+        /// 初始化示例资源爬虫。
+        /// </summary>
         public LanymyResourceCrawler(string hostUrl, Action<TaskProgressModel> taskProgressAction, Action<List<ResourceCrawlerDataModel>> stopAndReadQueueAllDataAction, int workTaskTotalCount = 1, int taskDelayMilliseconds = 3 * 1000, int channelCapacityCount = 0) : base(hostUrl, taskProgressAction, stopAndReadQueueAllDataAction, workTaskTotalCount, taskDelayMilliseconds, channelCapacityCount)
         {
-
         }
 
 
@@ -32,7 +35,6 @@ namespace Lanymy.Common.Instruments.Crawlers
         /// <returns>是否中断此任务: True中断;False不中断继续执行下一次循环</returns>
         protected override AnalysisResourceListResult<string, ResourceCrawlerDataModel> OnAnalysisResourceList()
         {
-
             //解析一个http地址 获取 html
             //解析分页列表信息
             //此次要做分页分批次获取列表逻辑
@@ -45,7 +47,7 @@ namespace Lanymy.Common.Instruments.Crawlers
 
             var analysisResourceListResult = new AnalysisResourceListResult<string, ResourceCrawlerDataModel>();
 
-            //不中断定时器,等待下一次事件触发
+            // 示例里保持循环常驻，让下一次定时触发继续抓取下一批数据。
             analysisResourceListResult.IsBreak = false;
             analysisResourceListResult.AnalysisResourceList = new List<ResourceCrawlerDataModel>();
             for (int i = 0; i < 10; i++)
@@ -64,38 +66,20 @@ namespace Lanymy.Common.Instruments.Crawlers
             //analysisResourceListResult.IsBreak = true;
 
             //return analysisResourceListResult;
-
         }
-
 
         protected override void OnAnalysisResourceDetail(ResourceCrawlerDataModel crawlerDataModel)
         {
-
-            //处理明细页相关信息
-            //crawlerDataModel.Url;
-            //Thread.Sleep(3 * 1000);
-
-            //Debug.WriteLine(string.Format("[ {0} ] - [ {1} ]", crawlerDataModel.ID, crawlerDataModel.CreateDateTime));
-
+            // 真实业务里这里通常会拉详情页、提取下载地址并把结果转交给下载爬虫。
         }
-
 
         protected override void OnStopAndReadQueueAllDataAction(List<ResourceCrawlerDataModel> queueAllDataList)
         {
-
-            //var file = Path.Combine(PathHelper.GetCallDomainPath(), "1.txt");
-
-            ////队列未处理数据集合
-            //JsonSerializeHelper.SerializeToJsonFile(queueAllDataList, file);
-
+            // 这里预留了“停机落盘未完成任务”的扩展点，示例中不做具体实现。
         }
-
-
 
         protected override async Task OnStartAsync()
         {
-
-
             await base.OnStartAsync();
 
             ////挂载之前的未处理数据集合
@@ -119,18 +103,11 @@ namespace Lanymy.Common.Instruments.Crawlers
             //    });
 
             //}
-
         }
-
-
 
         protected override async Task OnDisposeAsync()
         {
             await Task.CompletedTask;
         }
-
-
     }
-
-
 }

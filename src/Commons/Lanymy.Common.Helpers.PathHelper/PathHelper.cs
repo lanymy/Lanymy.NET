@@ -30,6 +30,21 @@ namespace Lanymy.Common.Helpers
             return lastChar == Path.DirectorySeparatorChar || lastChar == Path.AltDirectorySeparatorChar;
         }
 
+        private static string NormalizeDirectoryPath(string path)
+        {
+            if (path.IfIsNullOrEmpty())
+            {
+                return string.Empty;
+            }
+
+            if (Path.DirectorySeparatorChar != Path.AltDirectorySeparatorChar)
+            {
+                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            }
+
+            return path;
+        }
+
         private static bool ShouldTreatAsDirectoryPath(string path)
         {
             if (path.IfIsNullOrEmpty())
@@ -190,6 +205,13 @@ namespace Lanymy.Common.Helpers
 
             if (!ShouldTreatAsDirectoryPath(path))
                 path = Path.GetDirectoryName(path);
+
+            if (path.IfIsNullOrEmpty())
+            {
+                return string.Empty;
+            }
+
+            path = NormalizeDirectoryPath(path);
 
 #if NET48
             if (path.Last() != Path.DirectorySeparatorChar)

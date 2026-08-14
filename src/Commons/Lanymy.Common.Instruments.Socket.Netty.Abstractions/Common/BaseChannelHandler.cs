@@ -10,7 +10,9 @@ using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Instruments.Common
 {
-
+    /// <summary>
+    /// 定义 Netty 通道业务处理器的公共收发、心跳和关闭收口逻辑。
+    /// </summary>
     public abstract class BaseChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TChannelOptions, TChannelContext> : ChannelHandlerAdapter, IChannelClientHandler<TChannelSession>
         where TReceivePackage : class
         where TSendPackage : class
@@ -25,6 +27,7 @@ namespace Lanymy.Common.Instruments.Common
 
         protected IChannelHandlerContext _CurrentChannelHandlerContext;
 
+        // 关闭请求状态通过原子位控制，避免多个回调在关闭窗口里重复 schedule / close。
         protected int _CurrentCloseRequestState = CloseRequestStateNone;
 
         protected TChannelSession _CurrentChannelSession = new();
@@ -290,6 +293,7 @@ namespace Lanymy.Common.Instruments.Common
 
                     try
                     {
+                        // 这里从 ArrayPool 借一块连续缓冲，把 DotNetty 的 IByteBuffer 快照成只读 Span 交给协议层。
                         buffer.GetBytes(buffer.ReaderIndex, packageDataBytes, 0, packageDataBytesLength);
 
                         //OnChannelReadBytes(context, packageDataBytesLength, packageDataBytes);
@@ -444,6 +448,7 @@ namespace Lanymy.Common.Instruments.Common
 
         protected virtual Task ScheduleSendBytesAsync(IChannelHandlerContext context, byte[] bytes)
         {
+            // 统一通过事件循环调度发送，避免在任意线程直接并发写 Channel。
             return context.Executor.ScheduleAsync(async () => await WriteBytesAsync(context, bytes), _CurrentSendDataIntervalMilliseconds);
         }
 
@@ -664,6 +669,7 @@ namespace Lanymy.Common.Instruments.Common
                     return false;
                 }
 
+                // 允许把“未请求”或“已安排延迟关闭”都原子切换成“立即关闭请求”。
                 if (Interlocked.CompareExchange(ref _CurrentCloseRequestState, CloseRequestStateRequested, currentState) == currentState)
                 {
                     return true;

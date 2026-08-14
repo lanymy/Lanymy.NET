@@ -15,6 +15,10 @@ namespace Lanymy.Common.AllTests
             Assert.IsTrue(result.IsSuccess);
             Assert.IsTrue(result.ProcessId.HasValue);
             Assert.IsNull(result.Exception);
+            Assert.IsTrue(string.IsNullOrEmpty(result.ErrorMessage));
+            Assert.IsTrue(result.CreateNoWindow);
+            Assert.IsFalse(result.UseShellExecute);
+            Assert.IsFalse(result.WaitedForExit);
         }
 
         [TestMethod]
@@ -25,7 +29,10 @@ namespace Lanymy.Common.AllTests
             Assert.IsFalse(result.IsStarted);
             Assert.IsFalse(result.IsSuccess);
             Assert.IsNotNull(result.Exception);
+            Assert.AreEqual(result.Exception.Message, result.ErrorMessage);
             Assert.IsFalse(result.ProcessId.HasValue);
+            Assert.IsTrue(result.CreateNoWindow);
+            Assert.IsFalse(result.WaitedForExit);
         }
 
         [TestMethod]
@@ -38,6 +45,8 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual(0, result.ExitCode);
             Assert.IsTrue(result.IsSuccess);
             Assert.IsNull(result.Exception);
+            Assert.IsTrue(string.IsNullOrEmpty(result.ErrorMessage));
+            Assert.IsTrue(result.WaitedForExit);
         }
 
         [TestMethod]
@@ -50,6 +59,8 @@ namespace Lanymy.Common.AllTests
             Assert.AreEqual(7, result.ExitCode);
             Assert.IsFalse(result.IsSuccess);
             Assert.IsNull(result.Exception);
+            Assert.AreEqual("Process exited with code 7.", result.ErrorMessage);
+            Assert.IsTrue(result.WaitedForExit);
         }
     }
 }

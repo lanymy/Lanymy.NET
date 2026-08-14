@@ -11,11 +11,14 @@ using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments
 {
-
-
+    /// <summary>
+    /// 表示服务端 accepted client 的收发和生命周期管理基类。
+    /// </summary>
     public abstract class BaseTcpServerClient : ITcpServerClient
     {
-
+        /// <summary>
+        /// 当前 accepted socket。
+        /// </summary>
         public System.Net.Sockets.Socket CurrentSocket { get; private set; }
 
         public bool IsConnected
@@ -63,9 +66,6 @@ namespace Lanymy.Common.Instruments
 
 
 
-        #region 通知事件
-
-
         public event TcpServerClientErrorEvent ServerClientErrorEvent;
 
         public event TcpReceiveDataEvent ReceiveDataEvent;
@@ -75,12 +75,6 @@ namespace Lanymy.Common.Instruments
         public event TcpCloseEvent CloseEvent;
 
         public event TcpHeartEvent HeartEvent;
-
-
-        #endregion
-
-
-        #region 内部变量
 
         protected readonly int _SendDataIntervalMilliseconds;
 
@@ -101,22 +95,17 @@ namespace Lanymy.Common.Instruments
 
         protected TimerWorkTask _CurrentHeartTimerWorkTask;
         protected WorkTaskQueue<byte[]> _CurrentSendWorkTaskQueue;
-
-
-
-        //protected Queue<byte[]> _SendQueue = new Queue<byte[]>(SEND_MAX_COUNT);
-
-        //private const int SEND_MAX_COUNT = 100;
-
-
-        #endregion
-
-
-
-
+        
+        /// <summary>
+        /// 初始化服务端 client 包装对象。
+        /// </summary>
+        /// <param name="socket">accepted socket。</param>
+        /// <param name="receiveBufferSize">接收缓冲区大小。</param>
+        /// <param name="sendBufferSize">发送缓冲区大小。</param>
+        /// <param name="sendDataIntervalMilliseconds">连续发送之间的节流间隔。</param>
+        /// <param name="heartIntervalMilliseconds">心跳检查间隔。</param>
         protected BaseTcpServerClient(System.Net.Sockets.Socket socket, int receiveBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendBufferSize = BufferSizeKeys.BUFFER_SIZE_8K, int sendDataIntervalMilliseconds = 500, int heartIntervalMilliseconds = 3 * 1000)
         {
-
             _SendDataIntervalMilliseconds = sendDataIntervalMilliseconds;
             ReceiveBufferSize = receiveBufferSize;
             SendBufferSize = sendBufferSize;
@@ -130,15 +119,7 @@ namespace Lanymy.Common.Instruments
 
             _CurrentHeartTimerWorkTask = new TimerWorkTask(OnHeartTimerWorkTask, heartIntervalMilliseconds);
             _CurrentSendWorkTaskQueue = new WorkTaskQueue<byte[]>(OnSendWorkTaskQueueAsync, null);
-
-
         }
-
-
-
-
-
-        #region 通知事件
 
         protected abstract void OnStartReceiveEvent();
 
@@ -169,10 +150,8 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void ReportServerClientError(Exception ex)
         {
-
             try
             {
-
                 OnServerClientErrorEvent(ex);
 
                 lock (_ServerClientErrorLocker)
@@ -211,8 +190,6 @@ namespace Lanymy.Common.Instruments
             {
                 OnCloseError(new InvalidOperationException("TcpServerClient close after error failed.", closeException));
             }
-
-
         }
 
         protected virtual void OnCloseError(Exception ex)
@@ -300,10 +277,8 @@ namespace Lanymy.Common.Instruments
 
         protected virtual void OnReceiveData(BufferModel buffer, CacheModel cache)
         {
-
             try
             {
-
                 OnReceiveDataEvent(buffer, cache);
 
                 if (!ReceiveDataEvent.IfIsNull())
@@ -319,11 +294,8 @@ namespace Lanymy.Common.Instruments
 
         }
 
-        #endregion
-
         private TimerWorkTaskDataResult OnHeartTimerWorkTask()
         {
-
             try
             {
                 if (!HeartEvent.IfIsNull())
@@ -337,11 +309,7 @@ namespace Lanymy.Common.Instruments
             }
 
             return null;
-
         }
-
-
-
 
         internal async Task StartReceiveAsync()
         {
@@ -374,6 +342,7 @@ namespace Lanymy.Common.Instruments
                     return;
                 }
 
+                // 先启动发送队列与心跳任务，再触发启动事件，保证事件内部可直接收发。
                 await _CurrentSendWorkTaskQueue.StartAsync();
                 sendWorkTaskQueueStarted = true;
                 if (!CanContinueStartReceive())
@@ -442,12 +411,10 @@ namespace Lanymy.Common.Instruments
             _CurrentCache.Clear();
         }
 
-
         private bool TryBeginReceive()
         {
             try
             {
-
                 if (_IsRunning)
                 {
                     _CurrentBuffer.Clear();
@@ -459,12 +426,11 @@ namespace Lanymy.Common.Instruments
                         return false;
                     }
 
+                    // 接收链以 BeginRead 为起点，后续每次回调按流快照继续续接。
                     currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize, OnReceive, null);
-
                 }
 
                 return true;
-
             }
             catch (Exception exception)
             {
@@ -513,12 +479,7 @@ namespace Lanymy.Common.Instruments
 
                 if (_CurrentReadCount > 0)
                 {
-
-                    //if (CurrentSessionToken != null)
-                    //{
-                    //    CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
-                    //}
-
+                    // 会话时间戳更新放在拆包前，保证即便后续业务处理失败也能反映“最近有流量进入”。
                     CurrentSessionToken.LastReceiveDateTimeTotalMillisecondsFromInstantiation = DateTimeHelper.GetTotalMillisecondsFromInstantiation(DateTime.Now);
                     CurrentSessionToken.LastReceiveDateTime = DateTime.Now;
 
@@ -528,7 +489,6 @@ namespace Lanymy.Common.Instruments
 
                 }
 
-                //if (_IsRunning && IsConnected && !_CurrentNetworkStream.IfIsNull())
                 if (CanContinueReceive(currentNetworkStream))
                 {
                     currentNetworkStream.BeginRead(_CurrentBuffer.BufferData, _CurrentBuffer.Position, _CurrentBuffer.BufferSize - _CurrentBuffer.Position, OnReceive, null);
@@ -548,30 +508,18 @@ namespace Lanymy.Common.Instruments
 
         protected virtual async Task OnSendWorkTaskQueueAsync(byte[] sendDataBytes)
         {
-
             try
             {
                 var currentNetworkStream = _CurrentNetworkStream;
 
-                //if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && IsConnected && !_CurrentNetworkStream.IfIsNull())
                 if (_IsRunning && !sendDataBytes.IfIsNullOrEmpty() && !currentNetworkStream.IfIsNull())
                 {
-
                     await currentNetworkStream.WriteAsync(sendDataBytes, 0, sendDataBytes.Length);
                     await currentNetworkStream.FlushAsync();
-
-                    //if (CurrentSessionToken != null)
-                    //{
-                    //    CurrentSessionToken.LastSendDateTime = DateTime.Now;
-                    //}
-
                     CurrentSessionToken.LastSendDateTime = DateTime.Now;
 
-
                     await Task.Delay(_SendDataIntervalMilliseconds);
-
                 }
-
             }
             catch (Exception exception)
             {
@@ -621,7 +569,6 @@ namespace Lanymy.Common.Instruments
 
         protected virtual async Task OnCloseAsync()
         {
-
             if (!_IsRunning)
             {
                 return;
@@ -689,6 +636,7 @@ namespace Lanymy.Common.Instruments
 
                 if (ReferenceEquals(CurrentSocket, currentSocket))
                 {
+                    // 先断开公开引用，再进入具体释放步骤，避免关闭中的对象继续暴露旧句柄。
                     CurrentSocket = null;
                 }
             }
@@ -733,17 +681,8 @@ namespace Lanymy.Common.Instruments
 
             try
             {
-
                 _CurrentBuffer.Clear();
                 _CurrentCache.Clear();
-
-                //_IsSend = false;
-                //if (!_SendQueue.IfIsNull())
-                //{
-                //    _SendQueue.Clear();
-                //}
-                //_SendQueue = null;
-
 
                 OnCloseEvent();
             }
@@ -768,12 +707,8 @@ namespace Lanymy.Common.Instruments
                 {
                     ClearServerClientEvents();
                 }
-
-                //CurrentSessionToken = null;
             }
-
         }
-
 
         public void Close()
         {
@@ -799,7 +734,6 @@ namespace Lanymy.Common.Instruments
         {
             await OnCloseAsync();
         }
-
 
         public void Dispose()
         {
@@ -878,6 +812,7 @@ namespace Lanymy.Common.Instruments
 
                 if (ReferenceEquals(CurrentSocket, currentSocket))
                 {
+                    // Dispose 路径同样保证关闭后不再保留 socket 引用。
                     CurrentSocket = null;
                 }
 
@@ -933,10 +868,6 @@ namespace Lanymy.Common.Instruments
             {
                 ClearServerClientEvents();
             }
-
         }
-
-
     }
-
 }

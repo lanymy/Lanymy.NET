@@ -24,9 +24,17 @@
 - **理解模块拆分**：读 [architecture/module_map/README.md](./architecture/module_map/README.md)。
 - **理解跨框架兼容**：读 [architecture/compatibility/README.md](./architecture/compatibility/README.md)。
 - **理解 Helpers / Instruments 两大能力面**：读 [architecture/helpers/README.md](./architecture/helpers/README.md) 与 [architecture/instruments/README.md](./architecture/instruments/README.md)。
+- **理解压缩辅助模块与文件压缩边界**：读 [architecture/helpers/CompressionHelper.md](./architecture/helpers/CompressionHelper.md)。
+- **理解文件边界 Helper 的推荐调用方式**：读 [architecture/helpers/File-Boundary-Helpers-Overview.md](./architecture/helpers/File-Boundary-Helpers-Overview.md)。
+- **理解二进制文件序列化辅助模块**：读 [architecture/helpers/FileSerializeHelper.md](./architecture/helpers/FileSerializeHelper.md)。
+- **理解 SerializeHelper 模块之间的职责分工**：读 [architecture/helpers/SerializeHelpers-Map.md](./architecture/helpers/SerializeHelpers-Map.md)。
+- **理解 Helper 结果模型分层与字段归类**：读 [architecture/helpers/Helper-ResultModels.md](./architecture/helpers/Helper-ResultModels.md)。
 - **了解测试现状**：读 [architecture/testing/README.md](./architecture/testing/README.md)。
 - **确认功能修改后的测试补齐规则**：读 [conventions/Testing-Convention.md](./conventions/Testing-Convention.md)。
+- **确认通用 Helper 的返回值 / 异常语义边界**：读 [conventions/HelperResult-Semantics-Convention.md](./conventions/HelperResult-Semantics-Convention.md)。
+- **确认兼容层仍保留的历史语义**：读 [conventions/HelperCompatibility-Legacy-Semantics.md](./conventions/HelperCompatibility-Legacy-Semantics.md)。
 - **查看当前任务与回归验证清单**：读 [tasks/active-regression-backlog.md](./tasks/active-regression-backlog.md)。
+- **查看结果型 API 调用面盘点**：读 [tasks/helper-result-api-adoption-audit.md](./tasks/helper-result-api-adoption-audit.md)。
 - **查看问题复验与修复过程**：读 [debugs/review_round_01.md](./debugs/review_round_01.md) 与 [debugs/fixed_issues_summary.md](./debugs/fixed_issues_summary.md)。
 - **查看第二轮系统性体检**：读 [debugs/review_round_02.md](./debugs/review_round_02.md) 与 [debugs/remediation_roadmap.md](./debugs/remediation_roadmap.md)。
 
@@ -51,13 +59,18 @@ ai_docs/
 │   │   └── README.md
 │   ├── helpers/
 │   │   ├── README.md
+│   │   ├── CompressionHelper.md
+│   │   ├── File-Boundary-Helpers-Overview.md
 │   │   ├── FileHelper.md
+│   │   ├── FileSerializeHelper.md
+│   │   ├── Helper-ResultModels.md
 │   │   ├── HttpHelper.md
 │   │   ├── ImageHelper.md
 │   │   ├── JsonSerializeHelper.md
 │   │   ├── NetworkHelper.md
 │   │   ├── PathHelper.md
 │   │   ├── ProcessHelper.md
+│   │   ├── SerializeHelpers-Map.md
 │   │   ├── QrCodeHelper.md
 │   │   └── SecurityHelper.md
 │   ├── instruments/
@@ -81,6 +94,8 @@ ai_docs/
 ├── conventions/
 │   ├── README.md
 │   ├── FileHeader-Convention.md
+│   ├── HelperCompatibility-Legacy-Semantics.md
+│   ├── HelperResult-Semantics-Convention.md
 │   ├── Naming-Convention.md
 │   ├── MultiTargeting-Convention.md
 │   └── Testing-Convention.md
@@ -96,6 +111,7 @@ ai_docs/
 ├── tasks/
 │   ├── README.md
 │   ├── active-regression-backlog.md
+│   ├── helper-result-api-adoption-audit.md
 │   └── archive/
 │       └── README.md
 └── skills/

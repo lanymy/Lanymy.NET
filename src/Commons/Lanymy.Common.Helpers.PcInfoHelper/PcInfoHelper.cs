@@ -11,6 +11,7 @@ using System.Runtime.Versioning;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers.ResultModels;
 
 namespace Lanymy.Common.Helpers
 {
@@ -26,22 +27,84 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static string GetHostName()
         {
-            return Dns.GetHostName();
+            var result = GetHostNameWithResult();
+            if (result.Exception != null)
+            {
+                throw result.Exception;
+            }
+
+            return result.HostName;
+        }
+
+        /// <summary>
+        /// 获取电脑主机名称，并返回详细结果。
+        /// </summary>
+        /// <returns>主机名称查询结果</returns>
+        public static HostNameQueryResultModel GetHostNameWithResult()
+        {
+            var result = new HostNameQueryResultModel();
+
+            try
+            {
+                result.HostName = Dns.GetHostName();
+                result.IsSuccess = !string.IsNullOrWhiteSpace(result.HostName);
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         private static string GetIP(System.Net.Sockets.AddressFamily addressFamily)
         {
-            string ip = string.Empty;
-            var ipAddress = Dns.GetHostAddresses(GetHostName());
-            if (!ipAddress.IfIsNullOrEmpty())
+            var result = GetIPWithResult(addressFamily);
+            if (result.Exception != null)
             {
-                var result = ipAddress.FirstOrDefault(p => p.AddressFamily == addressFamily);
-                if (!result.IfIsNullOrEmpty())
+                throw result.Exception;
+            }
+
+            return result.AddressText ?? string.Empty;
+        }
+
+        private static LocalNetworkAddressResultModel GetIPWithResult(AddressFamily addressFamily)
+        {
+            var result = new LocalNetworkAddressResultModel
+            {
+                AddressFamily = addressFamily,
+                CandidateAddresses = Array.Empty<IPAddress>(),
+            };
+
+            var hostNameResult = GetHostNameWithResult();
+            result.HostName = hostNameResult.HostName;
+            if (hostNameResult.Exception != null)
+            {
+                result.Exception = hostNameResult.Exception;
+                return result;
+            }
+
+            try
+            {
+                var ipAddresses = Dns.GetHostAddresses(result.HostName) ?? Array.Empty<IPAddress>();
+                var matchedAddresses = ipAddresses.Where(p => p.AddressFamily == addressFamily).ToList();
+
+                result.CandidateAddresses = matchedAddresses;
+
+                var address = matchedAddresses.FirstOrDefault();
+                if (address != null)
                 {
-                    ip = result.ToString();
+                    result.Address = address;
+                    result.AddressText = address.ToString();
+                    result.IsSuccess = true;
                 }
             }
-            return ip;
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -54,6 +117,15 @@ namespace Lanymy.Common.Helpers
         }
 
         /// <summary>
+        /// 获取本机 IPV4，并返回详细结果。
+        /// </summary>
+        /// <returns>IPV4 查询结果</returns>
+        public static LocalNetworkAddressResultModel GetIPV4WithResult()
+        {
+            return GetIPWithResult(System.Net.Sockets.AddressFamily.InterNetwork);
+        }
+
+        /// <summary>
         /// 获取IPV6
         /// </summary>
         /// <returns></returns>
@@ -62,34 +134,87 @@ namespace Lanymy.Common.Helpers
             return GetIP(System.Net.Sockets.AddressFamily.InterNetworkV6);
         }
 
+        /// <summary>
+        /// 获取本机 IPV6，并返回详细结果。
+        /// </summary>
+        /// <returns>IPV6 查询结果</returns>
+        public static LocalNetworkAddressResultModel GetIPV6WithResult()
+        {
+            return GetIPWithResult(System.Net.Sockets.AddressFamily.InterNetworkV6);
+        }
+
 
 
         public static string GetLocalIpAddress()
         {
-            UnicastIPAddressInformation mostSuitableIp = null;
-            var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-            foreach (var network in networkInterfaces)
+            var result = GetLocalIpAddressWithResult();
+            if (result.Exception != null)
             {
-                if (network.OperationalStatus != OperationalStatus.Up)
-                    continue;
-                var properties = network.GetIPProperties();
-                if (properties.GatewayAddresses.Count == 0)
-                    continue;
-
-                foreach (var address in properties.UnicastAddresses)
-                {
-                    if (address.Address.AddressFamily != AddressFamily.InterNetwork)
-                        continue;
-                    if (IPAddress.IsLoopback(address.Address))
-                        continue;
-                    return address.Address.ToString();
-                }
+                throw result.Exception;
             }
 
-            return mostSuitableIp != null
-                ? mostSuitableIp.Address.ToString()
-                : "";
+            return result.AddressText ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 获取本机首个带网关的非回环 IPV4 地址，并返回详细结果。
+        /// </summary>
+        /// <returns>本机本地 IP 查询结果</returns>
+        public static LocalNetworkAddressResultModel GetLocalIpAddressWithResult()
+        {
+            var result = new LocalNetworkAddressResultModel
+            {
+                AddressFamily = AddressFamily.InterNetwork,
+                CandidateAddresses = Array.Empty<IPAddress>(),
+            };
+
+            try
+            {
+                var candidateAddresses = new List<IPAddress>();
+                var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+                foreach (var network in networkInterfaces)
+                {
+                    if (network.OperationalStatus != OperationalStatus.Up)
+                    {
+                        continue;
+                    }
+
+                    var properties = network.GetIPProperties();
+                    if (properties.GatewayAddresses.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (var address in properties.UnicastAddresses)
+                    {
+                        if (address.Address.AddressFamily != AddressFamily.InterNetwork)
+                        {
+                            continue;
+                        }
+
+                        if (IPAddress.IsLoopback(address.Address))
+                        {
+                            continue;
+                        }
+
+                        candidateAddresses.Add(address.Address);
+                        result.Address = address.Address;
+                        result.AddressText = address.Address.ToString();
+                        result.IsSuccess = true;
+                        result.CandidateAddresses = candidateAddresses;
+                        return result;
+                    }
+                }
+
+                result.CandidateAddresses = candidateAddresses;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
 
@@ -228,7 +353,26 @@ namespace Lanymy.Common.Helpers
         {
             var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), targetShortcutFileName);
 
-            return CreateShortcut(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments);
+            return CreateBootAutoRunWithResult(sourceExeFileFullPath, targetShortcutFileName, description, isOverride, arguments).IsSuccess;
+        }
+
+        /// <summary>
+        /// 创建程序开机自启动，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceExeFileFullPath">源程序路径</param>
+        /// <param name="targetShortcutFileName">快捷方式文件名</param>
+        /// <param name="description">描述</param>
+        /// <param name="isOverride">是否覆盖</param>
+        /// <param name="arguments">参数</param>
+        /// <returns>快捷方式创建结果</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
+        public static ShortcutOperationResultModel CreateBootAutoRunWithResult(string sourceExeFileFullPath, string targetShortcutFileName, string description = null, bool isOverride = true, string arguments = null)
+        {
+            var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), targetShortcutFileName);
+
+            return CreateShortcutWithResult(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments);
         }
 
 
@@ -252,8 +396,27 @@ namespace Lanymy.Common.Helpers
 
             var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), targetShortcutFileName);
 
-            return CreateShortcut(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments);
+            return CreateDesktopShortcutWithResult(sourceExeFileFullPath, targetShortcutFileName, description, isOverride, arguments).IsSuccess;
 
+        }
+
+        /// <summary>
+        /// 创建桌面快捷方式，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceExeFileFullPath">源 exe 程序全路径</param>
+        /// <param name="targetShortcutFileName">快捷方式文件名</param>
+        /// <param name="description">描述</param>
+        /// <param name="isOverride">是否覆盖</param>
+        /// <param name="arguments">参数</param>
+        /// <returns>快捷方式创建结果</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
+        public static ShortcutOperationResultModel CreateDesktopShortcutWithResult(string sourceExeFileFullPath, string targetShortcutFileName, string description = null, bool isOverride = true, string arguments = null)
+        {
+            var targetShortcutFileFullPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), targetShortcutFileName);
+
+            return CreateShortcutWithResult(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments);
         }
 
 
@@ -271,6 +434,28 @@ namespace Lanymy.Common.Helpers
 #endif
         public static bool CreateShortcut(string sourceExeFileFullPath, string targetShortcutFileFullPath, string description = null, bool isOverride = true, string arguments = null)
         {
+            return CreateShortcutWithResult(sourceExeFileFullPath, targetShortcutFileFullPath, description, isOverride, arguments).IsSuccess;
+        }
+
+        /// <summary>
+        /// 创建一个快捷方式(用户级别)，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceExeFileFullPath">源 exe 程序全路径</param>
+        /// <param name="targetShortcutFileFullPath">目标快捷方式文件全路径</param>
+        /// <param name="description">描述</param>
+        /// <param name="isOverride">是否覆盖</param>
+        /// <param name="arguments">参数</param>
+        /// <returns>快捷方式创建结果</returns>
+#if NET8_0_OR_GREATER
+        [SupportedOSPlatform("windows")]
+#endif
+        public static ShortcutOperationResultModel CreateShortcutWithResult(string sourceExeFileFullPath, string targetShortcutFileFullPath, string description = null, bool isOverride = true, string arguments = null)
+        {
+            var result = new ShortcutOperationResultModel
+            {
+                SourcePath = sourceExeFileFullPath,
+                TargetPath = targetShortcutFileFullPath,
+            };
 
             try
             {
@@ -280,6 +465,8 @@ namespace Lanymy.Common.Helpers
                     targetShortcutFileFullPath += FileExtensionKeys.SHORTCUT_FILE_EXTENSION;
                 }
 
+                result.TargetPath = targetShortcutFileFullPath;
+
                 if (isOverride && File.Exists(targetShortcutFileFullPath))
                 {
                     File.Delete(targetShortcutFileFullPath);
@@ -288,7 +475,8 @@ namespace Lanymy.Common.Helpers
                 var shellType = Type.GetTypeFromProgID("WScript.Shell");
                 if (shellType == null)
                 {
-                    return false;
+                    result.Exception = new InvalidOperationException("WScript.Shell COM component is not available.");
+                    return result;
                 }
 
                 dynamic shell = Activator.CreateInstance(shellType);
@@ -302,13 +490,15 @@ namespace Lanymy.Common.Helpers
 
                 shortcut.Save();
 
-                return true;
+                result.IsSuccess = true;
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                result.Exception = ex;
             }
+
+            return result;
         }
 
 

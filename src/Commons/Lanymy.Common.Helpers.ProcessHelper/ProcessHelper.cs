@@ -94,6 +94,9 @@ namespace Lanymy.Common.Helpers
 
             result.ApplicationFileFullPath = processStartInfo.FileName;
             result.Arguments = processStartInfo.Arguments;
+            result.CreateNoWindow = processStartInfo.CreateNoWindow;
+            result.UseShellExecute = processStartInfo.UseShellExecute;
+            result.WaitedForExit = waitForExit;
 
             try
             {
@@ -104,6 +107,7 @@ namespace Lanymy.Common.Helpers
 
                     if (!result.IsStarted)
                     {
+                        result.ErrorMessage = "Process start returned false.";
                         return result;
                     }
 
@@ -114,17 +118,26 @@ namespace Lanymy.Common.Helpers
                         process.WaitForExit();
                         result.HasExited = true;
                         result.ExitCode = process.ExitCode;
+                        if (result.ExitCode.GetValueOrDefault() != 0)
+                        {
+                            result.ErrorMessage = $"Process exited with code {result.ExitCode}.";
+                        }
                     }
                     else if (TryGetExitCode(process, out var exitCode))
                     {
                         result.HasExited = true;
                         result.ExitCode = exitCode;
+                        if (result.ExitCode.GetValueOrDefault() != 0)
+                        {
+                            result.ErrorMessage = $"Process exited with code {result.ExitCode}.";
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
                 result.Exception = ex;
+                result.ErrorMessage = ex.Message;
             }
 
             return result;

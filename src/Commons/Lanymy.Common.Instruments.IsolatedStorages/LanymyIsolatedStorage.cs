@@ -67,6 +67,142 @@ namespace Lanymy.Common.Instruments
         }
 
         /// <summary>
+        /// 获取当前 token 对应的实际存储文件名。
+        /// </summary>
+        /// <param name="token">逻辑标识。</param>
+        /// <returns>实际存储文件名。</returns>
+        public virtual string GetStorageFileName(string token)
+        {
+            return MatchFileFullName(token);
+        }
+
+        /// <summary>
+        /// 获取当前 token 对应的文件系统路径。
+        /// </summary>
+        /// <param name="token">逻辑标识。</param>
+        /// <returns>文件系统模式下的物理路径；托管独立存储模式下返回空字符串。</returns>
+        public virtual string GetStorageFileFullPath(string token)
+        {
+            var storageFileName = GetStorageFileName(token);
+
+            if (storageFileName.IfIsNullOrEmpty())
+            {
+                return string.Empty;
+            }
+
+            if (IfIsCustomIsolatedStorageMode)
+            {
+                return GetCustomIsolatedStorageFileFullPath(storageFileName);
+            }
+
+            using (var store = GetSystemIsolatedStorage())
+            {
+                if (store.IfIsNullOrEmpty())
+                {
+                    return GetCustomIsolatedStorageFileFullPath(storageFileName);
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// 判断当前 token 对应的存储文件是否存在。
+        /// </summary>
+        /// <param name="token">逻辑标识。</param>
+        /// <returns>存在返回 True；否则返回 False。</returns>
+        public virtual bool StorageFileExists(string token)
+        {
+            var storageFileName = GetStorageFileName(token);
+
+            if (storageFileName.IfIsNullOrEmpty())
+            {
+                return false;
+            }
+
+            if (IfIsCustomIsolatedStorageMode)
+            {
+                return File.Exists(GetCustomIsolatedStorageFileFullPath(storageFileName));
+            }
+
+            using (var store = GetSystemIsolatedStorage())
+            {
+                if (!store.IfIsNullOrEmpty())
+                {
+                    return store.FileExists(storageFileName);
+                }
+            }
+
+            return File.Exists(GetCustomIsolatedStorageFileFullPath(storageFileName));
+        }
+
+        /// <summary>
+        /// 读取当前 token 对应的原始存储字节。
+        /// </summary>
+        /// <param name="token">逻辑标识。</param>
+        /// <returns>原始存储字节；文件不存在时返回 null。</returns>
+        public virtual byte[] GetStorageFileBytes(string token)
+        {
+            var storageFileName = GetStorageFileName(token);
+
+            if (storageFileName.IfIsNullOrEmpty())
+            {
+                return null;
+            }
+
+            if (IfIsCustomIsolatedStorageMode)
+            {
+                var customStorageFileFullPath = GetCustomIsolatedStorageFileFullPath(storageFileName);
+                return ReadStorageBytesFromFile(customStorageFileFullPath);
+            }
+
+            using (var store = GetSystemIsolatedStorage())
+            {
+                if (!store.IfIsNullOrEmpty())
+                {
+                    if (!store.FileExists(storageFileName))
+                    {
+                        return null;
+                    }
+
+                    using (var fileStream = store.OpenFile(storageFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        byte[] data = new byte[fileStream.Length];
+                        FileHelper.ReadExactly(fileStream, data, 0, data.Length);
+                        return data;
+                    }
+                }
+            }
+
+            var fileFullPath = GetCustomIsolatedStorageFileFullPath(storageFileName);
+            return ReadStorageBytesFromFile(fileFullPath);
+        }
+
+        /// <summary>
+        /// 从文件系统模式的存储文件中读取原始字节。
+        /// </summary>
+        /// <param name="fileFullPath">物理文件路径。</param>
+        /// <returns>原始字节；文件不存在时返回 null。</returns>
+        protected virtual byte[] ReadStorageBytesFromFile(string fileFullPath)
+        {
+            var fileReadResult = FileHelper.GetBinaryFileBytesWithResult(fileFullPath);
+            if (!fileReadResult.IsSuccess)
+            {
+                if (fileReadResult.Exception is FileNotFoundException)
+                {
+                    return null;
+                }
+
+                if (!fileReadResult.Exception.IfIsNullOrEmpty())
+                {
+                    throw fileReadResult.Exception;
+                }
+            }
+
+            return fileReadResult.Bytes;
+        }
+
+        /// <summary>
         /// 字符串写入到数据流中
         /// </summary>
         /// <param name="stream"></param>

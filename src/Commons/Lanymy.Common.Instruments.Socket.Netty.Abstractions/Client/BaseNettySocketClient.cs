@@ -11,9 +11,9 @@ using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments.Client
 {
-
-
-
+    /// <summary>
+    /// 提供 Netty TCP 客户端的启动、重连、停止和资源收口逻辑。
+    /// </summary>
     public abstract class BaseNettySocketClient<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext, TClientChannelHandler, TClientChannelInitializer> : BaseSocketHost<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext, TClientChannelHandler, TClientChannelInitializer>
         where TReceivePackage : class
         where TSendPackage : class
@@ -24,17 +24,19 @@ namespace Lanymy.Common.Instruments.Client
         where TClientChannelHandler : BaseClientChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext>
         where TClientChannelInitializer : BaseClientChannelInitializer<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TClientChannelOptions, TClientChannelContext, TClientChannelHandler>
     {
-
-
+        /// <summary>
+        /// 目标服务端地址。
+        /// </summary>
         protected readonly IPEndPoint _CurrentTcpServerIPEndPoint;
         protected Bootstrap _CurrentBootstrap;
         protected Task _CurrentReconnectTask;
         protected CancellationTokenSource _CurrentReconnectCancellationTokenSource;
         protected long _CurrentReconnectGeneration;
-
+        /// <summary>
+        /// 初始化 Netty 客户端。
+        /// </summary>
         protected BaseNettySocketClient(TClientChannelContext serverChannelContext) : base(serverChannelContext)
         {
-
             var tcpServerIP = _CurrentChannelOptions.ServerIP;
             var tcpServerPort = _CurrentChannelOptions.Port;
             _CurrentTcpServerIPEndPoint = new IPEndPoint(IPAddress.Parse(tcpServerIP), tcpServerPort);
@@ -42,7 +44,6 @@ namespace Lanymy.Common.Instruments.Client
             _CurrentChannelContext.CurrentConnectToServerAction = EnsureReconnectLoopStarted;
 
         }
-
 
         protected override async Task OnStartAsync()
         {
@@ -62,6 +63,7 @@ namespace Lanymy.Common.Instruments.Client
 
                 currentReconnectCancellationTokenSource = CreateReconnectCancellationTokenSource();
                 _CurrentReconnectCancellationTokenSource = currentReconnectCancellationTokenSource;
+                // 启动阶段只负责点燃重连循环，真正的连接建立由重连循环串行执行。
                 EnsureReconnectLoopStarted(reconnectGeneration);
 
                 await Task.CompletedTask;
@@ -194,6 +196,7 @@ namespace Lanymy.Common.Instruments.Client
 
         protected virtual long BeginReconnectGeneration()
         {
+            // 每次新启动都切到新的 generation，让旧 handler/旧任务的重连请求自动失效。
             var reconnectGeneration = Interlocked.Increment(ref _CurrentReconnectGeneration);
             _CurrentChannelContext.CurrentReconnectGeneration = reconnectGeneration;
             return reconnectGeneration;
@@ -429,6 +432,7 @@ namespace Lanymy.Common.Instruments.Client
                     return false;
                 }
 
+                // 避免并发重连窗口里把第二个已连接 channel 抢绑到当前宿主上。
                 if (HasActiveBoundChannel() && !ReferenceEquals(_CurrentChannelHost, currentChannelHost))
                 {
                     return false;
@@ -454,6 +458,7 @@ namespace Lanymy.Common.Instruments.Client
 
                     if (!_CurrentChannelHost.IfIsNull() && _CurrentChannelHost.Active)
                     {
+                        // 已经有活跃连接时直接退出本轮重连循环。
                         return;
                     }
 
@@ -521,6 +526,7 @@ namespace Lanymy.Common.Instruments.Client
 
                 if (!_CurrentReconnectTask.IfIsNullOrEmpty() && !_CurrentReconnectTask.IsCompleted)
                 {
+                    // 同一 generation 只允许一个重连循环在跑，避免重复拨号。
                     return;
                 }
 
@@ -546,6 +552,7 @@ namespace Lanymy.Common.Instruments.Client
             {
                 if (!currentReconnectCancellationTokenSource.IfIsNull())
                 {
+                    // 先取消重连循环，避免 stop 和下一轮拨号交错。
                     currentReconnectCancellationTokenSource.Cancel();
                 }
             }

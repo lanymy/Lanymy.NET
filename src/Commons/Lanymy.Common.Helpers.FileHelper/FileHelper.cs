@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using Lanymy.Common.Abstractions.Models;
 using Lanymy.Common.Enums;
@@ -47,9 +48,10 @@ namespace Lanymy.Common.Helpers
             string hashString = string.Empty;
             using (var hash = CreateHashAlgorithm(hashAlgorithmType))
             {
-                if (offset >= 0 && offset < inputStream.Length)
+                if (inputStream.CanSeek)
                 {
-                    inputStream.Position = offset;
+                    var normalizedOffset = offset >= 0 && offset < inputStream.Length ? offset : 0;
+                    inputStream.Position = normalizedOffset;
                 }
                 var bytes = hash.ComputeHash(inputStream);
                 hashString = BitConverter.ToString(bytes).Replace("-", "");
@@ -102,13 +104,45 @@ namespace Lanymy.Common.Helpers
         /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否 覆盖目标文件</param>
         public static void CopyFile(string sourceFileFullPath, string targetFileFullPath, bool ifOverWriteTargetFile = true)
         {
+            var result = CopyFileWithResult(sourceFileFullPath, targetFileFullPath, ifOverWriteTargetFile);
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
 
-            if (!File.Exists(sourceFileFullPath))
-                throw new FileNotFoundException(nameof(sourceFileFullPath));
+        /// <summary>
+        /// 复制文件，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFileFullPath">源文件全路径</param>
+        /// <param name="targetFileFullPath">目标文件全路径</param>
+        /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否覆盖目标文件</param>
+        /// <returns>文件复制结果</returns>
+        public static FileOperationResultModel CopyFileWithResult(string sourceFileFullPath, string targetFileFullPath, bool ifOverWriteTargetFile = true)
+        {
+            var result = new FileOperationResultModel
+            {
+                SourcePath = sourceFileFullPath,
+                TargetPath = targetFileFullPath,
+            };
 
-            PathHelper.InitDirectoryPath(targetFileFullPath);
-            File.Copy(sourceFileFullPath, targetFileFullPath, ifOverWriteTargetFile);
+            try
+            {
+                if (!File.Exists(sourceFileFullPath))
+                {
+                    throw new FileNotFoundException("Source file does not exist.", sourceFileFullPath);
+                }
 
+                PathHelper.InitDirectoryPath(targetFileFullPath);
+                File.Copy(sourceFileFullPath, targetFileFullPath, ifOverWriteTargetFile);
+                result.IsSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -121,6 +155,25 @@ namespace Lanymy.Common.Helpers
             if (scheduleFileInfo.IfIsNullOrEmpty())
                 throw new ArgumentNullException(nameof(scheduleFileInfo));
             CopyFile(scheduleFileInfo.SourceFileFullPath, scheduleFileInfo.TargetFileFullPath, ifOverWriteTargetFile);
+        }
+
+        /// <summary>
+        /// 复制文件，并返回详细结果。
+        /// </summary>
+        /// <param name="scheduleFileInfo">文件调度信息实体类</param>
+        /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否覆盖目标文件</param>
+        /// <returns>文件复制结果</returns>
+        public static FileOperationResultModel CopyFileWithResult(ScheduleFileInfoModel scheduleFileInfo, bool ifOverWriteTargetFile = true)
+        {
+            if (scheduleFileInfo.IfIsNullOrEmpty())
+            {
+                return new FileOperationResultModel
+                {
+                    Exception = new ArgumentNullException(nameof(scheduleFileInfo)),
+                };
+            }
+
+            return CopyFileWithResult(scheduleFileInfo.SourceFileFullPath, scheduleFileInfo.TargetFileFullPath, ifOverWriteTargetFile);
         }
 
         /// <summary>
@@ -139,6 +192,39 @@ namespace Lanymy.Common.Helpers
             }
         }
 
+        /// <summary>
+        /// 批量复制文件，并返回明细结果。
+        /// </summary>
+        /// <param name="scheduleFileInfoList">文件调度信息实体类集合</param>
+        /// <param name="ifOverWriteTargetFile">如果目标文件存在 是否覆盖目标文件</param>
+        /// <returns>批量文件复制结果</returns>
+        public static BatchFileOperationResultModel CopyFilesWithResult(IEnumerable<ScheduleFileInfoModel> scheduleFileInfoList, bool ifOverWriteTargetFile = true)
+        {
+            var scheduleFileInfos = scheduleFileInfoList?.ToList();
+
+            if (scheduleFileInfos.IfIsNullOrEmpty())
+            {
+                return new BatchFileOperationResultModel
+                {
+                    RequestedItemCount = scheduleFileInfos?.Count ?? 0,
+                    Exception = new ArgumentNullException(nameof(scheduleFileInfoList)),
+                };
+            }
+
+            var results = new List<FileOperationResultModel>();
+
+            foreach (var scheduleFileInfoModel in scheduleFileInfos)
+            {
+                results.Add(CopyFileWithResult(scheduleFileInfoModel, ifOverWriteTargetFile));
+            }
+
+            return new BatchFileOperationResultModel
+            {
+                RequestedItemCount = scheduleFileInfos.Count,
+                Results = results,
+            };
+        }
+
         #region 移动文件
 
         /// <summary>
@@ -148,11 +234,49 @@ namespace Lanymy.Common.Helpers
         /// <param name="targetFileFullPath">目标文件物理全路径</param>
         public static void MoveFile(string sourceFileFullPath, string targetFileFullPath)
         {
-            if (File.Exists(sourceFileFullPath))
+            if (!File.Exists(sourceFileFullPath))
             {
+                return;
+            }
+
+            var result = MoveFileWithResult(sourceFileFullPath, targetFileFullPath);
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 移动文件，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFileFullPath">源文件物理全路径</param>
+        /// <param name="targetFileFullPath">目标文件物理全路径</param>
+        /// <returns>文件移动结果</returns>
+        public static FileOperationResultModel MoveFileWithResult(string sourceFileFullPath, string targetFileFullPath)
+        {
+            var result = new FileOperationResultModel
+            {
+                SourcePath = sourceFileFullPath,
+                TargetPath = targetFileFullPath,
+            };
+
+            try
+            {
+                if (!File.Exists(sourceFileFullPath))
+                {
+                    throw new FileNotFoundException("Source file does not exist.", sourceFileFullPath);
+                }
+
                 PathHelper.InitDirectoryPath(targetFileFullPath);
                 File.Move(sourceFileFullPath, targetFileFullPath);
+                result.IsSuccess = true;
             }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         #endregion
@@ -291,11 +415,51 @@ namespace Lanymy.Common.Helpers
         public static void CreateBinaryFile(string binaryFileFullPath, byte[] bytes)
         {
             if (bytes.IfIsNullOrEmpty()) return;
-            PathHelper.InitDirectoryPath(binaryFileFullPath);
-            using (FileStream fs = new FileStream(binaryFileFullPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            var result = CreateBinaryFileWithResult(binaryFileFullPath, bytes);
+            if (!result.IsSuccess && result.Exception != null)
             {
-                fs.Write(bytes, 0, bytes.Length);
+                throw result.Exception;
             }
+        }
+
+        /// <summary>
+        /// 创建二进制文件，并返回详细结果。
+        /// </summary>
+        /// <param name="binaryFileFullPath">二进制文件全路径</param>
+        /// <param name="bytes">二进制数据</param>
+        /// <returns>文件创建结果</returns>
+        public static FileOperationResultModel CreateBinaryFileWithResult(string binaryFileFullPath, byte[] bytes)
+        {
+            var result = new FileOperationResultModel
+            {
+                SourcePath = binaryFileFullPath,
+                TargetPath = binaryFileFullPath,
+            };
+
+            try
+            {
+                if (bytes == null)
+                {
+                    throw new ArgumentNullException(nameof(bytes));
+                }
+
+                PathHelper.InitDirectoryPath(binaryFileFullPath);
+                using (FileStream fs = new FileStream(binaryFileFullPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                {
+                    if (bytes.Length > 0)
+                    {
+                        fs.Write(bytes, 0, bytes.Length);
+                    }
+                }
+
+                result.IsSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -305,23 +469,62 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static byte[] GetBinaryFileBytes(string binaryFileFullPath)
         {
-
-            if (!File.Exists(binaryFileFullPath)) return null;
-
-            byte[] bytes;
-
-            using (FileStream fs = new FileStream(binaryFileFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            var result = GetBinaryFileBytesWithResult(binaryFileFullPath);
+            if (!result.IsSuccess)
             {
-                if (fs.Length > int.MaxValue)
+                if (result.Exception is FileNotFoundException)
                 {
-                    throw new IOException("Binary file is too large to read into a single byte array.");
+                    return null;
                 }
 
-                bytes = new byte[fs.Length];
-                ReadExactly(fs, bytes, 0, bytes.Length);
+                if (result.Exception != null)
+                {
+                    throw result.Exception;
+                }
             }
 
-            return bytes;
+            return result.Bytes;
+        }
+
+        /// <summary>
+        /// 一次性读取二进制文件全部内容，并返回详细结果。
+        /// </summary>
+        /// <param name="binaryFileFullPath">二进制文件全路径</param>
+        /// <returns>二进制文件读取结果</returns>
+        public static BinaryFileReadResultModel GetBinaryFileBytesWithResult(string binaryFileFullPath)
+        {
+            var result = new BinaryFileReadResultModel
+            {
+                FilePath = binaryFileFullPath,
+            };
+
+            try
+            {
+                if (!File.Exists(binaryFileFullPath))
+                {
+                    throw new FileNotFoundException("Binary file does not exist.", binaryFileFullPath);
+                }
+
+                using (FileStream fs = new FileStream(binaryFileFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    if (fs.Length > int.MaxValue)
+                    {
+                        throw new IOException("Binary file is too large to read into a single byte array.");
+                    }
+
+                    result.Bytes = new byte[fs.Length];
+                    ReadExactly(fs, result.Bytes, 0, result.Bytes.Length);
+                }
+
+                result.BytesLength = result.Bytes.Length;
+                result.IsSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>

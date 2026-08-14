@@ -12,6 +12,7 @@ using System.Text;
 using Lanymy.Common.ConstKeys;
 using Lanymy.Common.Enums;
 using Lanymy.Common.ExtensionFunctions;
+using Lanymy.Common.Helpers.ResultModels;
 using Lanymy.Common.Instruments;
 using Lanymy.Common.Instruments.CryptoModels;
 using Lanymy.Common.Instruments.Interfaces;
@@ -386,12 +387,39 @@ namespace Lanymy.Common.Helpers
         /// <param name="rawData">证书二进制数据</param>
         public static void LoadCertificate(byte[] rawData)
         {
+            var result = LoadCertificateWithResult(rawData);
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
 
-            if (rawData.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(rawData));
+        }
 
+        /// <summary>
+        /// 动态加载证书，并返回详细结果。
+        /// </summary>
+        /// <param name="rawData">证书二进制数据。</param>
+        /// <param name="storeLocation">证书存储位置，默认写入 LocalMachine。</param>
+        /// <param name="trustedStoreName">受信任证书存储名称，默认写入 Root。</param>
+        /// <param name="personalStoreName">个人证书存储名称，默认写入 My。</param>
+        /// <returns>证书加载结果。</returns>
+        public static SecurityCertificateLoadResultModel LoadCertificateWithResult(byte[] rawData, StoreLocation storeLocation = StoreLocation.LocalMachine, StoreName trustedStoreName = StoreName.Root, StoreName personalStoreName = StoreName.My)
+        {
+            var result = CreateCertificateLoadResultModel(storeLocation, null, trustedStoreName, personalStoreName);
 
-            LoadCertificate(new X509Certificate2(rawData));
+            try
+            {
+                if (rawData.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(rawData));
 
+                using var certificate = new X509Certificate2(rawData);
+                result = LoadCertificateWithResult(certificate, storeLocation, trustedStoreName, personalStoreName);
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
 
@@ -402,9 +430,40 @@ namespace Lanymy.Common.Helpers
         /// <param name="password">证书密码</param>
         public static void LoadCertificate(byte[] rawData, string password)
         {
-            if (rawData.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(rawData));
-            if (password.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
-            LoadCertificate(new X509Certificate2(rawData, password));
+            var result = LoadCertificateWithResult(rawData, password);
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 动态加载带密码的证书，并返回详细结果。
+        /// </summary>
+        /// <param name="rawData">证书二进制数据。</param>
+        /// <param name="password">证书密码。</param>
+        /// <param name="storeLocation">证书存储位置，默认写入 LocalMachine。</param>
+        /// <param name="trustedStoreName">受信任证书存储名称，默认写入 Root。</param>
+        /// <param name="personalStoreName">个人证书存储名称，默认写入 My。</param>
+        /// <returns>证书加载结果。</returns>
+        public static SecurityCertificateLoadResultModel LoadCertificateWithResult(byte[] rawData, string password, StoreLocation storeLocation = StoreLocation.LocalMachine, StoreName trustedStoreName = StoreName.Root, StoreName personalStoreName = StoreName.My)
+        {
+            var result = CreateCertificateLoadResultModel(storeLocation, null, trustedStoreName, personalStoreName);
+
+            try
+            {
+                if (rawData.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(rawData));
+                if (password.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
+
+                using var certificate = new X509Certificate2(rawData, password);
+                result = LoadCertificateWithResult(certificate, storeLocation, trustedStoreName, personalStoreName);
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -413,8 +472,39 @@ namespace Lanymy.Common.Helpers
         /// <param name="certFileFullPath">证书文件全路径</param>
         public static void LoadCertificate(string certFileFullPath)
         {
-            if (!File.Exists(certFileFullPath)) throw new FileNotFoundException(certFileFullPath);
-            LoadCertificate(new X509Certificate2(certFileFullPath));
+            var result = LoadCertificateWithResult(certFileFullPath);
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 从文件动态加载证书，并返回详细结果。
+        /// </summary>
+        /// <param name="certFileFullPath">证书文件全路径。</param>
+        /// <param name="storeLocation">证书存储位置，默认写入 LocalMachine。</param>
+        /// <param name="trustedStoreName">受信任证书存储名称，默认写入 Root。</param>
+        /// <param name="personalStoreName">个人证书存储名称，默认写入 My。</param>
+        /// <returns>证书加载结果。</returns>
+        public static SecurityCertificateLoadResultModel LoadCertificateWithResult(string certFileFullPath, StoreLocation storeLocation = StoreLocation.LocalMachine, StoreName trustedStoreName = StoreName.Root, StoreName personalStoreName = StoreName.My)
+        {
+            var result = CreateCertificateLoadResultModel(storeLocation, certFileFullPath, trustedStoreName, personalStoreName);
+
+            try
+            {
+                if (!File.Exists(certFileFullPath)) throw new FileNotFoundException(certFileFullPath);
+
+                using var certificate = new X509Certificate2(certFileFullPath);
+                result = LoadCertificateWithResult(certificate, storeLocation, trustedStoreName, personalStoreName);
+                result.FilePath = certFileFullPath;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -424,9 +514,41 @@ namespace Lanymy.Common.Helpers
         /// <param name="password">证书密码</param>
         public static void LoadCertificate(string certFileFullPath, string password)
         {
-            if (!File.Exists(certFileFullPath)) throw new FileNotFoundException(certFileFullPath);
-            if (password.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
-            LoadCertificate(new X509Certificate2(certFileFullPath, password));
+            var result = LoadCertificateWithResult(certFileFullPath, password);
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 从带密码的证书文件动态加载证书，并返回详细结果。
+        /// </summary>
+        /// <param name="certFileFullPath">证书文件全路径。</param>
+        /// <param name="password">证书密码。</param>
+        /// <param name="storeLocation">证书存储位置，默认写入 LocalMachine。</param>
+        /// <param name="trustedStoreName">受信任证书存储名称，默认写入 Root。</param>
+        /// <param name="personalStoreName">个人证书存储名称，默认写入 My。</param>
+        /// <returns>证书加载结果。</returns>
+        public static SecurityCertificateLoadResultModel LoadCertificateWithResult(string certFileFullPath, string password, StoreLocation storeLocation = StoreLocation.LocalMachine, StoreName trustedStoreName = StoreName.Root, StoreName personalStoreName = StoreName.My)
+        {
+            var result = CreateCertificateLoadResultModel(storeLocation, certFileFullPath, trustedStoreName, personalStoreName);
+
+            try
+            {
+                if (!File.Exists(certFileFullPath)) throw new FileNotFoundException(certFileFullPath);
+                if (password.IfIsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
+
+                using var certificate = new X509Certificate2(certFileFullPath, password);
+                result = LoadCertificateWithResult(certificate, storeLocation, trustedStoreName, personalStoreName);
+                result.FilePath = certFileFullPath;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -435,25 +557,80 @@ namespace Lanymy.Common.Helpers
         /// <param name="certificate">证书实例</param>
         public static void LoadCertificate(X509Certificate2 certificate)
         {
-
-            using (X509Store storeRoot = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
+            var result = LoadCertificateWithResult(certificate);
+            if (!result.IsSuccess && result.Exception != null)
             {
-                storeRoot.Open(OpenFlags.ReadWrite);
-                if (!storeRoot.Certificates.Contains(certificate))
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 动态加载证书，并返回详细结果。
+        /// </summary>
+        /// <param name="certificate">证书实例。</param>
+        /// <param name="storeLocation">证书存储位置，默认写入 LocalMachine。</param>
+        /// <param name="trustedStoreName">受信任证书存储名称，默认写入 Root。</param>
+        /// <param name="personalStoreName">个人证书存储名称，默认写入 My。</param>
+        /// <returns>证书加载结果。</returns>
+        public static SecurityCertificateLoadResultModel LoadCertificateWithResult(X509Certificate2 certificate, StoreLocation storeLocation = StoreLocation.LocalMachine, StoreName trustedStoreName = StoreName.Root, StoreName personalStoreName = StoreName.My)
+        {
+            var result = CreateCertificateLoadResultModel(storeLocation, null, trustedStoreName, personalStoreName);
+
+            try
+            {
+                if (certificate == null) throw new ArgumentNullException(nameof(certificate));
+
+                result.CertificateThumbprint = certificate.Thumbprint;
+                result.CertificateSubject = certificate.Subject;
+
+                using (X509Store trustedStore = new X509Store(trustedStoreName, storeLocation))
                 {
-                    storeRoot.Add(certificate);
+                    trustedStore.Open(OpenFlags.ReadWrite);
+                    result.ExistsInTrustedStore = ContainsCertificate(trustedStore, certificate);
+                    if (!result.ExistsInTrustedStore)
+                    {
+                        trustedStore.Add(certificate);
+                        result.AddedToTrustedStore = true;
+                        result.ExistsInTrustedStore = ContainsCertificate(trustedStore, certificate);
+                    }
                 }
+
+                using (X509Store personalStore = new X509Store(personalStoreName, storeLocation))
+                {
+                    personalStore.Open(OpenFlags.ReadWrite);
+                    result.ExistsInPersonalStore = ContainsCertificate(personalStore, certificate);
+                    if (!result.ExistsInPersonalStore)
+                    {
+                        personalStore.Add(certificate);
+                        result.AddedToPersonalStore = true;
+                        result.ExistsInPersonalStore = ContainsCertificate(personalStore, certificate);
+                    }
+                }
+
+                result.IsSuccess = result.ExistsInTrustedStore && result.ExistsInPersonalStore;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
             }
 
-            using (X509Store storeMy = new X509Store(StoreName.My, StoreLocation.LocalMachine))
-            {
-                storeMy.Open(OpenFlags.ReadWrite);
-                if (!storeMy.Certificates.Contains(certificate))
-                {
-                    storeMy.Add(certificate);
-                }
-            }
+            return result;
+        }
 
+        private static SecurityCertificateLoadResultModel CreateCertificateLoadResultModel(StoreLocation storeLocation, string filePath = null, StoreName trustedStoreName = StoreName.Root, StoreName personalStoreName = StoreName.My)
+        {
+            return new SecurityCertificateLoadResultModel
+            {
+                FilePath = filePath,
+                StoreLocation = storeLocation,
+                TrustedStoreName = trustedStoreName,
+                PersonalStoreName = personalStoreName,
+            };
+        }
+
+        private static bool ContainsCertificate(X509Store store, X509Certificate2 certificate)
+        {
+            return store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, false).Count > 0;
         }
 
 
@@ -552,11 +729,46 @@ namespace Lanymy.Common.Helpers
         /// <param name="privateKeyBase64String">私钥 Blob Base64String 形式 的 密钥 字符串</param>
         public static void CreateRsaKeyBlobBase64String(RsaKeySizeTypeEnum keySizeType, out string publicKeyBlobBase64String, out string privateKeyBase64String)
         {
+            var result = CreateRsaKeyBlobBase64StringWithResult(keySizeType);
+            publicKeyBlobBase64String = result.PublicKeyBlobBase64String;
+            privateKeyBase64String = result.PrivateKeyBlobBase64String;
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
 
-            CreateRsaKeyBlobBytes(keySizeType, out var publicKeyBlobBytes, out var privateKeyBlobBytes);
-            publicKeyBlobBase64String = Convert.ToBase64String(publicKeyBlobBytes);
-            privateKeyBase64String = Convert.ToBase64String(privateKeyBlobBytes);
+        /// <summary>
+        /// 创建 RSA 的 Blob Base64String 形式密钥，并返回详细结果。
+        /// </summary>
+        /// <param name="keySizeType">密钥长度。</param>
+        /// <returns>RSA Blob Base64 字符串密钥结果。</returns>
+        public static SecurityRsaKeyBlobStringResultModel CreateRsaKeyBlobBase64StringWithResult(RsaKeySizeTypeEnum keySizeType)
+        {
+            var result = new SecurityRsaKeyBlobStringResultModel
+            {
+                KeySizeType = keySizeType,
+            };
 
+            try
+            {
+                var blobBytesResult = CreateRsaKeyBlobBytesWithResult(keySizeType);
+                if (!blobBytesResult.IsSuccess)
+                {
+                    result.Exception = blobBytesResult.Exception;
+                    return result;
+                }
+
+                result.PublicKeyBlobBase64String = Convert.ToBase64String(blobBytesResult.PublicKeyBlobBytes);
+                result.PrivateKeyBlobBase64String = Convert.ToBase64String(blobBytesResult.PrivateKeyBlobBytes);
+                result.IsSuccess = !result.PublicKeyBlobBase64String.IfIsNullOrEmpty() && !result.PrivateKeyBlobBase64String.IfIsNullOrEmpty();
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -567,9 +779,40 @@ namespace Lanymy.Common.Helpers
         /// <param name="privateKeyBlobBytes">私钥 Blob 原始 二进制 数据</param>
         public static void CreateRsaKeyBlobBytes(RsaKeySizeTypeEnum keySizeType, out byte[] publicKeyBlobBytes, out byte[] privateKeyBlobBytes)
         {
-            var rsa = new RSACryptoServiceProvider((int)keySizeType);
-            publicKeyBlobBytes = rsa.ExportCspBlob(false);
-            privateKeyBlobBytes = rsa.ExportCspBlob(true);
+            var result = CreateRsaKeyBlobBytesWithResult(keySizeType);
+            publicKeyBlobBytes = result.PublicKeyBlobBytes;
+            privateKeyBlobBytes = result.PrivateKeyBlobBytes;
+            if (!result.IsSuccess && result.Exception != null)
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 创建 RSA 的 Blob 原始二进制密钥，并返回详细结果。
+        /// </summary>
+        /// <param name="keySizeType">密钥长度。</param>
+        /// <returns>RSA Blob 二进制密钥结果。</returns>
+        public static SecurityRsaKeyBlobBytesResultModel CreateRsaKeyBlobBytesWithResult(RsaKeySizeTypeEnum keySizeType)
+        {
+            var result = new SecurityRsaKeyBlobBytesResultModel
+            {
+                KeySizeType = keySizeType,
+            };
+
+            try
+            {
+                using var rsa = new RSACryptoServiceProvider((int)keySizeType);
+                result.PublicKeyBlobBytes = rsa.ExportCspBlob(false);
+                result.PrivateKeyBlobBytes = rsa.ExportCspBlob(true);
+                result.IsSuccess = result.PublicKeyBlobBytes != null && result.PrivateKeyBlobBytes != null;
+            }
+            catch (Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -581,21 +824,37 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static byte[] RsaEncryptBytesToBytes(byte[] publicKeyBlobBytes, RsaKeySizeTypeEnum keySizeType, byte[] bytesToEncrypt)
         {
+            return RsaEncryptBytesToBytesWithResult(publicKeyBlobBytes, keySizeType, bytesToEncrypt).ResultBytes;
+        }
 
-            byte[] bytes = null;
+        /// <summary>
+        /// RSA 加密二进制数组，并返回详细结果。
+        /// </summary>
+        /// <param name="publicKeyBlobBytes">公钥 Blob 二进制数组。</param>
+        /// <param name="keySizeType">密钥长度。</param>
+        /// <param name="bytesToEncrypt">要加密的二进制数组。</param>
+        /// <returns>RSA 二进制加密结果。</returns>
+        public static SecurityRsaBytesOperationResultModel RsaEncryptBytesToBytesWithResult(byte[] publicKeyBlobBytes, RsaKeySizeTypeEnum keySizeType, byte[] bytesToEncrypt)
+        {
+            var result = new SecurityRsaBytesOperationResultModel
+            {
+                IsEncryptOperation = true,
+                KeySizeType = keySizeType,
+            };
 
             try
             {
-                var rsa = new RSACryptoServiceProvider((int)keySizeType);
+                using var rsa = new RSACryptoServiceProvider((int)keySizeType);
                 rsa.ImportCspBlob(publicKeyBlobBytes);
-                bytes = rsa.Encrypt(bytesToEncrypt, false);
+                result.ResultBytes = rsa.Encrypt(bytesToEncrypt, false);
+                result.IsSuccess = result.ResultBytes != null;
             }
-            catch
+            catch (Exception ex)
             {
-
+                result.Exception = ex;
             }
 
-            return bytes;
+            return result;
 
         }
 
@@ -608,23 +867,37 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static byte[] RsaDecryptBytesFromBytes(byte[] privateKeyBlobBytes, RsaKeySizeTypeEnum keySizeType, byte[] bytesToDecrypt)
         {
+            return RsaDecryptBytesFromBytesWithResult(privateKeyBlobBytes, keySizeType, bytesToDecrypt).ResultBytes;
+        }
 
-            byte[] bytes = null;
+        /// <summary>
+        /// RSA 解密二进制数组，并返回详细结果。
+        /// </summary>
+        /// <param name="privateKeyBlobBytes">私钥 Blob 二进制数组。</param>
+        /// <param name="keySizeType">密钥长度。</param>
+        /// <param name="bytesToDecrypt">要解密的二进制数组。</param>
+        /// <returns>RSA 二进制解密结果。</returns>
+        public static SecurityRsaBytesOperationResultModel RsaDecryptBytesFromBytesWithResult(byte[] privateKeyBlobBytes, RsaKeySizeTypeEnum keySizeType, byte[] bytesToDecrypt)
+        {
+            var result = new SecurityRsaBytesOperationResultModel
+            {
+                IsEncryptOperation = false,
+                KeySizeType = keySizeType,
+            };
 
             try
             {
-
-                var rsa = new RSACryptoServiceProvider((int)keySizeType);
+                using var rsa = new RSACryptoServiceProvider((int)keySizeType);
                 rsa.ImportCspBlob(privateKeyBlobBytes);
-                bytes = rsa.Decrypt(bytesToDecrypt, false);
-
+                result.ResultBytes = rsa.Decrypt(bytesToDecrypt, false);
+                result.IsSuccess = result.ResultBytes != null;
             }
-            catch
+            catch (Exception ex)
             {
-
+                result.Exception = ex;
             }
 
-            return bytes;
+            return result;
 
         }
 
@@ -637,19 +910,42 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static string RsaEncryptStringToBase64String(string publicKeyBlobBase64String, RsaKeySizeTypeEnum keySizeType, string strToEncrypt)
         {
+            return RsaEncryptStringToBase64StringWithResult(publicKeyBlobBase64String, keySizeType, strToEncrypt).ResultString ?? string.Empty;
+        }
 
-            string encryptBase64String = string.Empty;
+        /// <summary>
+        /// RSA 加密字符串，并返回详细结果。
+        /// </summary>
+        /// <param name="publicKeyBlobBase64String">公钥 Blob Base64 字符串。</param>
+        /// <param name="keySizeType">密钥长度。</param>
+        /// <param name="strToEncrypt">要加密的字符串。</param>
+        /// <returns>RSA 字符串加密结果。</returns>
+        public static SecurityRsaStringOperationResultModel RsaEncryptStringToBase64StringWithResult(string publicKeyBlobBase64String, RsaKeySizeTypeEnum keySizeType, string strToEncrypt)
+        {
+            var result = new SecurityRsaStringOperationResultModel
+            {
+                IsEncryptOperation = true,
+                KeySizeType = keySizeType,
+            };
 
             try
             {
-                encryptBase64String = Convert.ToBase64String(RsaEncryptBytesToBytes(Convert.FromBase64String(publicKeyBlobBase64String), keySizeType, DefaultSettingKeys.DEFAULT_ENCODING.GetBytes(strToEncrypt)));
+                var bytesResult = RsaEncryptBytesToBytesWithResult(Convert.FromBase64String(publicKeyBlobBase64String), keySizeType, DefaultSettingKeys.DEFAULT_ENCODING.GetBytes(strToEncrypt));
+                if (!bytesResult.IsSuccess)
+                {
+                    result.Exception = bytesResult.Exception;
+                    return result;
+                }
+
+                result.ResultString = Convert.ToBase64String(bytesResult.ResultBytes);
+                result.IsSuccess = !result.ResultString.IfIsNullOrEmpty();
             }
-            catch
+            catch (Exception ex)
             {
-
+                result.Exception = ex;
             }
 
-            return encryptBase64String;
+            return result;
 
         }
 
@@ -662,21 +958,42 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static string RsaDecryptStringFromBase64String(string privateKeyBlobBase64String, RsaKeySizeTypeEnum keySizeType, string base64StringToDecrypt)
         {
+            return RsaDecryptStringFromBase64StringWithResult(privateKeyBlobBase64String, keySizeType, base64StringToDecrypt).ResultString ?? string.Empty;
+        }
 
-            string decryptString = string.Empty;
+        /// <summary>
+        /// RSA 解密 Base64 字符串，并返回详细结果。
+        /// </summary>
+        /// <param name="privateKeyBlobBase64String">私钥 Blob Base64 字符串。</param>
+        /// <param name="keySizeType">密钥长度。</param>
+        /// <param name="base64StringToDecrypt">要解密的 Base64 字符串。</param>
+        /// <returns>RSA 字符串解密结果。</returns>
+        public static SecurityRsaStringOperationResultModel RsaDecryptStringFromBase64StringWithResult(string privateKeyBlobBase64String, RsaKeySizeTypeEnum keySizeType, string base64StringToDecrypt)
+        {
+            var result = new SecurityRsaStringOperationResultModel
+            {
+                IsEncryptOperation = false,
+                KeySizeType = keySizeType,
+            };
 
             try
             {
+                var bytesResult = RsaDecryptBytesFromBytesWithResult(Convert.FromBase64String(privateKeyBlobBase64String), keySizeType, Convert.FromBase64String(base64StringToDecrypt));
+                if (!bytesResult.IsSuccess)
+                {
+                    result.Exception = bytesResult.Exception;
+                    return result;
+                }
 
-                decryptString = DefaultSettingKeys.DEFAULT_ENCODING.GetString(RsaDecryptBytesFromBytes(Convert.FromBase64String(privateKeyBlobBase64String), keySizeType, Convert.FromBase64String(base64StringToDecrypt)));
-
+                result.ResultString = DefaultSettingKeys.DEFAULT_ENCODING.GetString(bytesResult.ResultBytes);
+                result.IsSuccess = result.ResultString != null;
             }
-            catch
+            catch (Exception ex)
             {
-
+                result.Exception = ex;
             }
 
-            return decryptString;
+            return result;
 
         }
 

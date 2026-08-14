@@ -13,7 +13,9 @@ using Lanymy.Common.Instruments.Interfaces;
 
 namespace Lanymy.Common.Instruments
 {
-
+    /// <summary>
+    /// 统一定义仓库内加密能力的抽象基类，覆盖流、字节、字符串、文件、位图和模型对象场景。
+    /// </summary>
     public abstract class BaseCrypto : ICrypto
     {
         public abstract EncryptDigestInfoModel GetEncryptDigestInfoModelFromEncryptedStream(Stream encryptedStream, Encoding encoding = null);

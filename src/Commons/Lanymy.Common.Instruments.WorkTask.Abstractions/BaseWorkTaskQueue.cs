@@ -7,14 +7,15 @@ using Lanymy.Common.ExtensionFunctions;
 
 namespace Lanymy.Common.Instruments
 {
-
-
+    /// <summary>
+    /// 提供基于 Channel 的多工作线程队列执行模型。
+    /// </summary>
     public abstract class BaseWorkTaskQueue<TDataModel> : BaseChannelWorkTask<TDataModel>
     //where TDataModel : IWorkTaskQueueDataModel
     {
-
-
-
+        /// <summary>
+        /// 当前启动的工作任务集合。
+        /// </summary>
         protected readonly List<Task> _CurrentWorkTaskList = new List<Task>();
         protected CancellationTokenSource _CurrentCancellationTokenSource;
 
@@ -30,15 +31,19 @@ namespace Lanymy.Common.Instruments
         {
 
         }
-
-
-        //protected abstract Task OnAddToQueueAsync(TDataModel data);
-
+        /// <summary>
+        /// 执行单条工作项的同步逻辑。
+        /// </summary>
+        /// <param name="dataModel">当前工作项。</param>
         protected virtual void OnWorkAction(TDataModel dataModel)
         {
             _CurrentWorkAction(dataModel);
         }
 
+        /// <summary>
+        /// 执行单条工作项的异步逻辑；若未提供异步委托则回退到同步委托。
+        /// </summary>
+        /// <param name="dataModel">当前工作项。</param>
         protected virtual async Task OnWorkActionAsync(TDataModel dataModel)
         {
             if (!_CurrentAsyncWorkAction.IfIsNull())
@@ -50,6 +55,11 @@ namespace Lanymy.Common.Instruments
             OnWorkAction(dataModel);
         }
 
+        /// <summary>
+        /// 处理单条工作项异常。
+        /// </summary>
+        /// <param name="dataModel">出错的工作项。</param>
+        /// <param name="ex">捕获的异常。</param>
         protected virtual void OnWorkError(TDataModel dataModel, Exception ex)
         {
         }
@@ -65,18 +75,18 @@ namespace Lanymy.Common.Instruments
             }
         }
 
-
+        /// <summary>
+        /// 工作线程主循环。
+        /// </summary>
+        /// <param name="token">停止令牌。</param>
         protected virtual async Task OnTaskAsync(CancellationToken token)
         {
-
             try
             {
                 while (!token.IsCancellationRequested)
                 {
-
                     while (await _CurrentChannel.Reader.WaitToReadAsync(token))
                     {
-
                         while (IsRunning && _CurrentChannel.Reader.TryRead(out var dataModel))
                         {
                             try
@@ -109,7 +119,6 @@ namespace Lanymy.Common.Instruments
 
         protected override async Task OnStartAsync()
         {
-
             if (!_IsInternalChannel)
             {
                 _CurrentChannel = CreateChannel();
@@ -120,6 +129,7 @@ namespace Lanymy.Common.Instruments
 
             for (var i = 0; i < WorkTaskTotalCount; i++)
             {
+                // 每个 worker 都独立从同一个 channel 消费，形成并发处理模型。
                 var task = Task.Factory.StartNew(
                     () => OnTaskAsync(token),
                     token,
@@ -131,10 +141,7 @@ namespace Lanymy.Common.Instruments
             }
 
             await Task.CompletedTask;
-
         }
-
-
 
         protected override async Task OnStopAsync()
         {
@@ -145,11 +152,9 @@ namespace Lanymy.Common.Instruments
 
             if (!_IsInternalChannel && !currentChannel.IfIsNull())
             {
+                // 内部创建的 channel 由本类负责 complete，这样 worker 能尽快退出 WaitToReadAsync。
                 currentChannel.Writer.TryComplete();
-
             }
-
-
 
             try
             {
@@ -196,6 +201,7 @@ namespace Lanymy.Common.Instruments
 
             try
             {
+                // worker 全部退出后再读尾，避免和消费线程并发争抢剩余数据。
                 await OnStopAndReadQueueAllDataActionAsync();
             }
             catch (Exception ex)
@@ -221,7 +227,6 @@ namespace Lanymy.Common.Instruments
                     }
                 }
             }
-
             if (exceptions.Count == 1)
             {
                 throw exceptions[0];
@@ -231,38 +236,11 @@ namespace Lanymy.Common.Instruments
             {
                 throw new AggregateException(exceptions);
             }
-
-
         }
-
-
-        //public override async Task<List<TDataModel>> StopAndReadQueueAllDataAsync()
-        //{
-
-        //    _IsReadQueueAllData = true;
-
-        //    await StopAsync();
-
-        //    return _CurrentReadQueueAllDataList;
-
-        //}
-
 
         protected override async Task OnDisposeAsync()
         {
-
-            //if (!_CurrentReadQueueAllDataList.IfIsNullOrEmpty())
-            //{
-            //    _CurrentReadQueueAllDataList.Clear();
-            //    _CurrentReadQueueAllDataList = null;
-            //}
-
             await Task.CompletedTask;
-
         }
-
-
-
     }
-
 }

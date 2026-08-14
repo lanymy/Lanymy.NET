@@ -10,18 +10,22 @@ using System.Threading.Tasks;
 
 namespace Lanymy.Common.Instruments
 {
-
-
+    /// <summary>
+    /// 在普通队列消费基础上，增加“按数量 / 按时间”批量触发能力的任务队列。
+    /// </summary>
     public abstract class BaseWorkTaskTriggerQueue<TDataModel> : BaseWorkTaskQueue<TDataModel>
     //where TDataModel : IWorkTaskQueueDataModel
     {
-
-
+        /// <summary>
+        /// 触发批处理前暂存的队列快照。
+        /// </summary>
         protected readonly ConcurrentQueue<TDataModel> _CurrentCacheConcurrentQueue = new ConcurrentQueue<TDataModel>();
         protected Task _TimeTriggerTask;
         protected CancellationTokenSource _TimeTriggerTasktCancellationTokenSource;
 
-
+        /// <summary>
+        /// 指示当前是否正在执行触发回调，避免并发重入。
+        /// </summary>
         protected volatile bool _IsWorkTriggerActionRun = false;
 
         /// <summary>
@@ -39,7 +43,9 @@ namespace Lanymy.Common.Instruments
         protected readonly uint _OnActionTriggerMilliseconds;
         public DateTime OnActionTriggerLastDateTime { get; private set; } = DateTime.Now;
 
-
+        /// <summary>
+        /// 当前批量触发回调。
+        /// </summary>
         protected readonly Action<List<TDataModel>> _CurrentWorkTaskTriggerQueueAction;
 
 
@@ -73,11 +79,8 @@ namespace Lanymy.Common.Instruments
 
         }
 
-
-
         protected override void OnWorkAction(TDataModel dataModel)
         {
-
             if (_IsWorkTriggerActionRun)
             {
                 lock (_Locker)
@@ -120,6 +123,7 @@ namespace Lanymy.Common.Instruments
                     return;
                 }
 
+                // 先做快照再执行回调，避免在回调执行期直接操作并发队列。
                 currentBatchDataList = _CurrentCacheConcurrentQueue.ToList();
                 currentBatchCount = currentBatchDataList.Count;
                 _IsWorkTriggerActionRun = true;
@@ -139,6 +143,7 @@ namespace Lanymy.Common.Instruments
                 {
                     if (isTriggerActionSucceeded && currentBatchCount > 0)
                     {
+                        // 只有触发回调成功时才从缓存中剔除已处理批次，失败时保留现场等待下一次重试。
                         ClearTriggeredBatch(currentBatchCount);
                         var remainingTriggerCount = Math.Max(0, _OnActionTriggerCountIndex - currentBatchCount);
                         Interlocked.Exchange(ref _OnActionTriggerCountIndex, remainingTriggerCount);
@@ -175,6 +180,7 @@ namespace Lanymy.Common.Instruments
                 return;
             }
 
+            // 通过抬高计数阈值强制执行一次最终触发，把停机前残留批次一起冲刷出去。
             var onActionTriggerCountIndex = _OnActionTriggerCountIndex + OnActionTriggerCount;
             Interlocked.Exchange(ref _OnActionTriggerCountIndex, onActionTriggerCountIndex);
 
@@ -185,7 +191,6 @@ namespace Lanymy.Common.Instruments
         protected override async Task OnStartAsync()
         {
             await base.OnStartAsync();
-
 
             _TimeTriggerTasktCancellationTokenSource = new CancellationTokenSource();
             var token = _TimeTriggerTasktCancellationTokenSource.Token;
@@ -202,11 +207,10 @@ namespace Lanymy.Common.Instruments
         {
             while (!token.IsCancellationRequested)
             {
-
+                // 定时线程只负责检查是否达到触发条件，不直接参与消费主队列。
                 CheckOnActionTrigger();
 
                 await Task.Delay(TaskSleepMilliseconds, token);
-
             }
         }
 
@@ -224,6 +228,7 @@ namespace Lanymy.Common.Instruments
                 }
                 finally
                 {
+                    // 即使定时线程未启动成功，也要在 stop 末尾尽量冲刷掉缓存数据。
                     FlushCachedDataOnStop();
                 }
                 return;
@@ -278,6 +283,7 @@ namespace Lanymy.Common.Instruments
             }
             finally
             {
+                // worker 结束后再做最后一次批量触发，避免与正常消费并发交错。
                 FlushCachedDataOnStop();
             }
 

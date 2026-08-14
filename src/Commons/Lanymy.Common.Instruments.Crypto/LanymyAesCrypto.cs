@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -13,6 +13,9 @@ using Lanymy.Common.Instruments.Interfaces;
 
 namespace Lanymy.Common.Instruments
 {
+    /// <summary>
+    /// 基于 AES-CBC + PKCS7 的轻量加解密实现，并在密文侧附加压缩以缩小体积。
+    /// </summary>
     public class LanymyAesCrypto : IAesCrypto
     {
 
@@ -164,8 +167,7 @@ namespace Lanymy.Common.Instruments
             csEncrypt.Write(sourceBytes, 0, sourceBytes.Length);
             csEncrypt.FlushFinalBlock();
 
-
-            //return msEncrypt.ToArray();
+            // AES 完成后再统一压缩，解密路径会按相反顺序先解压再还原。
             return CompressionHelper.CompressBytesToBytes(msEncrypt.ToArray());
 
         }
@@ -199,6 +201,7 @@ namespace Lanymy.Common.Instruments
             using MemoryStream msDecrypt = new MemoryStream();
             using CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Write);
 
+            // EncryptBytesToBteys 始终先压缩再返回，所以这里先解压再进入 AES 解密。
             var bytes = CompressionHelper.DecompressBytesFromBytes(encryptBytes);
 
             csDecrypt.Write(bytes, 0, bytes.Length);

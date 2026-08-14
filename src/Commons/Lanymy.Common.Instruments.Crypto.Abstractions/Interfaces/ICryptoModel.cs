@@ -7,6 +7,9 @@ using Lanymy.Common.Instruments.CryptoModels;
 
 namespace Lanymy.Common.Instruments.Interfaces
 {
+    /// <summary>
+    /// 定义模型对象在字节、字符串和文件介质之间的加解密入口。
+    /// </summary>
     public interface ICryptoModel
     {
 
@@ -56,16 +59,14 @@ namespace Lanymy.Common.Instruments.Interfaces
         EncryptModelDigestInfoModel<T> DecryptModelFromBase64String<T>(string encryptBase64String, string secretKey = null, Encoding encoding = null) where T : class;
 
 
-
+        /// <summary>
+        /// 把模型序列化并加密到文件。
+        /// </summary>
         EncryptModelFileDigestInfoModel<T> EncryptModelToFile<T>(T t, string encryptFileFullPath, string secretKey = null, bool ifRandom = true, Encoding encoding = null) where T : class;
 
-
+        /// <summary>
+        /// 从加密文件解密并反序列化模型。
+        /// </summary>
         EncryptModelFileDigestInfoModel<T> DecryptModelFromFile<T>(string encryptedFileFullPath, string secretKey = null, Encoding encoding = null) where T : class;
-
-
-
-
-
-
     }
 }

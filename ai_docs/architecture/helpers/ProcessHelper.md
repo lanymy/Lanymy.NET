@@ -50,8 +50,13 @@
   - `HasExited`
   - `ExitCode`
   - `Exception`
+  - `ErrorMessage`
+  - `CreateNoWindow`
+  - `UseShellExecute`
+  - `WaitedForExit`
 - 参数拼接使用 `string.Join(" ", args)`，对带空格、引号、转义要求高的参数场景不算特别稳。
 - 兼容层 `StartProcess(...)` 仍保留“布尔返回”语义；需要诊断信息时，应优先使用结果型入口。
+- 当前与 `BaseCmd` 的真实耦合点仍只有 `GetProcessStartInfo("cmd", true)` 这一层启动配置复用；`BaseCmd` 没有直接切到 `ProcessResultModel`，本轮也未额外扩散内部 adoption。
 
 ## 风险点
 

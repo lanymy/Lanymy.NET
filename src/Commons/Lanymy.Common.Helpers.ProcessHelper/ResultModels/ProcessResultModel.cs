@@ -18,6 +18,21 @@ namespace Lanymy.Common.Helpers.ResultModels
         public string Arguments { get; set; }
 
         /// <summary>
+        /// 请求是否隐藏窗口。
+        /// </summary>
+        public bool CreateNoWindow { get; set; }
+
+        /// <summary>
+        /// 请求是否使用 Shell 启动。
+        /// </summary>
+        public bool UseShellExecute { get; set; }
+
+        /// <summary>
+        /// 本次调用是否要求等待进程退出。
+        /// </summary>
+        public bool WaitedForExit { get; set; }
+
+        /// <summary>
         /// 是否已成功启动进程。
         /// </summary>
         public bool IsStarted { get; set; }
@@ -41,6 +56,11 @@ namespace Lanymy.Common.Helpers.ResultModels
         /// 启动或等待期间捕获到的异常。
         /// </summary>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// 轻量失败说明。
+        /// </summary>
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// 是否成功。若仅启动未等待，则表示成功启动；

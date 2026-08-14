@@ -26,6 +26,7 @@
 - `WorkTask`
 - `Cache`
 - `Crypto`
+- `FileTextManipulater`
 - `Crawler`
 - `Serializer`
 - `Socket`
@@ -41,6 +42,7 @@
 | [CMD.Abstractions.md](./CMD.Abstractions.md) | 命令执行抽象层专题 |
 | [CMD-Semantics.md](./CMD-Semantics.md) | 命令执行成功语义专题 |
 | [Crypto.md](./Crypto.md) | 加解密机制模块专题 |
+| [FileTextManipulater.md](./FileTextManipulater.md) | 文本文件读写基础设施专题 |
 | [Serializer.md](./Serializer.md) | 序列化机制模块专题 |
 | [Socket.md](./Socket.md) | Socket 通信机制模块专题 |
 | [Socket.Abstractions.md](./Socket.Abstractions.md) | Socket 抽象层专题 |

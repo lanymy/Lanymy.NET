@@ -12,6 +12,7 @@
 ## 1. 当前入口
 
 - 活跃任务清单见 [active-regression-backlog.md](./active-regression-backlog.md)
+- 结果型 API 调用面盘点见 [helper-result-api-adoption-audit.md](./helper-result-api-adoption-audit.md)
 - 已完成任务归档入口见 [archive/README.md](./archive/README.md)
 
 ## 2. 使用方式

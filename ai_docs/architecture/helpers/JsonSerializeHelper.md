@@ -22,7 +22,11 @@
   - `DeserializeFromJsonAsync`
 - JSON 文件读写
   - `SerializeToJsonFile`
+  - `SerializeToJsonFileWithResult`
+  - `SerializeToJsonFileWithResultAsync`
   - `DeserializeFromJsonFile`
+  - `DeserializeFromJsonFileWithResult`
+  - `DeserializeFromJsonFileWithResultAsync`
 - 异步 JSON 文件读写
   - `SerializeToJsonFileAsync`
   - `DeserializeFromJsonFileAsync`
@@ -40,7 +44,7 @@
 - 对空对象或空 JSON 采用快速返回策略：
   - 空对象序列化返回空字符串
   - 空 JSON 反序列化返回 `default(T)`
-- 文件级 API 只是向序列化器继续透传，不在 Helper 中重复处理文件细节。
+- 文件级兼容层 API 继续向序列化器透传；严格层在 Helper 中补充了结果模型与异常捕获。
 
 ## 在仓库中的角色
 
@@ -53,6 +57,16 @@
 - 由于大量上层模块依赖 JSON 结果格式，修改默认设置时要把兼容性放在首位。
 - 这里的异步能力本质上依然是对同步逻辑的包装，不等价于真正流式 JSON 处理。
 - 当前约束 `where T : class` 比较广泛，若未来要支持值类型序列化，需要评估整个仓库 API 风格是否一致。
+- JSON 文件读写当前已经补充严格结果层：
+  - `SerializeToJsonFileWithResult(...)`
+  - `SerializeToJsonFileWithResultAsync(...)`
+  - `DeserializeFromJsonFileWithResult(...)`
+  - `DeserializeFromJsonFileWithResultAsync(...)`
+- 兼容层 `SerializeToJsonFile(...)` / `SerializeToJsonFileAsync(...)` 继续保持失败直接抛异常的历史语义。
+- 兼容层 `DeserializeFromJsonFile(...)` / `DeserializeFromJsonFileAsync(...)` 保留旧行为：
+  - 缺失文件时会沿底层文本读取器创建空文件
+  - 最终返回 `default(T)`，而不是抛异常
+- 严格层 `DeserializeFromJsonFileWithResult(...)` / `DeserializeFromJsonFileWithResultAsync(...)` 则显式把“文件不存在”视为失败并返回异常信息。
 
 ## 风险点
 
@@ -63,3 +77,4 @@
 
 - 可继续补一份“Helpers.JsonSerializeHelper 与 Instruments.JsonNetJsonSerializer 的分层关系”专题。
 - 若后续有现代化目标，建议先做全仓库 JSON 兼容面盘点，再考虑 `System.Text.Json` 迁移。
+- 想看 `Json / Binary / File / DataTable` 四个序列化 helper 的职责分工，可进入 [SerializeHelpers-Map.md](./SerializeHelpers-Map.md)。

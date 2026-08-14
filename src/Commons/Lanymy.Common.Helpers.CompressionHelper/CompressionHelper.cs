@@ -1,5 +1,7 @@
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Lanymy.Common.Helpers.ResultModels;
 using Lanymy.Common.Instruments;
 using Lanymy.Common.Instruments.ICompressers;
 
@@ -219,7 +221,46 @@ namespace Lanymy.Common.Helpers
         /// <returns></returns>
         public static void CompressSourceFileToCompressFile(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
         {
-            GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).CompressSourceFileToCompressFile(sourceFileFullPath, compressFileFullPath);
+            var result = CompressSourceFileToCompressFileWithResult(sourceFileFullPath, compressFileFullPath, compresserFileToFile);
+            if (!result.IsSuccess && result.Exception != null && !(result.Exception is FileNotFoundException))
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 压缩源文件，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFileFullPath">要压缩源文件的全路径</param>
+        /// <param name="compressFileFullPath">压缩后文件全路径</param>
+        /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
+        /// <returns>文件压缩结果</returns>
+        public static CompressionFileOperationResultModel CompressSourceFileToCompressFileWithResult(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
+        {
+            var result = new CompressionFileOperationResultModel
+            {
+                SourcePath = sourceFileFullPath,
+                TargetPath = compressFileFullPath,
+                IsCompressOperation = true,
+            };
+
+            try
+            {
+                if (!File.Exists(sourceFileFullPath))
+                {
+                    throw new FileNotFoundException("Source file does not exist.", sourceFileFullPath);
+                }
+
+                GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).CompressSourceFileToCompressFile(sourceFileFullPath, compressFileFullPath);
+                result.TargetFileExists = File.Exists(compressFileFullPath);
+                result.IsSuccess = result.TargetFileExists;
+            }
+            catch (System.Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -230,7 +271,46 @@ namespace Lanymy.Common.Helpers
         /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
         public static void DecompressSourceFileFromCompressFile(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
         {
-            GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).DecompressSourceFileFromCompressFile(sourceFileFullPath, compressFileFullPath);
+            var result = DecompressSourceFileFromCompressFileWithResult(sourceFileFullPath, compressFileFullPath, compresserFileToFile);
+            if (!result.IsSuccess && result.Exception != null && !(result.Exception is FileNotFoundException))
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 解压缩文件，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFileFullPath">解压缩后源文件全路径</param>
+        /// <param name="compressFileFullPath">要解压缩的文件</param>
+        /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
+        /// <returns>文件解压结果</returns>
+        public static CompressionFileOperationResultModel DecompressSourceFileFromCompressFileWithResult(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
+        {
+            var result = new CompressionFileOperationResultModel
+            {
+                SourcePath = compressFileFullPath,
+                TargetPath = sourceFileFullPath,
+                IsCompressOperation = false,
+            };
+
+            try
+            {
+                if (!File.Exists(compressFileFullPath))
+                {
+                    throw new FileNotFoundException("Compressed file does not exist.", compressFileFullPath);
+                }
+
+                GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).DecompressSourceFileFromCompressFile(sourceFileFullPath, compressFileFullPath);
+                result.TargetFileExists = File.Exists(sourceFileFullPath);
+                result.IsSuccess = result.TargetFileExists;
+            }
+            catch (System.Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -240,9 +320,48 @@ namespace Lanymy.Common.Helpers
         /// <param name="compressFileFullPath">压缩后文件全路径</param>
         /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
         /// <returns></returns>
-        public static Task CompressSourceFileToCompressFileAsync(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
+        public static async Task CompressSourceFileToCompressFileAsync(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
         {
-            return GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).CompressSourceFileToCompressFileAsync(sourceFileFullPath, compressFileFullPath);
+            var result = await CompressSourceFileToCompressFileWithResultAsync(sourceFileFullPath, compressFileFullPath, compresserFileToFile);
+            if (!result.IsSuccess && result.Exception != null && !(result.Exception is FileNotFoundException))
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 异步压缩源文件，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFileFullPath">要压缩源文件的全路径</param>
+        /// <param name="compressFileFullPath">压缩后文件全路径</param>
+        /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
+        /// <returns>文件压缩结果</returns>
+        public static async Task<CompressionFileOperationResultModel> CompressSourceFileToCompressFileWithResultAsync(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
+        {
+            var result = new CompressionFileOperationResultModel
+            {
+                SourcePath = sourceFileFullPath,
+                TargetPath = compressFileFullPath,
+                IsCompressOperation = true,
+            };
+
+            try
+            {
+                if (!File.Exists(sourceFileFullPath))
+                {
+                    throw new FileNotFoundException("Source file does not exist.", sourceFileFullPath);
+                }
+
+                await GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).CompressSourceFileToCompressFileAsync(sourceFileFullPath, compressFileFullPath);
+                result.TargetFileExists = File.Exists(compressFileFullPath);
+                result.IsSuccess = result.TargetFileExists;
+            }
+            catch (System.Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
 
@@ -252,9 +371,48 @@ namespace Lanymy.Common.Helpers
         /// <param name="sourceFileFullPath">解压缩后 源文件 全路径</param>
         /// <param name="compressFileFullPath">要解压缩的文件</param>
         /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
-        public static Task DecompressSourceFileFromCompressFileAsync(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
+        public static async Task DecompressSourceFileFromCompressFileAsync(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
         {
-            return GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).DecompressSourceFileFromCompressFileAsync(sourceFileFullPath, compressFileFullPath);
+            var result = await DecompressSourceFileFromCompressFileWithResultAsync(sourceFileFullPath, compressFileFullPath, compresserFileToFile);
+            if (!result.IsSuccess && result.Exception != null && !(result.Exception is FileNotFoundException))
+            {
+                throw result.Exception;
+            }
+        }
+
+        /// <summary>
+        /// 异步解压缩文件，并返回详细结果。
+        /// </summary>
+        /// <param name="sourceFileFullPath">解压缩后源文件全路径</param>
+        /// <param name="compressFileFullPath">要解压缩的文件</param>
+        /// <param name="compresserFileToFile">文件到文件的压缩器实现，Null 表示使用默认压缩器。</param>
+        /// <returns>文件解压结果</returns>
+        public static async Task<CompressionFileOperationResultModel> DecompressSourceFileFromCompressFileWithResultAsync(string sourceFileFullPath, string compressFileFullPath, ICompresserFileToFile compresserFileToFile = null)
+        {
+            var result = new CompressionFileOperationResultModel
+            {
+                SourcePath = compressFileFullPath,
+                TargetPath = sourceFileFullPath,
+                IsCompressOperation = false,
+            };
+
+            try
+            {
+                if (!File.Exists(compressFileFullPath))
+                {
+                    throw new FileNotFoundException("Compressed file does not exist.", compressFileFullPath);
+                }
+
+                await GenericityHelper.GetInterface(compresserFileToFile, DefaultCompresser).DecompressSourceFileFromCompressFileAsync(sourceFileFullPath, compressFileFullPath);
+                result.TargetFileExists = File.Exists(sourceFileFullPath);
+                result.IsSuccess = result.TargetFileExists;
+            }
+            catch (System.Exception ex)
+            {
+                result.Exception = ex;
+            }
+
+            return result;
         }
 
 

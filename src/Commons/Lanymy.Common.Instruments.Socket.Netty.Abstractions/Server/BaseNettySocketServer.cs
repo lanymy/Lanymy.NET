@@ -9,9 +9,9 @@ using Lanymy.Common.Instruments.Common;
 
 namespace Lanymy.Common.Instruments.Server
 {
-
-
-
+    /// <summary>
+    /// 提供 Netty TCP 服务端的启动、绑定、停止和资源收口逻辑。
+    /// </summary>
     public abstract class BaseNettySocketServer<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelOptions, TServerChannelContext, TServerChannelHandler, TServerChannelInitializer> : BaseSocketHost<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelOptions, TServerChannelContext, TServerChannelHandler, TServerChannelInitializer>
         where TReceivePackage : class
         where TSendPackage : class
@@ -22,10 +22,19 @@ namespace Lanymy.Common.Instruments.Server
         where TServerChannelContext : BaseServerChannelContext<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelOptions>
         where TServerChannelHandler : BaseServerChannelHandler<TReceivePackage, TSendPackage, TChannelSession, TChannelFixedHeaderPackageFilter, TServerChannelOptions, TServerChannelContext>
     {
-
+        /// <summary>
+        /// Worker 事件循环组。
+        /// </summary>
         protected IEventLoopGroup _CurrentWorkerGroup;
+
+        /// <summary>
+        /// 当前服务端 Bootstrap。
+        /// </summary>
         protected ServerBootstrap _CurrentBootstrap;
 
+        /// <summary>
+        /// 初始化 Netty 服务端。
+        /// </summary>
         protected BaseNettySocketServer(TServerChannelContext serverChannelContext) : base(serverChannelContext)
         {
         }
@@ -56,6 +65,7 @@ namespace Lanymy.Common.Instruments.Server
 
                 if (!IsBoundChannelReady(currentChannelHost))
                 {
+                    // bind 成功但 channel 未活跃时，视为失败并按启动回滚流程收口。
                     await CleanupRejectedBoundChannelAsync(currentChannelHost);
                     currentChannelHost = null;
                     throw CreateInactiveBindException();
@@ -311,6 +321,7 @@ namespace Lanymy.Common.Instruments.Server
 
         protected virtual void CleanupTrackedChannelHandlers()
         {
+            // 服务端停止后把在线 handler 视图整体清空，避免残留旧会话引用。
             _CurrentChannelContext.CurrentChannelDictionary.Clear();
         }
 

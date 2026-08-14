@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Input;
 using Lanymy.Common.Abstractions.Models;
 using Lanymy.Common.ExtensionFunctions;
@@ -100,9 +100,13 @@ namespace Lanymy.Common.AppTests.ViewModels
 
         private void NetworkHelperTest()
         {
+            var result = NetworkHelper.GetLocalIpListWithResult();
+            if (!result.IsSuccess || result.Addresses.Count <= 0)
+            {
+                return;
+            }
 
-            var list = NetworkHelper.GetLocalIpList();
-            var aaa = list[0].ToString();
+            var aaa = result.Addresses[0].ToString();
 
         }
 
