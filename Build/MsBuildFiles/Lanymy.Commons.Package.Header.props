@@ -6,7 +6,7 @@
     <TargetFrameworks>$(CurrentTargetFrameworks)</TargetFrameworks>
 
     <!--<LanymyCommonFrameworkPackageReleaseNumbers>0.17.5</LanymyCommonFrameworkPackageReleaseNumbers>-->
-    <LanymyCommonFrameworkPackageReleaseNumbers>0.17.6</LanymyCommonFrameworkPackageReleaseNumbers>
+    <LanymyCommonFrameworkPackageReleaseNumbers>0.17.6.1</LanymyCommonFrameworkPackageReleaseNumbers>
 
     <!--<LanymyCommonFrameworkPackageVersionSuffix>alpha</LanymyCommonFrameworkPackageVersionSuffix>-->
     <LanymyCommonFrameworkPackageVersionSuffix>alpha</LanymyCommonFrameworkPackageVersionSuffix>
